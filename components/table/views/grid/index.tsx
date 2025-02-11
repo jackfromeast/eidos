@@ -15,10 +15,12 @@ import React, {
   useMemo,
   useRef,
 } from "react"
-import { useKeyPress, useSize } from "ahooks"
+import { useKeyPress, useSize, useWhyDidYouUpdate } from "ahooks"
 import { Plus } from "lucide-react"
 import { useTheme } from "next-themes"
 
+import { MsgType } from "@/lib/const"
+import { getWorker } from "@/lib/sqlite/worker"
 import { IGridViewProperties, IView } from "@/lib/store/IView"
 import { cn, getRawTableNameById } from "@/lib/utils"
 import { useSqlite } from "@/hooks/use-sqlite"
@@ -39,13 +41,10 @@ import { useDrop } from "./hooks/use-drop"
 import { useHover } from "./hooks/use-hover"
 import { useTableAppStore } from "./store"
 import "./styles.css"
-import { MsgType } from "@/lib/const"
-import { getWorker } from "@/lib/sqlite/worker"
-
 import { TwinkleSparkle } from "../../../loading"
 import { useTableSearchStore } from "../../hooks/use-table-search-store"
 import { getScrollbarWidth } from "./helper"
-import { useSearchResults } from "./hooks/use-search-results"
+import { useGridSearch } from "./hooks/use-grid-search"
 import { darkTheme, lightTheme } from "./theme"
 
 const defaultConfig: Partial<DataEditorProps> = {
@@ -110,7 +109,7 @@ export default function GridView(props: IGridProps) {
     tableName,
     databaseName
   )
-  const { toCell, findRowIndexInView } = useDataSource(tableName, databaseName)
+  const { toCell } = useDataSource(tableName, databaseName)
   const { uiColumns } = useUiColumns(tableName, databaseName)
   const { onColumnResize, columns, showColumns, onColumnMoved } = useColumns(
     uiColumns,
@@ -161,10 +160,9 @@ export default function GridView(props: IGridProps) {
 
   // Get search state from context
   const { searchQuery, showSearch } = useTableSearchStore()
-  const { formattedSearchResults } = useSearchResults(
+  const { formattedSearchResults, currentCell } = useGridSearch(
     getColumnIndexByColumnName
   )
-  const { setCurrentSearchIndex, currentSearchIndex } = useTableSearchStore()
 
   // Add state for search highlight
   const [searchHighlightRegion, setSearchHighlightRegion] = React.useState<
@@ -179,48 +177,37 @@ export default function GridView(props: IGridProps) {
   }, [showSearch])
 
   // Update the onSearchResultsChanged function
-  const onSearchResultsChanged = useCallback(
-    (results: readonly Item[], navIndex: number) => {
-      setCurrentSearchIndex(navIndex)
-      if (results.length > 0 && navIndex >= 0 && navIndex < results.length) {
-        const result = results[navIndex]
-        setTimeout(() => {
-          if (glideDataGridRef.current) {
-            glideDataGridRef.current.scrollTo(result[0] - 1, result[1])
+  const onSearchResultsChanged = useCallback((result: Item) => {
+    if (result) {
+      setTimeout(() => {
+        if (glideDataGridRef.current) {
+          glideDataGridRef.current.scrollTo(result[0] - 1, result[1])
 
-            setTimeout(() => {
-              glideDataGridRef.current?.scrollTo(result[0] - 1, result[1])
+          setTimeout(() => {
+            glideDataGridRef.current?.scrollTo(result[0] - 1, result[1])
 
-              setSearchHighlightRegion([
-                {
-                  color: "rgba(255, 255, 0, 0.3)",
-                  range: {
-                    x: result[0] - 1,
-                    y: result[1],
-                    width: 1,
-                    height: 1,
-                  },
+            setSearchHighlightRegion([
+              {
+                color: "rgba(255, 255, 0, 0.3)",
+                range: {
+                  x: result[0] - 1,
+                  y: result[1],
+                  width: 1,
+                  height: 1,
                 },
-              ])
-            }, 50)
-          }
-        }, 0)
-      }
-    },
-    [setCurrentSearchIndex]
-  )
+              },
+            ])
+          }, 50)
+        }
+      }, 0)
+    }
+  }, [])
 
   useEffect(() => {
-    if (showSearch) {
-      onSearchResultsChanged(formattedSearchResults, currentSearchIndex)
+    if (showSearch && currentCell) {
+      onSearchResultsChanged(currentCell)
     }
-  }, [
-    showSearch,
-    searchQuery,
-    formattedSearchResults,
-    currentSearchIndex,
-    onSearchResultsChanged,
-  ])
+  }, [showSearch, searchQuery, currentCell, onSearchResultsChanged])
   useEffect(() => {
     const worker = getWorker()
     function subscribeHighlightRow(e: MessageEvent<any>) {

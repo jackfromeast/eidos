@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useRef } from "react"
+import { useCallback, useEffect, useRef } from "react"
 import { useKeyPress } from "ahooks"
 import { ChevronDownIcon, ChevronUpIcon, SearchIcon } from "lucide-react"
 import { useTranslation } from "react-i18next"
@@ -8,7 +8,6 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
-import { TableContext } from "./hooks"
 import { useTableSearch } from "./hooks/use-table-search"
 import { useTableSearchStore } from "./hooks/use-table-search-store"
 
@@ -95,15 +94,16 @@ export const ViewSearch = (props: { view: IView }) => {
 
   useKeyPress(["enter"], (event) => {
     if (showSearch && searchResults?.length) {
-      if (event.shiftKey) {
-        setCurrentSearchIndex((prev) =>
-          prev > 0 ? prev - 1 : searchResults.length - 1
-        )
-      } else {
-        setCurrentSearchIndex((prev) =>
-          prev < searchResults.length - 1 ? prev + 1 : 0
-        )
-      }
+      const direction: "next" | "prev" = event.shiftKey ? "prev" : "next"
+      const navigateEvent = new CustomEvent("navigateSearch", {
+        detail: {
+          direction,
+          currentIndex: currentSearchIndex,
+          total: searchResults.length,
+          event,
+        },
+      })
+      window.dispatchEvent(navigateEvent)
     }
   })
 
