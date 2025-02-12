@@ -6,7 +6,7 @@ import { NodeServerDatabase } from "./sqlite-server";
 
 
 const { spaceDbPath, simplePathConfig } = workerData
-export class DataSpaceManager {
+class DataSpaceManager {
     private static instance: DataSpaceManager;
     private dataSpace: DataSpace | null = null;
 
@@ -46,6 +46,8 @@ export class DataSpaceManager {
                 setInterval,
             },
             hasLoadExtension: true,
+            // upgrade cache to improve performance
+            // cacheSize: 8 * 1024 * 1024,
         });
 
         return this.dataSpace;

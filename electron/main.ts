@@ -3,17 +3,16 @@ import { handleFunctionCall } from '@/lib/rpc';
 import { BrowserWindow, Menu, Tray, app, dialog, ipcMain, nativeImage, shell } from 'electron';
 import { log } from 'electron-log';
 import path from 'path';
+import { getConfigManager } from './config';
 import { getDataSpace, getOrSetDataSpace } from './data-space';
 import { initializePlayground } from './file-system/playground';
+import { getResourcePath } from './helper';
 import { ProtocolHandler } from './protocol-handler';
+import { getApiAgentStatus, initApiAgent } from './server/api-agent';
 import { startServer } from './server/server';
 import { AppUpdater } from './updater';
 import { createWindow } from './window-manager/createWindow';
-import { initApiAgent, getApiAgentStatus } from './server/api-agent';
-import { getConfigManager } from './config';
-import { Worker } from 'worker_threads';
-import { getSpaceDbPath } from './file-system/space';
-import { getResourcePath } from './helper';
+import { WorkerManager } from './worker-manager';
 
 export let win: BrowserWindow | null
 let appUpdater: AppUpdater;
@@ -88,25 +87,8 @@ ipcMain.handle('sqlite-msg', async (event, payload) => {
 
 
 ipcMain.handle('sqlite-msg-read', async (event, payload) => {
-    return new Promise((resolve, reject) => {
-        const { space, dbName } = payload.data
-        const spaceId = space || dbName
-        const spaceDbPath = getSpaceDbPath(spaceId)
-        const worker = new Worker(path.join(__dirname, 'worker.js'), {
-            workerData: {
-                spaceDbPath,
-                simplePathConfig
-            }
-        })
-        worker.on('message', (result: any) => {
-            resolve(result);
-            worker.terminate();
-        });
-        worker.on('error', (err) => {
-            reject(err);
-            worker.terminate();
-        });
-        worker.postMessage(payload);
+    return WorkerManager.getInstance().executeTask(payload, {
+        simplePathConfig
     });
 });
 
@@ -162,6 +144,7 @@ ipcMain.handle('reload-app', () => {
 });
 
 app.on('window-all-closed', () => {
+    WorkerManager.getInstance().shutdown();
     getDataSpace()?.closeDb()
     win = null
 })
