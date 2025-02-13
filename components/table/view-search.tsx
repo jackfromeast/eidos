@@ -138,37 +138,42 @@ export const ViewSearch = (props: { view: IView }) => {
           />
           <SearchIcon className="absolute left-2 h-4 w-4 text-muted-foreground" />
 
-          {searchResults && searchResults.length > 0 && (
+          {searchQuery && (
             <div className="absolute right-2 flex items-center gap-1 bg-background">
-              <div className="flex items-center text-xs text-muted-foreground whitespace-nowrap">
-                <span>{currentSearchIndex + 1}</span>
-                <span>/</span>
-                <span>{totalMatches}</span>
-                <span className="ml-2">({searchTime}ms)</span>
-              </div>
-              <div className="flex">
-                <Button
-                  variant="ghost"
-                  size="xs"
-                  className="h-6 w-6 p-0 hover:bg-accent"
-                  onClick={() => navigateSearch("prev")}
-                >
-                  <ChevronUpIcon className="h-3 w-3" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="xs"
-                  className="h-6 w-6 p-0 hover:bg-accent"
-                  onClick={() => navigateSearch("next")}
-                >
-                  <ChevronDownIcon className="h-3 w-3" />
-                </Button>
-              </div>
-            </div>
-          )}
-          {isSearching && (
-            <div className="absolute right-2 flex items-center">
-              <Spinner />
+              {isSearching ? (
+                <Spinner />
+              ) : searchTime >= 0 ? (
+                <>
+                  <div className="flex items-center text-xs text-muted-foreground whitespace-nowrap">
+                    <span>{currentSearchIndex + 1}</span>
+                    <span>/</span>
+                    <span>{totalMatches}</span>
+                    <span className="ml-2">({searchTime}ms)</span>
+                  </div>
+                  <div className="flex">
+                    <Button
+                      variant="ghost"
+                      size="xs"
+                      className="h-6 w-6 p-0 hover:bg-accent"
+                      onClick={() => navigateSearch("prev")}
+                    >
+                      <ChevronUpIcon className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="xs"
+                      className="h-6 w-6 p-0 hover:bg-accent"
+                      onClick={() => navigateSearch("next")}
+                    >
+                      <ChevronDownIcon className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <div className="flex items-center text-xs text-muted-foreground whitespace-nowrap">
+                  {t("cmdk.notFound", { input: searchQuery })}
+                </div>
+              )}
             </div>
           )}
         </div>
