@@ -88,9 +88,15 @@ export class TableFullTextSearch {
             }
 
             const countSql = `
-                SELECT COUNT(*) as total 
-                FROM ${tableName} t
-                JOIN ${ftsTableName} fts ON t.rowid = fts.rowid 
+                WITH original_view AS (
+                    SELECT 
+                        ${tableName}.rowid
+                    FROM (${view.query}) v
+                    JOIN ${tableName} ON ${tableName}._id = v._id
+                )
+                SELECT COUNT(*) AS total
+                FROM original_view ov
+                JOIN ${ftsTableName} fts ON ov.rowid = fts.rowid
                 WHERE ${ftsTableName} MATCH ?
             `;
             const [{ total }] = await this.dataspace.db.selectObjects(countSql, [query]);
