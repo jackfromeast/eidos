@@ -34,21 +34,18 @@ export const DefaultState = {
 }
 
 // this plugin is just used for eidos doc not a general plugin
-export function EidosAutoSavePlugin(props: AutoSavePluginProps) {
+export function EidosAutoLoadSaveFocusPlugin(props: AutoSavePluginProps) {
   const [editor] = useLexicalComposerContext()
-  const { docId } = props
+  const { docId, disableManuallySave, isEditable } = props
   const lock = useRef(false)
   const { updateDoc, getDoc } = useSqlite()
 
-  useEffect(() => {
-    editor.setEditable(Boolean(props.isEditable))
-  }, [editor, props.isEditable])
-
   const handleSave = useCallback(async () => {
     if (!editor.isEditable()) return
-    const json = editor.getEditorState().toJSON()
-    const content = JSON.stringify(json)
+
     editor.update(async () => {
+      const json = editor.getEditorState().toJSON()
+      const content = JSON.stringify(json)
       const markdown = $convertToMarkdownString(allTransformers)
       await updateDoc(docId, content, markdown)
     })
@@ -56,63 +53,67 @@ export function EidosAutoSavePlugin(props: AutoSavePluginProps) {
 
   useKeyPress(["ctrl.s", "meta.s"], (e) => {
     e.preventDefault()
-    if (props.disableManuallySave) {
-      return
-    }
+    if (disableManuallySave) return
     handleSave()
   })
 
   useEffect(() => {
-    lock.current = true
-    getDoc(docId).then((initContent) => {
+    editor.setEditable(Boolean(isEditable))
+    if (isEditable) {
+      setTimeout(() => editor.focus(), 0)
+    }
+  }, [editor, isEditable])
+
+  useEffect(() => {
+    const loadInitialContent = async () => {
+      lock.current = true
+      const initContent = await getDoc(docId)
+
       let state = JSON.stringify(DefaultState)
       if (initContent) {
         try {
           state = initContent
         } catch (error) {
-        } finally {
-          editor.update(() => {
-            const parsedState = editor.parseEditorState(state)
-            editor.setEditorState(parsedState)
-            lock.current = false
-          })
+          console.error("Error parsing content:", error)
         }
-      } else {
-        editor.update(() => {
-          const parsedState = editor.parseEditorState(state)
-          editor.setEditorState(parsedState)
-          lock.current = false
-        })
       }
-    })
-  }, [editor, docId, getDoc])
 
-  const { run: debounceSave } = useDebounceFn(updateDoc, {
-    wait: 500,
-  })
+      editor.update(() => {
+        const parsedState = editor.parseEditorState(state)
+        editor.setEditorState(parsedState)
+        editor.setEditable(Boolean(isEditable))
+
+        if (editor.isEditable()) {
+          setTimeout(() => editor.focus(), 0)
+        }
+        lock.current = false
+      })
+    }
+
+    loadInitialContent()
+  }, [editor, docId, getDoc, isEditable])
+
+  const { run: debounceSave } = useDebounceFn(updateDoc, { wait: 500 })
 
   useEffect(() => {
     const unRegister = editor.registerUpdateListener(
-      ({ editorState, prevEditorState, tags }) => {
-        if (lock.current) {
-          return
-        }
+      ({ editorState, prevEditorState }) => {
+        if (lock.current) return
+
         editor.update(() => {
           const json = editorState.toJSON()
           const oldJson = prevEditorState.toJSON()
           const content = JSON.stringify(json)
           const oldContent = JSON.stringify(oldJson)
-          if (content === oldContent) {
-            return
-          }
+
+          if (content === oldContent) return
+
           const markdown = $convertToMarkdownString(allTransformers)
           debounceSave(docId, content, markdown)
         })
       }
     )
-    return () => {
-      unRegister()
-    }
+    return () => unRegister()
   }, [editor, debounceSave, docId])
 
   return null

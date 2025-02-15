@@ -20,7 +20,7 @@ import { ExtBlock } from "./hooks/use-ext-blocks"
 import { useEditorStore } from "./hooks/useEditorContext"
 import { getAllNodes } from "./nodes"
 import { AllPlugins } from "./plugins"
-import { EidosAutoSavePlugin } from "./plugins/AutoSavePlugin"
+import { EidosAutoLoadSaveFocusPlugin } from "./plugins/AutoLoadSaveFocusPlugin"
 import { DraggableBlockPlugin } from "./plugins/DraggableBlockPlugin"
 import FloatingTextFormatToolbarPlugin from "./plugins/FloatingTextFormatToolbarPlugin"
 import { SafeBottomPaddingPlugin } from "./plugins/SafeBottomPaddingPlugin"
@@ -108,7 +108,7 @@ export function InnerEditor(props: EditorProps) {
                 </div>
               }
               placeholder={
-                <div className="pointer-events-none absolute left-1 top-0 text-base text-[#aaa]">
+                <div className="pointer-events-none absolute left-1 top-[1px] text-base text-[#aaa]">
                   <span>{props.placeholder ?? t("doc.pressForCommand")}</span>
                 </div>
               }
@@ -125,7 +125,7 @@ export function InnerEditor(props: EditorProps) {
             {props.autoFocus && <AutoFocusPlugin />}
             {props.docId && (
               <>
-                <EidosAutoSavePlugin
+                <EidosAutoLoadSaveFocusPlugin
                   docId={props.docId}
                   isEditable={props.isEditable}
                   disableManuallySave={props.disableManuallySave}
