@@ -229,37 +229,60 @@ export function useAsyncData<TRowType>(data: {
     if (!qs || !sqlite) return
     setLoading(qs, true)
     let allRowIds: string[] = []
-    if (isInkServiceMode || isDesktopMode) {
-      const batchSize = 150000
+    const batchSize = 150000
+    if (count > batchSize) {
       setBlockUIMsg('loading')
-      const queries = rewriteQuery2getSortedSqliteRowIds(qs, count, batchSize)
-      for (let i = 0; i < queries.length; i++) {
-        const res = await sqlite.sql4mainThread(queries[i])
-        setBlockUIData({
-          progress: (i / queries.length) * 100,
-        })
-        const rowIds = res.map((r: any) => r[0])
-        allRowIds = allRowIds.concat(rowIds)
-
-        // If we've fetched less than 200,000 rows (except for the last query), we can stop
-        if (i < queries.length - 1 && rowIds.length < batchSize) {
-          break
-        }
-      }
-      setBlockUIMsg(null)
-    } else {
-      const _qs = _rewriteQuery2getSortedSqliteRowIds(qs)
-      const res = await sqlite.sql4mainThread(_qs)
-      allRowIds = res.map((r: any) => r[0])
     }
+    const start = performance.now()
+    const queries = rewriteQuery2getSortedSqliteRowIds(qs, count, batchSize)
+    // for (let i = 0; i < queries.length; i++) {
+    //   const res = await sqlite.sql4mainThread(queries[i])
+    //   setBlockUIData({
+    //     progress: (i / queries.length) * 100,
+    //   })
+    //   const rowIds = res.map((r: any) => r[0])
+    //   allRowIds = allRowIds.concat(rowIds)
+
+    //   // If we've fetched less than 200,000 rows (except for the last query), we can stop
+    //   if (i < queries.length - 1 && rowIds.length < batchSize) {
+    //     break
+    //   }
+    // }
+
+    let completedCount = 0
+    const queryPromises = queries.map((query) =>
+      sqlite!.sql4mainThread(query).then((res) => {
+        completedCount++
+        setBlockUIData({
+          progress: (completedCount / queries.length) * 100,
+        })
+        return res
+      })
+    )
+
+    const results = await Promise.all(queryPromises)
+    for (let i = 0; i < results.length; i++) {
+      const rowIds = results[i].map((r: any) => r[0])
+      allRowIds = allRowIds.concat(rowIds)
+      // If we've fetched less than 200,000 rows (except for the last query), we can stop
+      if (i < results.length - 1 && rowIds.length < batchSize) {
+        break
+      }
+    }
+    const end = performance.now()
+    console.log(`Time taken: ${end - start} milliseconds for ${count} rows`)
+    setBlockUIMsg(null)
+    // const _qs = _rewriteQuery2getSortedSqliteRowIds(qs)
+    // const res = await sqlite.sql4mainThread(_qs)
+    // allRowIds = res.map((r: any) => r[0])
 
     rowIdsRef.current = allRowIds
     // setCount(allRowIds.length)
     setLoading(qs, false)
-  }, [qs, setLoading, sqlite, count])
+  }, [qs, setLoading, count, sqlite])
 
   useEffect(() => {
-    if (isInkServiceMode || isDesktopMode) {
+    if (isReadOnly) {
       return
     }
     getViewSortedSqliteRowIds()
