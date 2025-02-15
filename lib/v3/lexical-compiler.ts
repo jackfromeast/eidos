@@ -1,4 +1,4 @@
-import { compilerInitialized, initializeCompiler, transform } from "./esbuild";
+import { transform } from "./esbuild";
 
 const BUILT_IN_PACKAGES = [
     "react",
@@ -47,9 +47,6 @@ function processLexicalImports(sourceCode: string): string {
 }
 
 export async function compileLexicalCode(sourceCode: string): Promise<CompileResult> {
-    if (!compilerInitialized) {
-        await initializeCompiler();
-    }
 
     try {
         const processedCode = processLexicalImports(sourceCode);

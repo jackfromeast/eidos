@@ -1,19 +1,23 @@
-import { initialize } from "esbuild-wasm";
+import { initialize, transform as esbuildTransform } from "esbuild-wasm";
 import wasmURL from 'esbuild-wasm/esbuild.wasm?url'
 
-export let compilerInitialized = false
+let initializePromise: Promise<void> | null = null;
+
 export const initializeCompiler = async () => {
-    if (compilerInitialized) return
-    try {
-        await initialize({
+    if (!initializePromise) {
+        initializePromise = initialize({
             worker: true,
             wasmURL
+        }).catch(error => {
+            console.error('Failed to initialize esbuild:', error);
+            initializePromise = null;
+            throw error;
         });
-    } catch (error) {
-        console.error(error)
-        compilerInitialized = false
     }
-    compilerInitialized = true
+    return initializePromise;
 };
 
-export { transform } from "esbuild-wasm";
+export const transform = async (...args: Parameters<typeof esbuildTransform>) => {
+    await initializeCompiler();
+    return esbuildTransform(...args);
+};

@@ -1,6 +1,6 @@
 import { uiConfig } from "@/components/ui";
 import { generateCacheKey, getCache, hasCache, setCache } from "./cache";
-import { compilerInitialized, initializeCompiler, transform } from "./esbuild";
+import { transform } from "./esbuild";
 
 
 interface CompileOptions {
@@ -16,9 +16,6 @@ export const compileCode = async (
   sourceCode: string,
   options: CompileOptions = {}
 ): Promise<CompileResult> => {
-  if (!compilerInitialized) {
-    await initializeCompiler()
-  }
   const { uiLibCode = "" } = options;
 
   try {
@@ -38,7 +35,6 @@ export const compileCode = async (
       keepNames: true,
       charset: "utf8",
     });
-
 
     return {
       code: jsxResult.code,
@@ -99,7 +95,7 @@ export async function generateImportMap(
 
   thirdPartyLibs.forEach((dep) => {
     if (dep === "react" || dep === "react-dom") return;
-    
+
     // Check if the dependency matches any pattern in uiLibDeps
     const shouldExternalizeReact = Array.from(uiLibDeps).some(pattern => {
       if (pattern.endsWith('*')) {
