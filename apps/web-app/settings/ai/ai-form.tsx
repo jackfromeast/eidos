@@ -37,7 +37,12 @@ export function AIConfigForm() {
     defaultValues: aiConfig,
   })
   const { reset } = form
-  const { testModel } = useModelTest()
+  const { 
+    testModel, 
+    isEmbeddingLoading,
+    isTranslationLoading,
+    isCodingLoading 
+  } = useModelTest()
   const { t } = useTranslation()
   const location = useLocation()
 
@@ -130,11 +135,10 @@ export function AIConfigForm() {
                       <Button
                         type="button"
                         variant="outline"
-                        onClick={() =>
-                          testModel(TaskType.Embedding, field.value)
-                        }
+                        disabled={isEmbeddingLoading}
+                        onClick={() => testModel(TaskType.Embedding, field.value)}
                       >
-                        {t("common.test")}
+                        {isEmbeddingLoading ? t("common.testing") : t("common.test")}
                       </Button>
                     </div>
                   </div>
@@ -166,11 +170,10 @@ export function AIConfigForm() {
                       <Button
                         type="button"
                         variant="outline"
-                        onClick={() =>
-                          testModel(TaskType.Translation, field.value)
-                        }
+                        disabled={isTranslationLoading}
+                        onClick={() => testModel(TaskType.Translation, field.value)}
                       >
-                        {t("common.test")}
+                        {isTranslationLoading ? t("common.testing") : t("common.test")}
                       </Button>
                     </div>
                   </div>
@@ -202,9 +205,10 @@ export function AIConfigForm() {
                       <Button
                         type="button"
                         variant="outline"
+                        disabled={isCodingLoading}
                         onClick={() => testModel(TaskType.Coding, field.value)}
                       >
-                        {t("common.test")}
+                        {isCodingLoading ? t("common.testing") : t("common.test")}
                       </Button>
                     </div>
                   </div>

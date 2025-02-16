@@ -2,6 +2,7 @@ import { toast } from "@/components/ui/use-toast"
 import { useAiConfig } from "@/hooks/use-ai-config"
 import { createOpenAI } from "@ai-sdk/openai"
 import { embedMany, generateText } from "ai"
+import { useState } from "react"
 
 export enum TaskType {
     Embedding = "Embedding",
@@ -10,8 +11,12 @@ export enum TaskType {
 }
 
 export const useModelTest = () => {
-
     const { getConfigByModel } = useAiConfig()
+    const [loadingStates, setLoadingStates] = useState<Record<TaskType, boolean>>({
+        [TaskType.Embedding]: false,
+        [TaskType.Translation]: false,
+        [TaskType.Coding]: false,
+    })
 
     async function testModel(
         modelType: TaskType,
@@ -25,6 +30,8 @@ export const useModelTest = () => {
             })
             return
         }
+        
+        setLoadingStates({ ...loadingStates, [modelType]: true })
         try {
             const config = getConfigByModel(model)
             switch (modelType) {
@@ -119,8 +126,15 @@ export const useModelTest = () => {
                 description: `Failed to test ${modelType} model "${model}".`,
                 variant: "destructive",
             })
+        } finally {
+            setLoadingStates({ ...loadingStates, [modelType]: false })
         }
     }
 
-    return { testModel }
+    return { 
+        testModel, 
+        isEmbeddingLoading: loadingStates[TaskType.Embedding],
+        isTranslationLoading: loadingStates[TaskType.Translation],
+        isCodingLoading: loadingStates[TaskType.Coding]
+    }
 }
