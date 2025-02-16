@@ -33,9 +33,11 @@ export const AIToolsPlugin = (props: any) => {
   const { setIsAIToolsOpen } = useEditorStore()
   const [content, setContent] = useState("")
   const [cancelActionConfirmOpen, setCancelActionConfirmOpen] = useState(false)
+
   const closeConfirm = useCallback(() => {
     setCancelActionConfirmOpen(false)
   }, [])
+
   const cancel = useCallback(() => {
     editor.update(() => {
       const selection = $getSelection()
@@ -50,6 +52,15 @@ export const AIToolsPlugin = (props: any) => {
   useEffect(() => {
     setIsAIToolsOpen(showCommentInput)
   }, [setIsAIToolsOpen, showCommentInput])
+
+  useEffect(() => {
+    if (showCommentInput) {
+      const placeholder = document.getElementById("ai-content-placeholder")
+      if (placeholder) {
+        placeholder.scrollIntoView({ behavior: "smooth", block: "center" })
+      }
+    }
+  }, [showCommentInput])
 
   const cancelAIAction = useCallback(
     (showConfirm?: boolean) => {
@@ -92,11 +103,12 @@ export const AIToolsPlugin = (props: any) => {
       COMMAND_PRIORITY_EDITOR
     )
   }, [editor])
+  
 
   return (
     <div>
       {showCommentInput && (
-        <FloatingPortal root={document.body}>
+        <FloatingPortal root={document.getElementById("ai-content-placeholder")}>
           <AITools cancelAIAction={cancelAIAction} content={content} />
         </FloatingPortal>
       )}

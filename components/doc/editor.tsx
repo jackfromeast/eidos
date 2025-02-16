@@ -115,9 +115,7 @@ export function InnerEditor(props: EditorProps) {
               ErrorBoundary={LexicalErrorBoundary}
             />
 
-            {isAIToolsOpen && props.isActive && (
-              <div id="ai-content-placeholder" />
-            )}
+            <div id="ai-content-placeholder" />
 
             <AIEditorPlugin />
             <AllPlugins disableExtPlugins={props.disableExtPlugins} />
