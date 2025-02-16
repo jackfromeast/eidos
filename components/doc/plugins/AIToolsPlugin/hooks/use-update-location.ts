@@ -51,12 +51,13 @@ export const useUpdateLocation = (
           if (correctedLeft < 10) {
             correctedLeft = 10
           }
-          boxElem.style.left = `${left}px`
-          boxElem.style.top = `${bottom +
-            8 +
-            (window.pageYOffset || document.documentElement.scrollTop)
-            }px`
+          const translateX = left
+          const translateY =
+            bottom + 8 + (window.pageYOffset || document.documentElement.scrollTop)
 
+          boxElem.style.left = "0px"
+          boxElem.style.top = "0px"
+          boxElem.style.transform = `translate(${translateX}px, ${translateY}px)`
           document
             .querySelector("#ai-content-placeholder")
             ?.setAttribute("style", `height: ${boxElem.clientHeight}px;`)
@@ -73,13 +74,20 @@ export const useUpdateLocation = (
               elements[i] = elem
               container.appendChild(elem)
             }
+            const offsetTop =
+              selectionRect.top + (window.pageYOffset || document.documentElement.scrollTop)
+            const offsetLeft = selectionRect.left
             const color = "255, 212, 0"
-            const style = `position:absolute;top:${selectionRect.top +
-              (window.pageYOffset || document.documentElement.scrollTop)
-              }px;left:${selectionRect.left}px;height:${selectionRect.height
-              }px;width:${selectionRect.width
-              }px;background-color:rgba(${color}, 0.3);pointer-events:none;z-index:5;`
-            elem.style.cssText = style
+            
+            elem.style.position = "absolute"
+            elem.style.top = "0px"
+            elem.style.left = "0px"
+            elem.style.width = `${selectionRect.width}px`
+            elem.style.height = `${selectionRect.height}px`
+            elem.style.backgroundColor = `rgba(${color}, 0.3)`
+            elem.style.pointerEvents = "none"
+            elem.style.zIndex = "5"
+            elem.style.transform = `translate(${offsetLeft}px, ${offsetTop}px)`
           }
           for (let i = elementsLength - 1; i >= selectionRectsLength; i--) {
             const elem = elements[i]
