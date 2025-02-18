@@ -1,5 +1,6 @@
 import { toast } from "@/components/ui/use-toast"
 import { useAiConfig } from "@/hooks/use-ai-config"
+import { getProvider } from "@/lib/ai/helper"
 import { createOpenAI } from "@ai-sdk/openai"
 import { embedMany, generateText } from "ai"
 import { useState } from "react"
@@ -30,10 +31,15 @@ export const useModelTest = () => {
             })
             return
         }
-        
+
         setLoadingStates({ ...loadingStates, [modelType]: true })
         try {
             const config = getConfigByModel(model)
+            const modelProvider = getProvider({
+                apiKey: config.apiKey,
+                baseUrl: config.baseUrl,
+                type: config.type,
+            })
             switch (modelType) {
                 case TaskType.Embedding:
                     const embeddingTexts = async (text: string[]) => {
@@ -67,12 +73,8 @@ export const useModelTest = () => {
                 case TaskType.Translation:
                     const translationText = async (text: string, targetLanguage: string) => {
                         if (!model) return []
-                        const openai = createOpenAI({
-                            apiKey: config.apiKey,
-                            baseURL: config.baseUrl,
-                        })
                         const res = await generateText({
-                            model: openai.chat(config.modelId),
+                            model: modelProvider(config.modelId),
                             prompt: `Translate the following text to ${targetLanguage}: ${text}`,
                         });
                         return res.text
@@ -80,7 +82,7 @@ export const useModelTest = () => {
                     try {
                         const text = "Bonjour 世界"
                         const targetLanguage = "English"
-                        const translations = await translationText(text, targetLanguage)
+                        await translationText(text, targetLanguage)
                         toast({
                             title: "Test Succeeded",
                             description: `Tested ${modelType} model "${model}" successfully.`
@@ -96,13 +98,10 @@ export const useModelTest = () => {
                     break
                 case TaskType.Coding:
                     if (!model) return []
-                    const openai = createOpenAI({
-                        apiKey: config.apiKey,
-                        baseURL: config.baseUrl,
-                    })
+
                     try {
                         const code = await generateText({
-                            model: openai.chat(config.modelId),
+                            model: modelProvider(config.modelId),
                             prompt: `just write a function that takes a list of numbers and returns the sum of the numbers. don't include any other text.`,
                         })
                         console.log(code)
@@ -131,8 +130,8 @@ export const useModelTest = () => {
         }
     }
 
-    return { 
-        testModel, 
+    return {
+        testModel,
         isEmbeddingLoading: loadingStates[TaskType.Embedding],
         isTranslationLoading: loadingStates[TaskType.Translation],
         isCodingLoading: loadingStates[TaskType.Coding]

@@ -13,6 +13,7 @@ import { createDeepSeek } from '@ai-sdk/deepseek';
 import { createGroq } from '@ai-sdk/groq';
 import { createOpenAI } from "@ai-sdk/openai";
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
 
 export type Model = (typeof WEB_LLM_MODELS)[0]
 
@@ -125,7 +126,7 @@ export function getProvider(data: {
     apiKey
   }
   if (baseUrl) {
-    config.baseUrl = baseUrl
+    config.baseURL = baseUrl
   }
   switch (type) {
     case 'deepseek':
@@ -134,6 +135,8 @@ export function getProvider(data: {
       return createGroq(config)
     case 'openai':
       return createOpenAI(config)
+    case 'google':
+      return createGoogleGenerativeAI(config)
     default:
       return createOpenAICompatible({
         baseURL: baseUrl,

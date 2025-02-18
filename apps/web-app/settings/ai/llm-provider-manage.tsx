@@ -60,14 +60,18 @@ export const LLMProviderManage = ({
           <TableRow>
             <TableHead>{t("settings.ai.provider.name")}</TableHead>
             <TableHead>{t("settings.ai.provider.type")}</TableHead>
-            <TableHead className="w-[100px]">{t("settings.ai.provider.actions")}</TableHead>
+            <TableHead className="w-[100px]">
+              {t("settings.ai.provider.actions")}
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {value.map((provider, index) => (
             <TableRow key={`${provider.name}-${provider.type}`}>
               <TableCell>{provider.name}</TableCell>
-              <TableCell>{provider.type}</TableCell>
+              <TableCell className="flex items-center gap-2">
+                {provider.type}
+              </TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">
                   <Dialog>
@@ -78,7 +82,9 @@ export const LLMProviderManage = ({
                     </DialogTrigger>
                     <DialogContent>
                       <DialogHeader>
-                        <DialogTitle>{t("settings.ai.provider.confirmDelete")}</DialogTitle>
+                        <DialogTitle>
+                          {t("settings.ai.provider.confirmDelete")}
+                        </DialogTitle>
                         <DialogDescription>
                           {t("settings.ai.provider.deleteConfirmation", {
                             name: (

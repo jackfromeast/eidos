@@ -34,7 +34,7 @@ export const useAiConfig = () => {
       )
       if (llmProvider) {
         return {
-          baseUrl: llmProvider.baseUrl || '/',
+          baseUrl: llmProvider.baseUrl || '',
           apiKey: llmProvider.apiKey || '',
           modelId: modelId || '',
           type: llmProvider.type,

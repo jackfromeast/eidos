@@ -25,9 +25,10 @@ import {
   FormMessage,
 } from "@/components/react-hook-form/form"
 
-import { TaskType, useModelTest } from "./hooks"
+import { TaskType } from "./hooks"
 import { LLMProviderManage } from "./llm-provider-manage"
 import { LocalLLMManage } from "./local-llm-manage"
+import { ModelTestButton } from "./model-test-button"
 import { AIFormValues, aiFormSchema, useAIConfigStore } from "./store"
 
 export function AIConfigForm() {
@@ -37,12 +38,6 @@ export function AIConfigForm() {
     defaultValues: aiConfig,
   })
   const { reset } = form
-  const { 
-    testModel, 
-    isEmbeddingLoading,
-    isTranslationLoading,
-    isCodingLoading 
-  } = useModelTest()
   const { t } = useTranslation()
   const location = useLocation()
 
@@ -115,7 +110,7 @@ export function AIConfigForm() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <FormField
+            {/* <FormField
               control={form.control}
               name="embeddingModel"
               render={({ field }) => (
@@ -132,14 +127,10 @@ export function AIConfigForm() {
                           localModels={aiConfig.localModels}
                         />
                       </FormControl>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        disabled={isEmbeddingLoading}
-                        onClick={() => testModel(TaskType.Embedding, field.value)}
-                      >
-                        {isEmbeddingLoading ? t("common.testing") : t("common.test")}
-                      </Button>
+                      <ModelTestButton
+                        taskType={TaskType.Embedding}
+                        modelValue={field.value}
+                      />
                     </div>
                   </div>
                   <FormDescription>
@@ -148,7 +139,7 @@ export function AIConfigForm() {
                   <FormMessage />
                 </FormItem>
               )}
-            />
+            /> */}
             <FormField
               control={form.control}
               name="translationModel"
@@ -167,14 +158,10 @@ export function AIConfigForm() {
                           localModels={aiConfig.localModels}
                         />
                       </FormControl>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        disabled={isTranslationLoading}
-                        onClick={() => testModel(TaskType.Translation, field.value)}
-                      >
-                        {isTranslationLoading ? t("common.testing") : t("common.test")}
-                      </Button>
+                      <ModelTestButton
+                        taskType={TaskType.Translation}
+                        modelValue={field.value}
+                      />
                     </div>
                   </div>
                   <FormDescription>
@@ -202,14 +189,10 @@ export function AIConfigForm() {
                           localModels={aiConfig.localModels}
                         />
                       </FormControl>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        disabled={isCodingLoading}
-                        onClick={() => testModel(TaskType.Coding, field.value)}
-                      >
-                        {isCodingLoading ? t("common.testing") : t("common.test")}
-                      </Button>
+                      <ModelTestButton
+                        taskType={TaskType.Coding}
+                        modelValue={field.value}
+                      />
                     </div>
                   </div>
                   <FormDescription>

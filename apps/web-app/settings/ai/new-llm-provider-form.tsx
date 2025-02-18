@@ -196,7 +196,7 @@ export const LLMProviderForm = ({
                     <SelectItem value="openai">OpenAI Compatible</SelectItem>
                     <SelectItem value="deepseek">Deepseek</SelectItem>
                     <SelectItem value="groq">Groq</SelectItem>
-                    {/* <SelectItem value="google">Google</SelectItem> */}
+                    <SelectItem value="google">Google</SelectItem>
                   </SelectContent>
                 </Select>
               </FormControl>
