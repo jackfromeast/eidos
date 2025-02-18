@@ -1,6 +1,9 @@
-import { TextMatchTransformer } from "@lexical/markdown"
+import { MultilineElementTransformer } from "@lexical/markdown"
 import { BlockWithAlignableContents } from "@lexical/react/LexicalBlockWithAlignableContents"
-import { DecoratorBlockNode, SerializedDecoratorBlockNode } from "@lexical/react/LexicalDecoratorBlockNode"
+import {
+  DecoratorBlockNode,
+  SerializedDecoratorBlockNode,
+} from "@lexical/react/LexicalDecoratorBlockNode"
 import {
   EditorConfig,
   ElementFormatType,
@@ -73,7 +76,11 @@ export class ChartNode extends DecoratorBlockNode {
       focus: embedBlockTheme.focus || "",
     }
     return (
-      <BlockWithAlignableContents format={this.__format} className={className} nodeKey={this.__key}>
+      <BlockWithAlignableContents
+        format={this.__format}
+        className={className}
+        nodeKey={this.__key}
+      >
         <ChartBlock config={this.__config} nodeKey={this.__key} />
       </BlockWithAlignableContents>
     )
@@ -88,26 +95,41 @@ export function $createChartNode(config: string): ChartNode {
   return new ChartNode(config)
 }
 
-export function $isChartNode(node: LexicalNode | null | undefined): node is ChartNode {
+export function $isChartNode(
+  node: LexicalNode | null | undefined
+): node is ChartNode {
   return node instanceof ChartNode
 }
 
-export const CHART_NODE_TRANSFORMER: TextMatchTransformer = {
+export const CHART_NODE_TRANSFORMER: MultilineElementTransformer = {
   dependencies: [ChartNode],
   export: (node: LexicalNode, traverseChildren: (node: any) => string) => {
     if (!$isChartNode(node)) {
       return null
     }
     const configContent = node.getTextContent()
-    return "```chart\n" + configContent + "\n" + "```"
+    return "<chart>\n" + configContent + "\n</chart>"
   },
-  importRegExp: /```chart([\s\S]*?)```/,
-  regExp: /```chart([\s\S]*?)```$/,
-  replace: (textNode, match) => {
-    const config = match[1].trim()
+  regExpStart: /<chart>/,
+  regExpEnd: {
+    regExp: /<\/chart>/,
+    optional: true,
+  },
+  replace: (
+    rootNode,
+    children,
+    startMatch,
+    endMatch,
+    linesInBetween,
+    isImport
+  ) => {
+    const config = linesInBetween?.join("\n").trim()
+    if (!config) {
+      return false
+    }
     const chartNode = $createChartNode(config)
-    textNode.replace(chartNode)
+    rootNode.append(chartNode)
+    return true
   },
-  trigger: "```",
-  type: "text-match",
-} 
+  type: "multiline-element",
+}
