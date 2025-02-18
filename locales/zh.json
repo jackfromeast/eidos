@@ -263,7 +263,7 @@
     "settings.ai.providerDescription": "有许多 LLM API 提供者。根据您的需要进行配置。",
     "settings.ai.providerType": "提供者类型",
     "settings.ai.translationModel": "翻译模型",
-    "settings.ai.translationModelDescription": "选择您偏好的翻译模型",
+    "settings.ai.translationModelDescription": "选择您偏好的翻译或者文本处理模型",
     "settings.ai.updateLLMProvider": "更新 LLM 提供者",
     "settings.api": "API",
     "settings.api.agentUrl": "API 代理 URL",
