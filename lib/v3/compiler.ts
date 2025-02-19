@@ -1,4 +1,4 @@
-import { uiConfig } from "@/components/ui";
+import { uiComponentsConfig } from "@/components/ui";
 import { generateCacheKey, getCache, hasCache, setCache } from "./cache";
 import { transform } from "./esbuild";
 
@@ -58,6 +58,7 @@ export function getImportsFromCode(code: string) {
 }
 
 const uiLibsRegistry = new Map<string, string>();
+
 const utilsCode = `
 import {  clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
@@ -78,7 +79,7 @@ const uiLibDeps = new Set([
 
 export async function generateImportMap(
   thirdPartyLibs: string[],
-  uiLibs: string[]
+  uiLibs: string[],
 ) {
   const moduleRegistry = new Map();
   const REACT_VERSION = '18.3.1';
@@ -112,13 +113,16 @@ export async function generateImportMap(
     }
   });
 
-  for (const dep of uiLibs) {
-    const componentId = `@/components/ui/${dep}`;
 
+  for (const dep of uiLibs) {
+    let componentId = `@/components/ui/${dep}`;
+    if (dep.startsWith("use-")) {
+      componentId = `@/hooks/${dep}`;
+    }
     let url = uiLibsRegistry.get(componentId);
 
     if (!url) {
-      const code = uiConfig[dep as keyof typeof uiConfig];
+      const code = uiComponentsConfig[dep as keyof typeof uiComponentsConfig];
       const cacheKey = generateCacheKey(code);
       let compiledCode: CompileResult;
       if (hasCache(cacheKey)) {
@@ -188,7 +192,7 @@ export function getAllLibs(code: string, processedComponents = new Set<string>()
   for (const component of uiLibs) {
     if (processedComponents.has(component)) continue;
     processedComponents.add(component);
-    const code = uiConfig[component as keyof typeof uiConfig];
+    const code = uiComponentsConfig[component as keyof typeof uiComponentsConfig];
     const { thirdPartyLibs: _thirdPartyLibs, uiLibs: _uiLibs } = getAllLibs(code, processedComponents);
     thirdPartyLibs.push(..._thirdPartyLibs);
     uiLibs.push(..._uiLibs);
