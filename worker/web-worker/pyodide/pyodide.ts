@@ -1,6 +1,6 @@
 import { IPythonScriptCallProps } from '@/components/script-container/helper';
-import { loadPyodide, PyodideInterface } from 'pyodide'
-import { analyzePythonImports } from './analyze-imports';
+import { loadPyodide, PyodideInterface } from 'pyodide';
+import { PyProxy } from 'pyodide/ffi';
 
 
 declare const self: Worker
@@ -18,7 +18,6 @@ interface PyodideResponse {
     time?: number;
 }
 
-// 添加预加载包的配置类型
 interface PyodideConfig {
     preloadPackages?: string[];
 }
@@ -51,10 +50,8 @@ async function loadPyodideAndPackages(config?: PyodideConfig): Promise<PyodideIn
     }
     const nativefs = await pyodide.mountNativeFS("/mount_dir", dirHandle);
 
-    // 使用 CDN 版本的 micropip
     await pyodide.loadPackage('micropip')
 
-    // 预加载指定的包
     if (config?.preloadPackages?.length) {
         const micropip = pyodide.pyimport('micropip')
         await Promise.all(config.preloadPackages.map(pkg => micropip.install(pkg)))
@@ -124,55 +121,74 @@ self.onmessage = async (event: MessageEvent<PyodideMessage>) => {
                 if (!payload.code) {
                     throw new Error('No code provided for execution')
                 }
-                
-                // 使用导入的分析函数
-                const imports = await analyzePythonImports(pyodide, payload.code)
-                console.log('Detected imports:', imports)
-                
-                // Combine explicit dependencies with detected third-party imports
-                const allDependencies = new Set([
-                    ...(payload.dependencies || []),
-                    ...(imports.thirdParty || [])
-                ])
-                
-                // Install all required packages
-                if (allDependencies.size > 0) {
-                    const micropip = pyodide.pyimport('micropip')
-                    await Promise.all([...allDependencies].map(async pkg => {
-                        try {
-                            try {
-                                pyodide.pyimport(pkg)
-                                console.log(`Package ${pkg} already loaded`)
-                            } catch {
-                                await micropip.install(pkg)
-                                console.log(`Package ${pkg} installed`)
-                            }
-                        } catch (error) {
-                            console.warn(`Failed to install package ${pkg}:`, error)
-                        }
-                    }))
+
+                await pyodide.loadPackagesFromImports(payload.code, {
+                    messageCallback: (message) => {
+                        self.postMessage({
+                            type: 'PythonStdout',
+                            data: message
+                        });
+                    },
+                    errorCallback: (error) => {
+                        self.postMessage({
+                            type: 'PythonStderr',
+                            data: error
+                        });
+                    }
+                });
+
+                if (payload.dependencies?.length) {
+                    const micropip = pyodide.pyimport('micropip');
+                    await micropip.install(payload.dependencies);
                 }
 
                 let code = payload.code
-                const hasMainFunction = /^\s*def\s+main\s*\(/m.test(code)
-                if (hasMainFunction) {
-                    code = `${code}\nmain`
+                let result: PyProxy
+
+                await pyodide.runPythonAsync(code)
+                try {
+                    const func = pyodide.globals.get(payload.command || 'main')
+                    if (typeof func === 'function') {
+                        result = await func(payload.input, payload.context)
+                    } else {
+                        result = func
+                    }
+                } catch (error) {
+                    throw new Error(`Command '${payload.command}' not found or not callable`)
                 }
 
-                const main = await pyodide.runPythonAsync(code)
-
-                let result
-                if (hasMainFunction) {
-                    result = await main(payload.input, payload.context);
-                } else {
-                    result = main;
+                let jsResult;
+                try {
+                    if (result) {
+                        jsResult = result.toJs({
+                            dict_converter: Object.fromEntries,
+                            create_pyproxies: false
+                        })
+                        console.log('jsResult', jsResult, result)
+                    } else {
+                        jsResult = result;
+                    }
+                } catch (error) {
+                    console.warn('Failed to convert Python result to JS:', error);
+                    jsResult = String(result);
                 }
 
-                console.log(result)
+                console.log({
+                    jsResult,
+                    result
+                })
+                try {
+                    JSON.parse(JSON.stringify(jsResult));
+                } catch (error) {
+                    console.warn('Result cannot be serialized, converting to string:', error);
+                    jsResult = String(jsResult);
+                }
+
+                console.log('Final result:', jsResult);
                 port.postMessage({
                     type: 'PythonScriptCallResponse',
                     data: {
-                        result: result.toString(),
+                        result: jsResult,
                         time: Date.now() - startTime
                     }
                 });
@@ -197,6 +213,6 @@ self.onmessage = async (event: MessageEvent<PyodideMessage>) => {
     }
 }
 
-loadPyodideAndPackages({
-    preloadPackages: ['pdfminer.six']
-})
+// loadPyodideAndPackages({
+//     preloadPackages: ['pdfminer.six']
+// })
