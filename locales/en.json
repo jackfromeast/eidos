@@ -262,6 +262,7 @@
     "settings.ai.models": "Models",
     "settings.ai.modelsDescription": "Comma-separated list of model IDs.",
     "settings.ai.provider": "Provider",
+    "settings.ai.provider.enabled": "Enabled",
     "settings.ai.provider.name": "Name",
     "settings.ai.provider.type": "Type",
     "settings.ai.provider.actions": "Actions",

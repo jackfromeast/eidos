@@ -78,7 +78,7 @@ export function AITools({
   const [actionOpen, setActionOpen] = useState(false)
   const [aiResult, setAiResult] = useState<string>("")
   const [chartConfig, setChartConfig] = useState<ChartConfig | null>(null)
-  const { getConfigByModel, codingModel } = useAiConfig()
+  const { getConfigByModel, codingModel, textModel } = useAiConfig()
   const { t } = useTranslation()
   const { generateConfig, isLoading: isChartLoading } = useGenerateChartConfig()
 
@@ -327,7 +327,7 @@ export function AITools({
 
   const handlePromptSelect = (
     prompt: string,
-    model?: string,
+    model: string = textModel,
     isCustomPrompt?: boolean
   ) => {
     if (!model) {
@@ -369,7 +369,6 @@ be between <content-begin> and <content-end>. you just output the transformed co
           },
         ])
       }
-
       reload()
       setPromptListOpen(false)
     }, 100)

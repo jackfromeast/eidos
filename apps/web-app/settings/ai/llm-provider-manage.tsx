@@ -11,6 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { Switch } from "@/components/ui/switch"
 import {
   Table,
   TableBody,
@@ -60,6 +61,7 @@ export const LLMProviderManage = ({
           <TableRow>
             <TableHead>{t("settings.ai.provider.name")}</TableHead>
             <TableHead>{t("settings.ai.provider.type")}</TableHead>
+            <TableHead>{t("settings.ai.provider.enabled")}</TableHead>
             <TableHead className="w-[100px]">
               {t("settings.ai.provider.actions")}
             </TableHead>
@@ -71,6 +73,17 @@ export const LLMProviderManage = ({
               <TableCell>{provider.name}</TableCell>
               <TableCell className="flex items-center gap-2">
                 {provider.type}
+              </TableCell>
+              <TableCell>
+                <Switch
+                  checked={provider.enabled ?? true}
+                  onCheckedChange={(checked) => {
+                    const newData = value.map((p, i) =>
+                      i === index ? { ...p, enabled: checked } : p
+                    )
+                    onChange(newData)
+                  }}
+                />
               </TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">

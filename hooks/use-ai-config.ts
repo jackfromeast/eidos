@@ -3,6 +3,7 @@ import { useCallback, useMemo } from "react"
 import { useAIConfigStore } from "@/apps/web-app/settings/ai/store"
 import { TaskType } from "@/apps/web-app/settings/ai/hooks"
 
+
 export const useAiConfig = () => {
   const { aiConfig } = useAIConfigStore()
 
@@ -10,7 +11,13 @@ export const useAiConfig = () => {
     if (!aiConfig.llmProviders?.length) {
       return ''
     }
-    const provider = aiConfig.llmProviders[0]
+    // Only consider enabled providers
+    const enabledProviders = aiConfig.llmProviders.filter(provider => provider.enabled)
+    if (!enabledProviders.length) {
+      return ''
+    }
+    
+    const provider = enabledProviders[0]
     const models = provider?.models?.split(',')
     const model = models?.[0]?.trim()
     if (!model) {
@@ -30,7 +37,9 @@ export const useAiConfig = () => {
       }
       const [modelId, provider] = model.split('@')
       const llmProvider = aiConfig.llmProviders.find(
-        (item) => item?.name?.toLowerCase() === provider?.toLowerCase()
+        (item) => 
+          item?.name?.toLowerCase() === provider?.toLowerCase() && 
+          item.enabled
       )
       if (llmProvider) {
         return {
@@ -50,7 +59,8 @@ export const useAiConfig = () => {
   )
 
   const hasAvailableModels = useMemo(() => {
-    return aiConfig.llmProviders.length > 0
+    // Check if there are any enabled providers
+    return aiConfig.llmProviders.some(provider => provider.enabled)
   }, [aiConfig])
 
   const findAvailableModel = useCallback((task: TaskType) => {
@@ -68,11 +78,16 @@ export const useAiConfig = () => {
     return aiConfig.codingModel
   }, [aiConfig])
 
+  const textModel = useMemo(() => {
+    return aiConfig.translationModel || findFirstAvailableModel()
+  }, [aiConfig])
+
   return {
     getConfigByModel,
     hasAvailableModels,
     findFirstAvailableModel,
     findAvailableModel,
     codingModel,
+    textModel
   }
 }

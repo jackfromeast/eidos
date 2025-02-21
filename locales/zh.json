@@ -260,6 +260,7 @@
     "settings.ai.models": "模型",
     "settings.ai.modelsDescription": "以逗号分隔的模型 ID 列表。",
     "settings.ai.provider": "提供者",
+    "settings.ai.provider.enabled": "启用",
     "settings.ai.providerDescription": "有许多 LLM API 提供者。根据您的需要进行配置。",
     "settings.ai.providerType": "提供者类型",
     "settings.ai.translationModel": "翻译模型",

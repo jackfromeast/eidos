@@ -31,6 +31,7 @@ const useModels = () => {
   const [models, setModels] = React.useState<string[]>([])
   React.useEffect(() => {
     const allModels = aiConfig.llmProviders
+      .filter((item) => item.enabled)
       .map((item) => {
         return item.models.split(",").map((model) => {
           return `${model.trim()}@${item.name}`
@@ -88,7 +89,7 @@ export function AIModelSelect({
           size={size}
           className={cn("grow justify-between ", className)}
         >
-          <p className="w-[200px] truncate">
+          <p className="w-[200px] truncate" title={currentModel || "Select model..."}>
             {value ? currentModel : "Select model..."}
           </p>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -123,7 +124,9 @@ export function AIModelSelect({
                             : "opacity-0"
                         )}
                       />
-                      <p className="max-w-[250px] truncate">{model}</p>{" "}
+                      <p className="max-w-[250px] truncate" title={model}>
+                        {model}
+                      </p>{" "}
                     </CommandItem>
                   ))}
                 </CommandGroup>
@@ -156,7 +159,9 @@ export function AIModelSelect({
                           value === model ? "opacity-100" : "opacity-0"
                         )}
                       />
-                      <p className="max-w-[250px] truncate">{model}</p>
+                      <p className="max-w-[250px] truncate" title={model}>
+                        {model}
+                      </p>
                     </CommandItem>
                   ))}
                 </CommandGroup>
