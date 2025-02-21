@@ -60,7 +60,14 @@ export function EidosAutoLoadSaveFocusPlugin(props: AutoSavePluginProps) {
   useEffect(() => {
     editor.setEditable(Boolean(isEditable))
     if (isEditable) {
-      setTimeout(() => editor.focus(), 0)
+      if (editor._config.namespace === "eidos-notes-home-page") {
+        // disable auto focus for home page's editor
+        return
+      }
+      setTimeout(
+        () => editor.focus(undefined, { defaultSelection: "rootStart" }),
+        0
+      )
     }
   }, [editor, isEditable])
 
@@ -84,7 +91,14 @@ export function EidosAutoLoadSaveFocusPlugin(props: AutoSavePluginProps) {
         editor.setEditable(Boolean(isEditable))
 
         if (editor.isEditable()) {
-          setTimeout(() => editor.focus(), 0)
+          if (editor._config.namespace === "eidos-notes-home-page") {
+            // disable auto focus for home page's editor
+            return
+          }
+          setTimeout(
+            () => editor.focus(undefined, { defaultSelection: "rootStart" }),
+            0
+          )
         }
         lock.current = false
       })
