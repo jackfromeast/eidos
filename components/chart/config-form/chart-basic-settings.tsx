@@ -57,13 +57,16 @@ export function ChartBasicSettings({
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
+                {/* x-y chart */}
                 <SelectItem value="line">Line</SelectItem>
                 <SelectItem value="bar">Bar</SelectItem>
                 <SelectItem value="area">Area</SelectItem>
-                <SelectItem value="pie">Pie</SelectItem>
                 <SelectItem value="scatter">Scatter</SelectItem>
-                <SelectItem value="radar">Radar</SelectItem>
                 <SelectItem value="composed">Composed</SelectItem>
+                {/* pie chart */}
+                <SelectItem value="pie">Pie</SelectItem>
+                {/* radar chart */}
+                <SelectItem value="radar">Radar</SelectItem>
               </SelectContent>
             </Select>
           </FormItem>

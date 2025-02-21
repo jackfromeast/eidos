@@ -35,6 +35,10 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart"
 
+import {
+  PRESET_FILL_COLORS
+} from "./constants"
+
 // Basic type definition
 export type ChartType =
   | "line"
@@ -147,48 +151,28 @@ export function Chart(props: ChartConfig) {
     themeConfig,
   } = props
 
-  // Add validation for series types
-  const validateSeriesTypes = () => {
-    if (type === "bar" && series.some((s) => s.type !== "bar")) {
-      console.warn(
-        'BarChart only supports bar type series. Please use "composed" chart type for mixed series types.'
-      )
-      return false
-    }
-    if (type === "line" && series.some((s) => s.type !== "line")) {
-      console.warn(
-        'LineChart only supports line type series. Please use "composed" chart type for mixed series types.'
-      )
-      return false
-    }
-    if (type === "area" && series.some((s) => s.type !== "area")) {
-      console.warn(
-        'AreaChart only supports area type series. Please use "composed" chart type for mixed series types.'
-      )
-      return false
-    }
-    return true
-  }
-
+  console.log(props)
   // Render chart series
   const renderSeries = (): ReactNode[] => {
-    if (!validateSeriesTypes()) {
-      return []
-    }
-
     return series.map((seriesConfig, index) => {
-      const SeriesComponent = SeriesComponents[seriesConfig.type]
+      const seriesType = type === "composed" ? seriesConfig.type : type
+      const SeriesComponent = SeriesComponents[seriesType]
       if (!SeriesComponent) return null
+
+      const seriesStyle = {
+        ...seriesConfig.style,
+        ...(type === "radar" ? { opacity: 0.6 } : {}),
+      }
 
       return (
         <SeriesComponent
-          key={`${seriesConfig.type}-${index}`}
+          key={`${seriesType}-${index}`}
           dataKey={seriesConfig.dataKey}
           name={seriesConfig.name || seriesConfig.dataKey}
-          stroke={seriesConfig.style?.stroke}
-          fill={seriesConfig.style?.fill}
-          strokeWidth={seriesConfig.style?.strokeWidth}
-          opacity={seriesConfig.style?.opacity}
+          stroke={seriesStyle.stroke}
+          fill={seriesStyle.fill}
+          strokeWidth={seriesStyle.strokeWidth}
+          opacity={seriesStyle.opacity}
           type={seriesConfig.smooth ? "monotone" : "linear"}
           stackId={seriesConfig.stack ? "stack" : undefined}
         />
@@ -208,23 +192,27 @@ export function Chart(props: ChartConfig) {
     // Special chart type handling
     if (type === "pie") {
       const nameKey = xAxis?.dataKey
-      const valueKey = series[0].dataKey
+      const valueKey = series?.[0]?.dataKey
 
+      if (!series.length) {
+        console.warn("Warning: Pie chart requires at least one series.")
+        return <div>Pie chart requires at least one series.</div>
+      }
       if (!nameKey) {
         console.warn(
           "Warning: Pie chart requires xAxis.dataKey for proper labeling. Current behavior uses array indices as names."
         )
+        return <div>Pie chart requires xAxis.dataKey for proper labeling.</div>
       }
+
       return (
         <PieChart width={numericWidth} height={numericHeight}>
           <Pie
             data={data.map((item, index) => ({
               ...item,
-              ...(nameKey && themeConfig
-                ? {
-                    fill: themeConfig?.[item[nameKey]]?.color,
-                  }
-                : {}),
+              fill:
+                themeConfig?.[item[nameKey]]?.color ||
+                PRESET_FILL_COLORS[index % PRESET_FILL_COLORS.length],
             }))}
             dataKey={valueKey}
             nameKey={nameKey}

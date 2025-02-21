@@ -1,3 +1,5 @@
+import { CodeIcon, FileJsonIcon, TableIcon } from "lucide-react"
+
 import { Label } from "@/components/ui/label"
 import {
   Select,
@@ -6,15 +8,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Callout } from "@/components/eui/callout"
 
 import { DataTransforms } from "../../data-pipeline/data-transforms"
 import { ScriptDataSource } from "./script-data-source"
 import { TableDataSource } from "./table-data-source"
-import {
-  DataSourceConfig,
-  DataSourceType,
-  DataTransform
-} from "./types"
+import { DataSourceConfig, DataSourceType, DataTransform } from "./types"
 
 interface DataSourceConfigProps {
   data: any[]
@@ -134,30 +133,49 @@ export function DataSourceConfigComponent({
 
         <div className="space-y-2">
           {dataSource.type === "raw" && (
-            <>
-              <Label>Raw Data</Label>
-              <p>
-                Raw Data will be used as the data source for the chart. you can
-                use the <span className="font-bold">JSON editor</span> to edit
-                the data.
-              </p>
-            </>
+            <Callout icon={<FileJsonIcon className="h-4 w-4" />}>
+              Raw Data will be used as the data source for the chart. You can
+              use the <span className="font-medium">JSON editor</span> to edit
+              the data.
+            </Callout>
           )}
 
           {dataSource.type === "table" && (
-            <TableDataSource
-              config={dataSource}
-              onConfigChange={onDataSourceChange}
-              onDataChange={onDataChange}
-            />
+            <div className="h-full">
+              <Callout icon={<TableIcon className="h-4 w-4" />}>
+                Table will be used as the data source for the chart. You can
+                build custom queries to fetch the data you need. When you
+                execute the query, the data will be apply to the chart. you can
+                also reset data by clicking the{" "}
+                <span className="font-medium">Cancel</span> button.
+              </Callout>
+              <TableDataSource
+                config={dataSource}
+                onConfigChange={onDataSourceChange}
+                onDataChange={onDataChange}
+              />
+            </div>
           )}
 
           {dataSource.type === "script" && (
-            <ScriptDataSource
-              config={dataSource}
-              onConfigChange={onDataSourceChange}
-              onDataChange={onDataChange}
-            />
+            <>
+              <Callout icon={<CodeIcon className="h-4 w-4" />}>
+                Script will be used as the data source for the chart. You can
+                write custom JavaScript/Python code to fetch and transform your
+                data. Script should expose a `data` property that is an array of
+                objects or a function named `data` that returns an array of
+                objects
+                <br />
+                The script won't run automatically, you need to click the{" "}
+                <span className="font-medium">Fetch Data</span> button to fetch
+                the data.
+              </Callout>
+              <ScriptDataSource
+                config={dataSource}
+                onConfigChange={onDataSourceChange}
+                onDataChange={onDataChange}
+              />
+            </>
           )}
         </div>
       </div>

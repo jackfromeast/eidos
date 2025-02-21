@@ -25,7 +25,7 @@ import {
 import { Switch } from "@/components/ui/switch"
 
 import { ChartConfig, SeriesConfig } from ".."
-import { ColorSelect } from "./color-select"
+import { PRESET_COLORS } from "../constants"
 
 interface ChartSeriesConfigProps {
   control: Control<ChartConfig>
@@ -47,6 +47,13 @@ export function ChartSeriesConfig({
 }: ChartSeriesConfigProps) {
   const series = watch("series")
   const data = watch("data")
+  const chartType = watch("type")
+
+  const getNextColor = (currentIndex: number) => {
+    const colorValues = Object.values(PRESET_COLORS)
+    return colorValues[currentIndex % colorValues.length]
+  }
+
   return (
     <div className="space-y-2">
       <div className="flex justify-between items-center">
@@ -57,11 +64,12 @@ export function ChartSeriesConfig({
           size="sm"
           onClick={() => {
             const newSeries = [...getValues().series]
-            newSeries.push({
+            const nextColor = getNextColor(newSeries.length)
+            newSeries.unshift({
               type: "line",
               dataKey: "",
               name: "",
-              style: {},
+              style: nextColor,
             })
             setValue("series", newSeries)
           }}
@@ -70,7 +78,7 @@ export function ChartSeriesConfig({
         </Button>
       </div>
 
-      {series?.map((_, index) => (
+      {series.map((_, index) => (
         <Card key={index} className="p-3">
           <div className="space-y-3">
             <div className="flex justify-between items-center">
@@ -98,11 +106,17 @@ export function ChartSeriesConfig({
                   <FormItem>
                     <FormLabel>Type</FormLabel>
                     <Select
-                      onValueChange={(value: SeriesConfig["type"]) =>
+                      onValueChange={(value: SeriesConfig["type"]) => {
                         field.onChange(value)
-                      }
+                        if (chartType !== "composed") {
+                          const newSeries = [...getValues().series]
+                          newSeries.forEach((s) => (s.type = value))
+                          setValue("series", newSeries)
+                        }
+                      }}
                       defaultValue={field.value}
-                      value={field.value}
+                      value={chartType === "composed" ? field.value : chartType}
+                      disabled={chartType !== "composed"}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -110,10 +124,18 @@ export function ChartSeriesConfig({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="line">Line</SelectItem>
-                        <SelectItem value="bar">Bar</SelectItem>
-                        <SelectItem value="area">Area</SelectItem>
-                        <SelectItem value="scatter">Scatter</SelectItem>
+                        {chartType === "composed" ? (
+                          <>
+                            <SelectItem value="line">Line</SelectItem>
+                            <SelectItem value="bar">Bar</SelectItem>
+                            <SelectItem value="area">Area</SelectItem>
+                            <SelectItem value="scatter">Scatter</SelectItem>
+                            {/* <SelectItem value="pie">Pie</SelectItem>
+                            <SelectItem value="radar">Radar</SelectItem> */}
+                          </>
+                        ) : (
+                          <SelectItem value={chartType}>{chartType}</SelectItem>
+                        )}
                       </SelectContent>
                     </Select>
                   </FormItem>
@@ -192,11 +214,43 @@ export function ChartSeriesConfig({
                 control={control}
                 name={`series.${index}.style.stroke`}
                 render={({ field }) => (
-                  <ColorSelect
-                    value={field.value}
-                    onChange={field.onChange}
-                    label="Stroke Color"
-                  />
+                  <FormItem>
+                    <FormLabel>Stroke Color</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select color">
+                            <div className="flex items-center gap-2">
+                              {field.value && (
+                                <div
+                                  className="w-4 h-4 rounded-full"
+                                  style={{ backgroundColor: field.value }}
+                                />
+                              )}
+                              {field.value || "Select color"}
+                            </div>
+                          </SelectValue>
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {Object.entries(PRESET_COLORS).map(([name, color]) => (
+                          <SelectItem key={color.stroke} value={color.stroke}>
+                            <div className="flex items-center gap-2">
+                              <div
+                                className="w-4 h-4 rounded-full"
+                                style={{ backgroundColor: color.stroke }}
+                              />
+                              {name}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
                 )}
               />
 
@@ -204,11 +258,43 @@ export function ChartSeriesConfig({
                 control={control}
                 name={`series.${index}.style.fill`}
                 render={({ field }) => (
-                  <ColorSelect
-                    value={field.value}
-                    onChange={field.onChange}
-                    label="Fill Color"
-                  />
+                  <FormItem>
+                    <FormLabel>Fill Color</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select color">
+                            <div className="flex items-center gap-2">
+                              {field.value && (
+                                <div
+                                  className="w-4 h-4 rounded-full"
+                                  style={{ backgroundColor: field.value }}
+                                />
+                              )}
+                              {field.value || "Select color"}
+                            </div>
+                          </SelectValue>
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {Object.entries(PRESET_COLORS).map(([name, color]) => (
+                          <SelectItem key={color.fill} value={color.fill}>
+                            <div className="flex items-center gap-2">
+                              <div
+                                className="w-4 h-4 rounded-full"
+                                style={{ backgroundColor: color.fill }}
+                              />
+                              {name}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
                 )}
               />
             </div>

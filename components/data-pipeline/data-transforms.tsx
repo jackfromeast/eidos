@@ -8,6 +8,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
+import { Callout } from "../eui/callout"
+import { CodeIcon } from "lucide-react"
 
 interface DataTransform {
   type: "filter" | "sort" | "aggregate"
@@ -42,6 +44,12 @@ export function DataTransforms({
 }: DataTransformsProps) {
   return (
     <div className="p-3 space-y-3 border rounded-md">
+      <Callout icon={<CodeIcon className="h-4 w-4" />}>
+        You can apply transforms to the data to customize the data for your
+        chart. It won't run automatically, you need to click the{" "}
+        <span className="font-medium">Apply</span> button to apply the
+        transforms.
+      </Callout>
       <div className="space-y-3">
         <div className="flex justify-between items-center">
           <Label className="text-sm font-medium">Data Transforms</Label>
