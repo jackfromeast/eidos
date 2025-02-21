@@ -1,12 +1,14 @@
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 
-import { DOMAINS } from "@/lib/const"
-import { isDesktopMode } from "@/lib/env"
-import { useActivation } from "@/hooks/use-activation"
-import { useBrowserCheck } from "@/hooks/use-browser-check"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { useActivation } from "@/hooks/use-activation"
+import { useBrowserCheck } from "@/hooks/use-browser-check"
+import { DOMAINS } from "@/lib/const"
+import { isDesktopMode } from "@/lib/env"
+
+import { Callout } from "../eui/callout"
 
 const BrowserChecker = () => {
   const {
@@ -94,7 +96,24 @@ export const Activation = () => {
         Activation
       </h2>
 
-      {!isDesktopMode && <BrowserChecker />}
+      {!isDesktopMode && (
+        <>
+          <Callout type="warning">
+            <p>
+              Web app will be deprecated in the future. Please use the{" "}
+              <a
+                href="https://eidos.space/download"
+                target="_blank"
+                className="text-blue-500 hover:underline"
+              >
+                desktop app
+              </a>{" "}
+              for the best experience.
+            </p>
+          </Callout>
+          <BrowserChecker />
+        </>
+      )}
 
       <div className="w-full">
         <Input
