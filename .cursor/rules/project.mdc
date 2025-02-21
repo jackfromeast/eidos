@@ -1,0 +1,9 @@
+---
+description: all rules about this project
+globs: *
+---
+# Your rule content
+
+- When generating React components, use kebab-case for file/folder names, not PascalCase.
+- All comments in generated code should be in English, regardless of the language used in user questions.
+- If you need icons, you can use `lucide-react`.
