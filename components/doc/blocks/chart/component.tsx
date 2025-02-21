@@ -24,6 +24,7 @@ import { $isChartNode } from "./node"
 export interface ChartBlockProps {
   config: string
   nodeKey: NodeKey
+  id: string
   dataSource: DataSourceConfig
   transforms: DataTransform[]
 }
@@ -31,6 +32,7 @@ export interface ChartBlockProps {
 export const ChartBlock: React.FC<ChartBlockProps> = ({
   config,
   nodeKey,
+  id,
   dataSource,
   transforms,
 }) => {
@@ -131,6 +133,7 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({
       className="relative group bg-secondary"
       style={{ minHeight: "200px" }}
       ref={containerRef}
+      data-block-id={id}
     >
       <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2 z-10">
         {parsedConfig && (

@@ -35,9 +35,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart"
 
-import {
-  PRESET_FILL_COLORS
-} from "./constants"
+import { PRESET_FILL_COLORS } from "./constants"
 
 // Basic type definition
 export type ChartType =
@@ -151,7 +149,6 @@ export function Chart(props: ChartConfig) {
     themeConfig,
   } = props
 
-  console.log(props)
   // Render chart series
   const renderSeries = (): ReactNode[] => {
     return series.map((seriesConfig, index) => {

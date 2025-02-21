@@ -141,6 +141,7 @@ export class ChartNode extends DecoratorBlockNode {
         <ChartBlock
           config={this.__config}
           nodeKey={this.__key}
+          id={this.__id}
           dataSource={this.__dataSource}
           transforms={this.__transforms}
         />
