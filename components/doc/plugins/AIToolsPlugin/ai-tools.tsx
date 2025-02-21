@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { $convertFromMarkdownString, Transformer } from "@lexical/markdown"
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext"
 import { useClickAway, useKeyPress } from "ahooks"
@@ -38,6 +38,18 @@ import { useGenerateChartConfig } from "./hooks/use-generate-chart"
 import { useUpdateLocation } from "./hooks/use-update-location"
 import { PromptList } from "./prompt-list"
 
+function setPlaceholderHeight(height: number) {
+  document
+    .getElementById("ai-content-placeholder")
+    ?.setAttribute("style", `height: ${height}px;`)
+}
+
+function resetPlaceholderHeight() {
+  document
+    .getElementById("ai-content-placeholder")
+    ?.setAttribute("style", `height: 0px;`)
+}
+
 export function AITools({
   cancelAIAction,
   content,
@@ -70,9 +82,29 @@ export function AITools({
   const { t } = useTranslation()
   const { generateConfig, isLoading: isChartLoading } = useGenerateChartConfig()
 
+  const aiContentBoxRef = useRef<HTMLDivElement>(null)
   const isMakeItRealRef = useRef(false)
   const isGenerateChartRef = useRef(false)
   const isMakeItReal = () => isMakeItRealRef.current
+
+  useEffect(() => {
+    if (!aiContentBoxRef.current) {
+      return
+    }
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect
+        setPlaceholderHeight(height)
+      }
+    })
+
+    resizeObserver.observe(aiContentBoxRef.current)
+
+    return () => {
+      resizeObserver.disconnect()
+    }
+  }, [aiContentBoxRef.current])
 
   const generateChartConfig = async () => {
     if (!codingModel) {
@@ -94,6 +126,8 @@ export function AITools({
     isMakeItRealRef.current = false
     isGenerateChartRef.current = false
     setIsFinished(true)
+    // reset placeholder height
+    resetPlaceholderHeight()
   }
 
   const { addScript } = useScript()
@@ -378,6 +412,8 @@ be between <content-begin> and <content-end>. you just output the transformed co
       {!isFinished && (
         <>
           <div
+            id="ai-content-box"
+            ref={aiContentBoxRef}
             className="rounded-md border bg-white p-2 shadow-md dark:border-gray-700 dark:bg-slate-800"
             style={{
               width: editorWidth,

@@ -58,7 +58,7 @@ export const useUpdateLocation = (
           boxElem.style.left = "0px"
           boxElem.style.top = "0px"
           boxElem.style.transform = `translate(${translateX}px, ${translateY}px)`
-          boxElem.style.height = `${boxElem.clientHeight}px`
+          // boxElem.style.height = `${boxElem.clientHeight}px`
           // ?.setAttribute("style", `height: ${boxElem.clientHeight}px;`)
           const selectionRectsLength = selectionRects.length
           const { container } = selectionState
