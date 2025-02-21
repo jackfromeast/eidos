@@ -111,8 +111,8 @@ export function DataSourceConfigComponent({
     const transformedData = applyTransforms(newData)
     onDataChange(transformedData)
     toast({
-      title: "Draft Data Applied",
-      description: "The draft data has been applied to the chart.",
+      title: "Transform Applied",
+      description: "Draft data has been updated.",
     })
   }
 
@@ -184,12 +184,12 @@ export function DataSourceConfigComponent({
           )}
         </div>
       </div>
-      {/* <DataTransforms
+      <DataTransforms
         data={data}
         transforms={transforms}
         onTransformsChange={onTransformsChange}
         onApplyTransforms={() => handleDataUpdate(data)}
-      /> */}
+      />
     </div>
   )
 }

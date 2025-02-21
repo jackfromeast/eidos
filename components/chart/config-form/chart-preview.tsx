@@ -29,7 +29,7 @@ export function ChartPreview({
     JSON.stringify(config.data, null, 2)
   )
 
-  useEffect(() => { 
+  useEffect(() => {
     setDataJson(JSON.stringify(config.data, null, 2))
   }, [config.data])
 
