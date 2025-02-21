@@ -73,10 +73,6 @@ export function ScriptDataSource({
           )}
         </div>
       </div>
-      <p className="text-sm text-muted-foreground">
-        Script should expose a `data` property that is an array of objects or a
-        function named `data` that returns an array of objects
-      </p>
     </div>
   )
 }
