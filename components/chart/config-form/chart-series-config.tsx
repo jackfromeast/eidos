@@ -227,7 +227,7 @@ export function ChartSeriesConfig({
                             <div className="flex items-center gap-2">
                               {field.value && (
                                 <div
-                                  className="w-4 h-4 rounded-full"
+                                  className="w-4 h-4 rounded-full flex-shrink-0"
                                   style={{ backgroundColor: field.value }}
                                 />
                               )}
@@ -271,7 +271,7 @@ export function ChartSeriesConfig({
                             <div className="flex items-center gap-2">
                               {field.value && (
                                 <div
-                                  className="w-4 h-4 rounded-full"
+                                  className="w-4 h-4 rounded-full flex-shrink-0"
                                   style={{ backgroundColor: field.value }}
                                 />
                               )}
