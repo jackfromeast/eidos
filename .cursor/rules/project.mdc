@@ -2,8 +2,32 @@
 description: all rules about this project
 globs: *
 ---
-# Your rule content
+# Project Rules
 
-- When generating React components, use kebab-case for file/folder names, not PascalCase.
-- All comments in generated code should be in English, regardless of the language used in user questions.
-- If you need icons, you can use `lucide-react`.
+## Component & File Naming
+- Use kebab-case for file/folder names, not PascalCase
+- Example: `user-profile` instead of `UserProfile`
+
+## Code Style
+- All comments must be in English, regardless of the language used in user questions
+- Use `lucide-react` for icons
+
+## Internationalization (i18n)
+- Use react-i18next as the i18n solution
+- Language files location:
+  - @en.json (English)
+  - @zh.json (Chinese)
+- Use flat mode for i18n keys:
+  - Keys should be separated by dots
+  - Avoid nested JSON objects
+  - ✅ Good: `"common.badge.alpha": "Alpha"`
+  - ❌ Bad: 
+    ```json
+    {
+      "common": {
+        "badge": {
+          "alpha": "Alpha"
+        }
+      }
+    }
+    ```
