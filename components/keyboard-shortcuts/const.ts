@@ -160,6 +160,10 @@ export const useCommonKeyboardShortcuts = () => {
       description: t('kbd.shortcuts.common.newDocumentDescription'),
     },
     {
+      key: "Ctrl/Cmd + T",
+      description: t('kbd.shortcuts.common.navigateToTodayDescription'),
+    },
+    {
       key: "Ctrl/Cmd + Shift + L",
       description: t('kbd.shortcuts.common.toggleThemeDescription'),
     },
