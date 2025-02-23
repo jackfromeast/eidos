@@ -4,6 +4,7 @@ import { useKeyPress } from "ahooks"
 import { useTheme } from "next-themes"
 import { useNavigate } from "react-router-dom"
 
+import { getToday } from "@/lib/utils"
 import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
 import { useSqlite } from "@/hooks/use-sqlite"
 import { useToast } from "@/components/ui/use-toast"
@@ -23,7 +24,14 @@ export function ShortCuts() {
 
   const { space } = useCurrentPathInfo()
 
-  useKeyPress(["meta.n"], () => {
+  // navigate to today
+  useKeyPress(["ctrl.t", "meta.t"], () => {
+    const date = getToday()
+    navigate(`/${space}/everyday/${date}`)
+  })
+
+  // create new doc
+  useKeyPress(["ctrl.n", "meta.n"], () => {
     const createNewDoc = async () => {
       if (!space) return
       const docId = await createDoc("")
