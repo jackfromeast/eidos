@@ -7,7 +7,7 @@ import fs from "fs"
 // import { visualizer } from "rollup-plugin-visualizer"
 
 
-const iconPath = path.resolve(__dirname, "../icons.json")
+const iconPath = path.resolve(__dirname, "./icons.json")
 const iconJson = JSON.parse(fs.readFileSync(iconPath, "utf-8"))
 
 export const createHtmlPlugin = (serviceMode: string): Plugin => {
