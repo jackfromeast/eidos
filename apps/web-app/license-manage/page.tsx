@@ -1,4 +1,4 @@
-import { Activation } from "@/components/landing/activation"
+import { Activation } from "@/apps/web-app/license-manage/activation"
 
 export const LicenseManagePage = () => {
   return (

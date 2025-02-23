@@ -8,7 +8,7 @@ import { useBrowserCheck } from "@/hooks/use-browser-check"
 import { DOMAINS } from "@/lib/const"
 import { isDesktopMode } from "@/lib/env"
 
-import { Callout } from "../eui/callout"
+import { Callout } from "../../../components/eui/callout"
 
 const BrowserChecker = () => {
   const {
