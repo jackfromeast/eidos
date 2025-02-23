@@ -126,8 +126,8 @@ export const extractIdFromShortId = (shortId: string) => {
   )}-${shortId.slice(16, 20)}-${shortId.slice(20)}`
 }
 
-export const getDate = (offset: number) => {
-  const date = new Date()
+export const getDate = (offset: number, baseDate?: Date | string) => {
+  const date = baseDate ? new Date(baseDate) : new Date()
   date.setDate(date.getDate() + offset)
   const year = date.getFullYear()
   const month = (date.getMonth() + 1).toString().padStart(2, "0")
@@ -213,7 +213,8 @@ export const generateId = () => {
   return Math.random().toString(36).substring(2, 10)
 }
 
-export const isDayPageId = (id: string) => {
+export const isDayPageId = (id: string | undefined) => {
+  if (!id) return false
   return /^\d{4}-\d{2}-\d{2}$/g.test(id)
 }
 

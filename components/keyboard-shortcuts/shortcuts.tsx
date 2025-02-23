@@ -2,9 +2,9 @@
 
 import { useKeyPress } from "ahooks"
 import { useTheme } from "next-themes"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 
-import { getToday } from "@/lib/utils"
+import { getDate, getToday, isDayPageId } from "@/lib/utils"
 import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
 import { useSqlite } from "@/hooks/use-sqlite"
 import { useToast } from "@/components/ui/use-toast"
@@ -21,7 +21,7 @@ export function ShortCuts() {
   const navigate = useNavigate()
   const { toast } = useToast()
   const { createDoc } = useSqlite()
-
+  const { day } = useParams()
   const { space } = useCurrentPathInfo()
 
   // navigate to today
@@ -49,12 +49,24 @@ export function ShortCuts() {
     setIsAiOpen(!isAiOpen)
   })
 
-  useKeyPress(["ctrl.openbracket", "meta.openbracket"], () => {
-    navigate(-1)
+  useKeyPress(["ctrl.openbracket", "meta.openbracket"], (e) => {
+    if (!e.shiftKey) {
+      navigate(-1)
+    } else if (isDayPageId(day)) {
+      // day
+      const newDay = getDate(-1, day)
+      navigate(`/${space}/everyday/${newDay}`)
+    }
   })
 
-  useKeyPress(["ctrl.closebracket", "meta.closebracket"], () => {
-    navigate(1)
+  useKeyPress(["ctrl.closebracket", "meta.closebracket"], (e) => {
+    if (!e.shiftKey) {
+      navigate(1)
+    } else if (isDayPageId(day)) {
+      // day
+      const newDay = getDate(1, day)
+      navigate(`/${space}/everyday/${newDay}`)
+    }
   })
 
   useKeyPress(["ctrl.comma", "meta.comma"], () => {

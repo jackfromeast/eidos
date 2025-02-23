@@ -164,6 +164,14 @@ export const useCommonKeyboardShortcuts = () => {
       description: t('kbd.shortcuts.common.navigateToTodayDescription'),
     },
     {
+      key: "Ctrl/Cmd + Shift + [",
+      description: t('kbd.shortcuts.common.navigateToPreviousDayDescription'),
+    },
+    {
+      key: "Ctrl/Cmd + Shift + ]",
+      description: t('kbd.shortcuts.common.navigateToNextDayDescription'),
+    },
+    {
       key: "Ctrl/Cmd + Shift + L",
       description: t('kbd.shortcuts.common.toggleThemeDescription'),
     },

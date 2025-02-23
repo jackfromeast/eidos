@@ -458,5 +458,7 @@
     "table.view.query": "查询",
     "table.view.queryDescription": "用于此视图的 SQL 查询。",
     "table.view.typeDescription": "用于此表格的视图类型。",
-    "table.view.where": "当"
+    "table.view.where": "当",
+    "kbd.shortcuts.common.navigateToPreviousDayDescription": "导航到前一天",
+    "kbd.shortcuts.common.navigateToNextDayDescription": "导航到后一天"
 }
