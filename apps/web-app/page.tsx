@@ -1,7 +1,6 @@
 import { useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 
-import { isDesktopMode } from "@/lib/env"
 import { useActivation } from "@/hooks/use-activation"
 import { useGoto } from "@/hooks/use-goto"
 import { useSpace } from "@/hooks/use-space"
@@ -17,12 +16,12 @@ export const LandingPage = () => {
   const { isActivated } = useActivation()
 
   useEffect(() => {
-    if (isDesktopMode && !isActivated) {
+    if (!isActivated) {
       navigate("/my-licenses")
-    } else if (isActivated && lastOpenedDatabase) {
+    } else if (lastOpenedDatabase) {
       goto(lastOpenedDatabase)
     }
-  }, [lastOpenedDatabase, goto, isActivated])
+  }, [lastOpenedDatabase, goto, isActivated, navigate])
 
   return (
     <div className="flex h-screen w-screen items-center justify-center">
