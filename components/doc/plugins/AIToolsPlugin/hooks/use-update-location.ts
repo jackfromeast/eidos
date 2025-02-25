@@ -19,6 +19,7 @@ export const useUpdateLocation = (
   boxRef: React.MutableRefObject<HTMLDivElement | null>
 ) => {
   const [editorWidth, setEditorWidth] = useState(0)
+  const [containerLeft, setContainerLeft] = useState(0)
   const selectionState = useMemo(
     () => ({
       container: document.createElement("div"),
@@ -51,7 +52,7 @@ export const useUpdateLocation = (
           if (correctedLeft < 10) {
             correctedLeft = 10
           }
-          const translateX = left
+          const translateX = containerLeft
           const translateY =
             bottom + 8 + (window.pageYOffset || document.documentElement.scrollTop)
 
@@ -96,7 +97,7 @@ export const useUpdateLocation = (
         }
       }
     })
-  }, [boxRef, editor, selectionRef, selectionState])
+  }, [boxRef, editor, selectionRef, selectionState, containerLeft])
 
   useEffect(() => {
     const main = document.querySelector("#main-content")
@@ -111,6 +112,8 @@ export const useUpdateLocation = (
     updateLocation()
     const container = selectionState.container
     const editorContainer = document.querySelector("#editor-container-inner")
+
+    setContainerLeft(editorContainer?.getBoundingClientRect()?.left || 0)
     if (editorWidth !== editorContainer?.clientWidth) {
       setEditorWidth(editorContainer?.clientWidth || 0)
     }
