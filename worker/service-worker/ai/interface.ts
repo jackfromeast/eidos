@@ -20,4 +20,5 @@ export interface IData {
     modelId: string;
     type?: undefined;
   }
+  chunking?: 'word' | 'line' | RegExp;
 }

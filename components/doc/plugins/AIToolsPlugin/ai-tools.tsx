@@ -37,6 +37,7 @@ import { AIContentEditor } from "./ai-msg-editor"
 import { useGenerateChartConfig } from "./hooks/use-generate-chart"
 import { useUpdateLocation } from "./hooks/use-update-location"
 import { PromptList } from "./prompt-list"
+import { Thinking } from "@/components/thinking"
 
 function setPlaceholderHeight(height: number) {
   document
@@ -163,6 +164,8 @@ export function AITools({
       ...getConfigByModel(currentModel),
       model: currentModel,
       useTools: false,
+      // use word chunking for
+      chunking: "word",
     },
   })
 
@@ -421,7 +424,7 @@ be between <content-begin> and <content-end>. you just output the transformed co
             {isGenerateChartRef.current && (
               <div>
                 {isChartLoading ? (
-                  <Loading />
+                  <Thinking />
                 ) : chartConfig ? (
                   <Chart {...chartConfig} />
                 ) : (
@@ -434,7 +437,7 @@ be between <content-begin> and <content-end>. you just output the transformed co
             )}
             {isMakeItRealRef.current &&
               (isLoading ? (
-                <Loading />
+                <Thinking />
               ) : (
                 generatedCode && (
                   <BlockRenderer

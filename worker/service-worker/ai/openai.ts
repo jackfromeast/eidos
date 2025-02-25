@@ -30,7 +30,8 @@ export async function handleOpenAI(
     id,
     projectId,
     useTools,
-    textModel
+    textModel,
+    chunking = 'line'
   } = data
   if (useTools != null) {
     useFunctions = useTools
@@ -124,7 +125,7 @@ export async function handleOpenAI(
         }),
         experimental_transform: smoothStream({
           delayInMs: 20,
-          chunking: 'line'
+          chunking
         }),
         messages: coreMessages,
         onFinish: async ({ text }) => {
