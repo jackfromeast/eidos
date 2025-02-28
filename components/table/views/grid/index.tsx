@@ -8,6 +8,9 @@ import DataEditor, {
 import { useSpaceAppStore } from "@/apps/web-app/[database]/store"
 
 import "@glideapps/glide-data-grid/dist/index.css"
+import { useKeyPress, useSize } from "ahooks"
+import { Plus } from "lucide-react"
+import { useTheme } from "next-themes"
 import React, {
   useCallback,
   useContext,
@@ -15,36 +18,33 @@ import React, {
   useMemo,
   useRef,
 } from "react"
-import { useKeyPress, useSize, useWhyDidYouUpdate } from "ahooks"
-import { Plus } from "lucide-react"
-import { useTheme } from "next-themes"
 
-import { MsgType } from "@/lib/const"
-import { getWorker } from "@/lib/sqlite/worker"
-import { IGridViewProperties, IView } from "@/lib/store/IView"
-import { cn, getRawTableNameById } from "@/lib/utils"
 import { useSqlite } from "@/hooks/use-sqlite"
 import { useTableOperation } from "@/hooks/use-table"
 import { useUiColumns } from "@/hooks/use-ui-columns"
+import { IGridViewProperties, IView } from "@/lib/store/IView"
+import { cn } from "@/lib/utils"
 
+import { TwinkleSparkle } from "../../../loading"
 import { Button } from "../../../ui/button"
 import { TableContext, useCurrentView } from "../../hooks"
+import { useTableSearchStore } from "../../hooks/use-table-search-store"
 import { useViewCount } from "../../hooks/use-view-count"
 import { AITools } from "./ai-tools"
 import { customCells } from "./cells"
 import { headerIcons } from "./fields/header-icons"
 import { GridContextMenu } from "./grid-context-menu"
+import { getScrollbarWidth } from "./helper"
 import { useAsyncData } from "./hooks/use-async-data"
+import { useCellActivated } from "./hooks/use-cell-activated"
 import { useColumns } from "./hooks/use-col"
 import { useDataSource } from "./hooks/use-data-source"
 import { useDrop } from "./hooks/use-drop"
+import { useGridSearch } from "./hooks/use-grid-search"
+import { useHighlightRow } from "./hooks/use-highlight-row"
 import { useHover } from "./hooks/use-hover"
 import { useTableAppStore } from "./store"
 import "./styles.css"
-import { TwinkleSparkle } from "../../../loading"
-import { useTableSearchStore } from "../../hooks/use-table-search-store"
-import { getScrollbarWidth } from "./helper"
-import { useGridSearch } from "./hooks/use-grid-search"
 import { darkTheme, lightTheme } from "./theme"
 
 const defaultConfig: Partial<DataEditorProps> = {
@@ -89,10 +89,6 @@ export default function GridView(props: IGridProps) {
   const size = useSize(containerRef)
   const aiContainerRef = useRef<HTMLDivElement>(null)
   const [aiHighlightRegions, setAIHighlightRegions] = React.useState<
-    DataEditorProps["highlightRegions"]
-  >([])
-
-  const [customHighlightRegions, setCustomHighlightRegions] = React.useState<
     DataEditorProps["highlightRegions"]
   >([])
 
@@ -154,6 +150,12 @@ export default function GridView(props: IGridProps) {
     view: currentView,
   })
 
+  const { customHighlightRegions, setCustomHighlightRegions } = useHighlightRow(
+    tableName,
+    getIndexByRowId,
+    showColumns
+  )
+
   const { setIsAddFieldEditorOpen, selection, setSelection, clearSelection } =
     useTableAppStore()
   const [isAItoolsOpen, setIsAItoolsOpen] = React.useState(false)
@@ -164,6 +166,8 @@ export default function GridView(props: IGridProps) {
     showColumns,
     getColumnIndexByColumnName
   )
+
+  const { cell, setCell } = useCellActivated()
 
   // Add state for search highlight
   const [searchHighlightRegion, setSearchHighlightRegion] = React.useState<
@@ -207,42 +211,8 @@ export default function GridView(props: IGridProps) {
       onSearchResultsChanged(currentCell)
     }
   }, [showSearch, searchQuery, currentCell, onSearchResultsChanged])
-  useEffect(() => {
-    const worker = getWorker()
-    function subscribeHighlightRow(e: MessageEvent<any>) {
-      const { type, payload } = e.data
-      if (type === MsgType.HighlightRow) {
-        const { tableId, rowId, fieldName } = payload
-        if (tableName !== getRawTableNameById(tableId)) return
-        const index = getIndexByRowId(rowId)
-        // highlight row
-        if (fieldName) {
-          const colIndex = showColumns.findIndex((c) => c.name === fieldName)
-          if (colIndex > -1) {
-            setCustomHighlightRegions([
-              {
-                color: "rgba(0, 0, 255, 0.1)",
-                range: { x: colIndex, y: index, width: 1, height: 1 },
-              },
-            ])
-          }
-        } else {
-          setCustomHighlightRegions([
-            {
-              color: "rgba(0, 0, 255, 0.1)",
-              range: { x: 0, y: index, width: showColumns.length, height: 1 },
-            },
-          ])
-        }
-      }
-    }
-    worker.addEventListener("message", subscribeHighlightRow)
-    window.addEventListener("message", subscribeHighlightRow)
-    return () => {
-      worker.removeEventListener("message", subscribeHighlightRow)
-      window.removeEventListener("message", subscribeHighlightRow)
-    }
-  }, [getIndexByRowId, showColumns, tableName])
+
+  // Use the hook to get the highlight regions:
 
   useEffect(() => {
     if (!selection.current) {
