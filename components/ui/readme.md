@@ -48,3 +48,32 @@ Added a container property to specify the container for `PopoverContent`. By def
        ref={ref}
        align={align}
 ```
+
+### DialogContent
+
+Added a container property to specify the container for `DialogContent`. By default, it mounts to document.body.
+
+```diff
+
+ const DialogContent = React.forwardRef<
+   React.ElementRef<typeof DialogPrimitive.Content>,
+-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
+->(({ className, children, ...props }, ref) => (
+-  <DialogPortal>
++  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
++    container?: HTMLElement
++  }
++>(({ className, children, container, ...props }, ref) => (
++  <DialogPrimitive.Portal {...(container ? { container } : {})}>
+     <DialogOverlay />
+     <DialogPrimitive.Content
+       ref={ref}
+@@ -48,7 +50,7 @@ const DialogContent = React.forwardRef<
+         <span className="sr-only">Close</span>
+       </DialogPrimitive.Close>
+     </DialogPrimitive.Content>
+-  </DialogPortal>
++  </DialogPrimitive.Portal>
+ ))
+ DialogContent.displayName = DialogPrimitive.Content.displayName
+```
