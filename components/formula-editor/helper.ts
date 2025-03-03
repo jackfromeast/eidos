@@ -7,3 +7,11 @@ export const getDynamicallyTypes = (fields: IField<any>[]) => {
   })
   return typeDefine
 }
+
+export const getUDFs = (functions: { name: string; code: string }[]) => {
+  let udfs = ``
+  functions.forEach((func) => {
+    udfs += func.code
+  })
+  return udfs
+}
