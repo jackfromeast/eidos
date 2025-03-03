@@ -10,6 +10,7 @@ import { useWindowSize } from "usehooks-ts"
 import docPluginPrompt from "@/lib/v3/prompts/built-in-remix-prompt-for-doc-plugin.md?raw"
 import pythonScriptPrompt from "@/lib/v3/prompts/built-in-remix-prompt-for-python-script.md?raw"
 import scriptPrompt from "@/lib/v3/prompts/built-in-remix-prompt-for-script.md?raw"
+import builtInRemixPromptForUDF from "@/lib/v3/prompts/built-in-remix-prompt-for-udf.md?raw"
 import builtInRemixPrompt from "@/lib/v3/prompts/built-in-remix-prompt.md?raw"
 import { useAiConfig } from "@/hooks/use-ai-config"
 import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
@@ -52,16 +53,25 @@ export function Chat({
   const { toast } = useToast()
 
   useEffect(() => {
+    const getPromptByScriptType = (type?: string) => {
+      switch (type) {
+        case "script":
+          return scriptPrompt
+        case "doc_plugin":
+          return docPluginPrompt
+        case "py_script":
+          return pythonScriptPrompt
+        case "udf":
+          return builtInRemixPromptForUDF
+        default:
+          return builtInRemixPrompt
+      }
+    }
+
     getRemixPrompt(
       script?.bindings,
       script?.ts_code || script?.code,
-      script?.type === "script"
-        ? scriptPrompt
-        : script?.type === "doc_plugin"
-        ? docPluginPrompt
-        : script?.type === "py_script"
-        ? pythonScriptPrompt
-        : builtInRemixPrompt
+      getPromptByScriptType(script?.type)
     ).then(setRemixPrompt)
   }, [script?.bindings, script?.ts_code, script?.code])
   const [aiModel, setAIModel] = useState(

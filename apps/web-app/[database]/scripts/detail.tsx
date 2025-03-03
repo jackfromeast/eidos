@@ -101,7 +101,7 @@ export const ScriptDetailPage = () => {
     }
   }, [currentDraftCode, setLayoutMode])
 
-  const showChat = script.type !== "prompt" && script.type !== "udf"
+  const showChat = script.type !== "prompt"
   // script.type !== "py_script"
 
   useEffect(() => {
@@ -141,6 +141,24 @@ export const ScriptDetailPage = () => {
               commands: exportsCommands,
             })
           }
+        } finally {
+          sandbox.destroy()
+        }
+      }
+      if (script.type === "udf") {
+        const sandbox = new ScriptSandbox()
+        try {
+          const res = await sandbox.detectObjects(code)
+          const func = Object.values(res)[0] as Function
+          if (typeof func === "function") {
+            const name = func.name
+            await updateScript({
+              id: script.id,
+              name,
+            })
+          }
+        } catch (error) {
+          console.error("error", error)
         } finally {
           sandbox.destroy()
         }

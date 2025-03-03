@@ -173,6 +173,14 @@ export const getSuggestedActions = (type: IScript["type"]) => {
           action: "Make a Emoji converter plugin, which can change all :D to 🤣",
         },
       ]
+    case "udf":
+      return [
+        {
+          title: "Extract Email Domain",
+          label: "from email address",
+          action: "extract the domain from an email address",
+        },
+      ]
     default:
       return []
   }

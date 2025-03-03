@@ -34,10 +34,20 @@ const NonMemoizedMarkdown = ({ children }: { children: string }) => {
         )
       }
 
-      if (language === "jsx" || language === "tsx" || language === "python") {
+      if (
+        language === "javascript" ||
+        language === "jsx" ||
+        language === "tsx" ||
+        language === "python"
+      ) {
         const code = children?.toString()
         const linesCount = code?.split("\n").length
-        const filename = language === "python" ? "main.py" : `index.${language}`
+        const filename =
+          language === "python"
+            ? "main.py"
+            : language === "javascript"
+            ? "index.js"
+            : `index.${language}`
         return (
           <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg p-3 mt-2">
             <div

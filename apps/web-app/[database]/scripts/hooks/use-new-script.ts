@@ -45,7 +45,7 @@ export const useNewScript = () => {
       type: "udf",
       description: "twice the input",
       version: "0.0.1",
-      code: `function myFunc(pCx, arg) {
+      code: `function myTwice(arg) {
     return arg + arg
 }`,
     }

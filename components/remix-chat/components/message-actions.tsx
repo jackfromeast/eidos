@@ -1,14 +1,14 @@
+import { useState } from "react"
 import type { Message } from "ai"
 import { EyeIcon, EyeOffIcon, PlayIcon, RefreshCwIcon } from "lucide-react"
-import { useState } from "react"
 import { toast } from "sonner"
 import { useSWRConfig } from "swr"
 import { useCopyToClipboard } from "usehooks-ts"
 
-import { useEditorStore } from "@/apps/web-app/[database]/scripts/stores/editor-store"
+import { getCodeFromMarkdown } from "@/lib/markdown"
 import { Button } from "@/components/ui/button"
 import { TooltipProvider } from "@/components/ui/tooltip"
-import { getCodeFromMarkdown } from "@/lib/markdown"
+import { useEditorStore } from "@/apps/web-app/[database]/scripts/stores/editor-store"
 
 import type { Vote } from "../interface"
 import { CopyIcon } from "./icons"
@@ -44,7 +44,11 @@ export function MessageActions({
 
   const handleApply = () => {
     const indexJsxCode = codeBlocks.find(
-      (code) => code.lang === "jsx" || code.lang === "typescript" || code.lang === "python"
+      (code) =>
+        code.lang === "jsx" ||
+        code.lang === "typescript" ||
+        code.lang === "python" ||
+        code.lang === "javascript"
     )?.code
     console.log("indexJsxCode", indexJsxCode)
     if (indexJsxCode) {
@@ -55,7 +59,10 @@ export function MessageActions({
 
   const handleTogglePreview = () => {
     const indexJsxCode = codeBlocks.find(
-      (code) => code.lang === "jsx" || code.lang === "typescript" || code.lang === "python"
+      (code) =>
+        code.lang === "jsx" ||
+        code.lang === "typescript" ||
+        code.lang === "python"
     )?.code
     if (isPreviewEnabled) {
       setScriptCodeMap("current", "")

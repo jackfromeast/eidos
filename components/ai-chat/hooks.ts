@@ -92,7 +92,7 @@ export const useUserPrompts = () => {
     sqlite?.script
       .list({
         type: "prompt",
-        enabled: 1,
+        enabled: true,
       })
       .then((res) => {
         setPrompts(res)
