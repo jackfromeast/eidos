@@ -39,7 +39,7 @@ export const LLMProviderManage = ({
   const { t } = useTranslation()
 
   const handleAdd = (data: LLMProvider) => {
-    const newData = [...value, data]
+    const newData = [...value, { ...data, enabled: data.enabled ?? false }]
     onChange(newData)
   }
 
@@ -76,7 +76,7 @@ export const LLMProviderManage = ({
               </TableCell>
               <TableCell>
                 <Switch
-                  checked={provider.enabled ?? true}
+                  checked={provider.enabled ?? false}
                   onCheckedChange={(checked) => {
                     const newData = value.map((p, i) =>
                       i === index ? { ...p, enabled: checked } : p
