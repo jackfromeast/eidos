@@ -2,6 +2,8 @@ import { useContext, useEffect, useState } from "react"
 import { useDebounceFn } from "ahooks"
 import {
   Calculator,
+  ChevronDown,
+  ChevronUp,
   FunctionSquareIcon,
   Hash,
   Info,
@@ -59,6 +61,7 @@ export const FormulaEditor = ({
   const { preview } = usePreviewTableFormula()
   const validateFormula = useFormulaValidation()
   const [isAiPromptMode, setIsAiPromptMode] = useState(false)
+  const [showFullError, setShowFullError] = useState(false)
 
   const { generateFormulaConfig, isLoading: isGeneratingFormula } =
     useGenerateFormula()
@@ -279,9 +282,36 @@ export const FormulaEditor = ({
         </div>
         <div className="min-h-[40px] p-2">
           {validationError ? (
-            <p className="text-sm text-destructive font-medium">
-              {validationError}
-            </p>
+            <div className="text-sm text-destructive font-medium">
+              {validationError.includes("\n") ? (
+                <>
+                  <div className="flex items-center gap-1">
+                    <span>{validationError.split("\n")[0]}</span>
+                    <button
+                      onClick={() => setShowFullError((prev) => !prev)}
+                      className="text-xs flex items-center gap-0.5 underline hover:text-destructive/80 ml-1"
+                    >
+                      {showFullError ? (
+                        <>
+                          {t("common.collapse")} <ChevronUp size={14} />
+                        </>
+                      ) : (
+                        <>
+                          {t("common.expand")} <ChevronDown size={14} />
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  {showFullError && (
+                    <pre className="mt-1 text-xs bg-destructive/10 p-1 rounded max-h-[120px] overflow-y-auto">
+                      {validationError}
+                    </pre>
+                  )}
+                </>
+              ) : (
+                <pre>{validationError}</pre>
+              )}
+            </div>
           ) : previewResult ? (
             <p className="text-sm text-muted-foreground flex items-center gap-2">
               <TooltipProvider>
