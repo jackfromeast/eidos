@@ -34,6 +34,8 @@ import {
 } from "@/components/formula-editor/completions"
 import { TableContext } from "@/components/table/hooks"
 
+import { useGenerateFormula } from "./use-generate-formula"
+
 export const FormulaEditor = ({
   editorRef,
   closeEditor,
@@ -51,12 +53,15 @@ export const FormulaEditor = ({
   const [formula, setFormula] = useState(formulaField?.property.formula ?? "")
   const { udfs = [], tableName, space } = useContext(TableContext)
   const { updateFieldProperty } = useTableOperation(tableName, space)
-  const { theme } = useTheme()
   const [previewResult, setPreviewResult] = useState<string | null>(null)
   const [selectedItem, setSelectedItem] = useState<any>(null)
   const [validationError, setValidationError] = useState<string | null>(null)
   const { preview } = usePreviewTableFormula()
   const validateFormula = useFormulaValidation()
+  const [isAiPromptMode, setIsAiPromptMode] = useState(false)
+
+  const { generateFormulaConfig, isLoading: isGeneratingFormula } =
+    useGenerateFormula()
 
   const { run: validateAndPreview } = useDebounceFn(
     async () => {
@@ -81,8 +86,13 @@ export const FormulaEditor = ({
   }, [formulaField?.property.formula])
 
   useEffect(() => {
-    validateAndPreview()
-  }, [formula, rowId])
+    if (isAiPromptMode) {
+      setValidationError(null)
+      setPreviewResult(null)
+    } else {
+      validateAndPreview()
+    }
+  }, [formula, rowId, isAiPromptMode])
 
   const { error, updateFormula } = useFormulaUpdate(
     formulaField,
@@ -192,14 +202,15 @@ export const FormulaEditor = ({
 
       setSelectedItem(items[newIndex])
 
-      // Scroll to the selected item
+      // Scroll to the selected item with improved performance
       const completionItemElement = document.querySelector(
         `.group[data-label="${items[newIndex].label}"]`
       )
       if (completionItemElement) {
+        // Use 'auto' instead of 'smooth' for better performance during rapid scrolling
         completionItemElement.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
+          behavior: "auto",
+          block: "nearest",
         })
       }
     } catch (error) {
@@ -207,6 +218,16 @@ export const FormulaEditor = ({
         `Error in handleArrow${direction === "up" ? "Up" : "Down"}:`,
         error
       )
+    }
+  }
+
+  const handleAiComplete = async (prompt: string) => {
+    console.log("handleAiComplete", prompt)
+    const tableFields = uiColumns.map((column) => column.name)
+    const result = await generateFormulaConfig(prompt, tableFields)
+    console.log("result", result)
+    if (result) {
+      setFormula(result.formula)
     }
   }
 
@@ -243,6 +264,10 @@ export const FormulaEditor = ({
           columns={uiColumns}
           udfs={udfs}
           height="100px"
+          placeholder="Enter a SQL expression or tap // to start an AI prompt"
+          onAiPromptModeChange={setIsAiPromptMode}
+          onAiComplete={handleAiComplete}
+          isGeneratingFormula={isGeneratingFormula}
         />
         <div className="flex justify-end gap-2 absolute top-[60px] right-2 z-10">
           <Button variant="outline" size="sm" onClick={closeEditor}>

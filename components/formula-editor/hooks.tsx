@@ -29,7 +29,9 @@ export interface UseEditorProps {
     ) => void,
     onArrowUp?: () => void,
     onArrowDown?: () => void,
-    onEnter?: () => void
+    onEnter?: () => void,
+    placeholder?: string,
+    disableAutocompletion?: boolean
   ) => EditorView
   language?: string
   theme?: "light" | "dark"
@@ -38,6 +40,9 @@ export interface UseEditorProps {
   onArrowUp?: () => void
   onArrowDown?: () => void
   onEnter?: () => void
+  onAiComplete?: (prompt: string) => void
+  placeholder?: string
+  disableAutocompletion?: boolean
 }
 
 /**
@@ -61,9 +66,14 @@ export function useEditor({
   onArrowUp,
   onArrowDown,
   onEnter,
+  onAiComplete,
+  placeholder,
+  disableAutocompletion,
 }: UseEditorProps) {
   // Track completion state
   const [isCompletionActive, setIsCompletionActive] = useState(false)
+  // Track AI prompt mode
+  const [isAiPromptMode, setIsAiPromptMode] = useState(false)
 
   // Add a flag to track if the editor is destroyed
   const isDestroyedRef = useRef(false)
@@ -75,6 +85,8 @@ export function useEditor({
       !initializedRef.current &&
       typeof window !== "undefined"
     ) {
+      isDestroyedRef.current = false
+
       const view = createEditorView(
         editorRef.current,
         value,
@@ -88,7 +100,10 @@ export function useEditor({
         onCurrentTokenChange,
         onArrowUp,
         onArrowDown,
-        onEnter
+        onEnter,
+        placeholder,
+        // Disable autocompletion if explicitly requested or if in AI prompt mode
+        disableAutocompletion || value.trim().startsWith("//")
       )
       editorViewRef.current = view
       initializedRef.current = true
@@ -170,9 +185,89 @@ export function useEditor({
     }
   }, [value])
 
+  // Check if content starts with // to enable AI prompt mode
+  useEffect(() => {
+    if (
+      editorViewRef.current &&
+      initializedRef.current &&
+      !isDestroyedRef.current
+    ) {
+      const content = editorViewRef.current.state.doc.toString()
+      const newAiPromptMode = content.trim().startsWith("//")
+
+      if (newAiPromptMode !== isAiPromptMode) {
+        setIsAiPromptMode(newAiPromptMode)
+
+        // If we're entering or exiting AI prompt mode, we need to recreate the editor
+        // to enable/disable autocompletion appropriately
+        if (editorRef.current) {
+          // Save current state
+          const currentValue = content
+          const currentCursor = editorViewRef.current.state.selection.main
+
+          // Check if editor was focused before recreation
+          const editorElement = editorViewRef.current.dom
+          const wasFocused =
+            document.activeElement === editorElement ||
+            editorElement.contains(document.activeElement)
+
+          // Destroy current editor
+          editorViewRef.current.destroy()
+
+          // Create new editor with appropriate autocompletion setting
+          const view = createEditorView(
+            editorRef.current,
+            currentValue,
+            onChange,
+            onSave,
+            columns,
+            udfs,
+            language,
+            onEsc,
+            height,
+            onCurrentTokenChange,
+            onArrowUp,
+            onArrowDown,
+            onEnter,
+            placeholder,
+            // Disable autocompletion if explicitly requested or if in AI prompt mode
+            disableAutocompletion || newAiPromptMode
+          )
+
+          // Restore cursor position
+          const validHead = Math.min(currentCursor.head, currentValue.length)
+          view.dispatch({
+            selection: { anchor: validHead, head: validHead },
+          })
+
+          editorViewRef.current = view
+
+          // Restore focus if the editor was focused before
+          if (wasFocused) {
+            // Use a single focus attempt with a small delay to avoid disrupting IME
+            try {
+              // Single focus attempt with slight delay to let DOM stabilize
+              setTimeout(() => {
+                console.log("focusing")
+                if (view && !isDestroyedRef.current) {
+                  view.focus();
+                }
+              }, 10);
+            } catch (error) {
+              console.error("Error restoring focus:", error);
+            }
+          }
+        }
+      }
+    }
+  }, [value, isAiPromptMode])
+
   // Add event listeners for ArrowUp and ArrowDown with improved completion detection
   useEffect(() => {
-    if (editorViewRef.current && (onArrowUp || onArrowDown || onEnter)) {
+    if (
+      editorViewRef.current &&
+      (onArrowUp || onArrowDown || onEnter || onAiComplete)
+    ) {
       const editorDOM = editorViewRef.current.dom
 
       const handleKeyDown = (event: KeyboardEvent) => {
@@ -181,8 +276,28 @@ export function useEditor({
           editorViewRef.current &&
           completionStatus(editorViewRef.current.state) !== null
 
-        // Skip custom key handling if completion is active
-        if (currentCompletionActive) {
+        // Handle Shift+Enter for AI completion in AI prompt mode
+        if (
+          event.key === "Enter" &&
+          event.shiftKey &&
+          isAiPromptMode &&
+          onAiComplete
+        ) {
+          event.preventDefault()
+          event.stopPropagation()
+
+          // Get the prompt text (remove the leading //)
+          const promptText = editorViewRef.current?.state.doc.toString().trim()
+          const cleanPrompt = promptText?.startsWith("//")
+            ? promptText.substring(2).trim()
+            : promptText
+
+          onAiComplete(cleanPrompt || "")
+          return false
+        }
+
+        // Skip custom key handling if completion is active and not in AI prompt mode
+        if (currentCompletionActive && !isAiPromptMode) {
           return true
         }
 
@@ -200,7 +315,7 @@ export function useEditor({
           return false
         }
 
-        if (event.key === "Enter" && onEnter) {
+        if (event.key === "Enter" && !event.shiftKey && onEnter) {
           event.preventDefault()
           event.stopPropagation()
           onEnter()
@@ -216,7 +331,14 @@ export function useEditor({
         })
       }
     }
-  }, [editorViewRef.current, onArrowUp, onArrowDown, onEnter])
+  }, [
+    editorViewRef.current,
+    onArrowUp,
+    onArrowDown,
+    onEnter,
+    onAiComplete,
+    isAiPromptMode,
+  ])
 
   // Update editor theme
   useEffect(() => {
@@ -232,4 +354,8 @@ export function useEditor({
       }
     }
   }, [theme])
+
+  return {
+    isAiPromptMode,
+  }
 }

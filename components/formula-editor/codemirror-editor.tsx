@@ -1,4 +1,4 @@
-import { forwardRef, useImperativeHandle, useRef } from "react"
+import { forwardRef, useEffect, useImperativeHandle, useRef } from "react"
 import { autocompletion } from "@codemirror/autocomplete"
 import { javascript } from "@codemirror/lang-javascript"
 import { sql } from "@codemirror/lang-sql"
@@ -9,7 +9,7 @@ import {
   syntaxTree,
 } from "@codemirror/language"
 import { EditorSelection } from "@codemirror/state"
-import { keymap } from "@codemirror/view"
+import { keymap, placeholder } from "@codemirror/view"
 import { tags } from "@lezer/highlight"
 import { EditorView, basicSetup } from "codemirror"
 
@@ -88,20 +88,29 @@ function createEditorView(
   onCurrentTokenChange?: (token: { text: string; type: string } | null) => void,
   onArrowUp?: () => void,
   onArrowDown?: () => void,
-  onEnter?: () => void
+  onEnter?: () => void,
+  placeholderText?: string,
+  disableAutocompletion?: boolean
 ): EditorView {
+  const conditionExtensions = !disableAutocompletion
+    ? [
+        getLanguageSupport(language),
+        autocompletion({
+          override: [
+            (context) => sqlCompletions(context, uiColumns || [], udfs || []),
+          ],
+        }),
+      ]
+    : []
+
   const view = new EditorView({
     doc: value,
     extensions: [
       basicSetup,
       EditorView.lineWrapping,
-      getLanguageSupport(language),
       syntaxHighlighting(syntaxHighlightingTheme),
-      autocompletion({
-        override: [
-          (context) => sqlCompletions(context, uiColumns || [], udfs || []),
-        ],
-      }),
+      placeholderText ? placeholder(placeholderText) : [],
+      ...conditionExtensions,
       EditorView.updateListener.of((update) => {
         if (update.docChanged) {
           onChange(update.state.doc.toString())
@@ -176,6 +185,10 @@ function createEditorView(
         "&.cm-focused .cm-selectionBackground": {
           backgroundColor: "hsl(var(--accent) / 0.3)",
         },
+        ".cm-placeholder": {
+          color: "hsl(var(--muted-foreground))",
+          fontStyle: "italic",
+        },
       }),
     ],
     parent: element,
@@ -197,6 +210,11 @@ export interface CodeMirrorFormulaEditorProps {
   onArrowUp?: () => void
   onArrowDown?: () => void
   onEnter?: () => void
+  onAiComplete?: (prompt: string) => void
+  placeholder?: string
+  disableAutocompletion?: boolean
+  onAiPromptModeChange?: (isAiPromptMode: boolean) => void
+  isGeneratingFormula?: boolean
 }
 
 /**
@@ -226,6 +244,11 @@ export const CodeMirrorFormulaEditor = forwardRef<
       onArrowUp,
       onArrowDown,
       onEnter,
+      onAiComplete,
+      placeholder,
+      disableAutocompletion,
+      onAiPromptModeChange,
+      isGeneratingFormula = false,
     },
     ref
   ) => {
@@ -315,7 +338,7 @@ export const CodeMirrorFormulaEditor = forwardRef<
       },
     }))
 
-    useEditor({
+    const { isAiPromptMode } = useEditor({
       editorRef,
       editorViewRef,
       initializedRef,
@@ -332,8 +355,32 @@ export const CodeMirrorFormulaEditor = forwardRef<
       onArrowUp,
       onArrowDown,
       onEnter,
+      onAiComplete,
+      placeholder,
+      disableAutocompletion,
     })
 
-    return <div ref={editorRef} className="w-full" />
+    useEffect(() => {
+      if (onAiPromptModeChange) {
+        onAiPromptModeChange(isAiPromptMode)
+      }
+    }, [isAiPromptMode])
+
+    return (
+      <div className="w-full relative">
+        <div ref={editorRef} className="w-full" />
+        {isAiPromptMode && !isGeneratingFormula && (
+          <div className="absolute bottom-0 left-2 text-xs text-muted-foreground p-1 bg-secondary rounded">
+            AI Mode (Shift+Enter to complete)
+          </div>
+        )}
+        {isGeneratingFormula && (
+          <div className="absolute bottom-0 left-2 text-xs text-muted-foreground p-1 bg-secondary rounded flex items-center gap-1">
+            <span className="animate-spin h-3 w-3 border-2 border-muted-foreground border-t-transparent rounded-full"></span>
+            <span>Generating formula...</span>
+          </div>
+        )}
+      </div>
+    )
   }
 )
