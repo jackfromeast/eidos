@@ -36,11 +36,23 @@ export const useSpace = () => {
 
   const deleteSpace = useCallback(
     async (spaceName: string) => {
-      await spaceFileSystem.remove(spaceName)
-      setLastOpenedDatabase("")
-      await updateSpaceList()
+      try {
+        await spaceFileSystem.remove(spaceName)
+        setLastOpenedDatabase("")
+
+        await new Promise(resolve => setTimeout(resolve, 100))
+
+        const spaceNames = await spaceFileSystem.list()
+        if (spaceNames.includes(spaceName)) {
+          console.warn(`Space ${spaceName} still exists after deletion attempt`)
+        }
+        setSpaceList(spaceNames)
+      } catch (error) {
+        console.error("Error deleting space:", error)
+        throw error
+      }
     },
-    [setLastOpenedDatabase, updateSpaceList]
+    [setLastOpenedDatabase, spaceFileSystem]
   )
 
   const rebuildIndex = useCallback(async () => {

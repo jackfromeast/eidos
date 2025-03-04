@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom"
 
 import { isDesktopMode } from "@/lib/env"
 import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
+import { useEngine } from "@/hooks/use-engine"
 import { useSpace } from "@/hooks/use-space"
 import {
   AlertDialog,
@@ -38,6 +39,7 @@ export function Settings() {
   const [confirmName, setConfirmName] = useState("")
   const [isRebuilding, setIsRebuilding] = useState(false)
   const [dataFolder, setDataFolder] = useState<string>("")
+  const { close } = useEngine()
 
   useEffect(() => {
     const loadDataFolder = async () => {
@@ -56,8 +58,8 @@ export function Settings() {
   const handleDelete = async () => {
     if (confirmName === space) {
       await deleteSpace(space)
+      close()
       navigate("/")
-      window.location.reload()
     } else {
       alert("The space name does not match.")
     }

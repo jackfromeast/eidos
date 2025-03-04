@@ -9,13 +9,13 @@ import {
 import { ScriptTableName, TreeTableName } from "@/lib/sqlite/const"
 import { ITreeNode } from "@/lib/store/ITreeNode"
 
+import { useEngine } from "./use-engine"
 import { useSqliteStore } from "./use-sqlite"
-import { isDesktopMode } from "@/lib/env"
-import { toast } from "@/components/ui/use-toast"
 
 export const useSqliteMetaTableSubscribe = () => {
   const { addNode } = useSqliteStore()
 
+  const { reload } = useEngine()
   useEffect(() => {
     const bc = new BroadcastChannel(EidosDataEventChannelName)
     const handler = async (ev: MessageEvent<EidosDataEventChannelMsg>) => {
@@ -40,17 +40,7 @@ export const useSqliteMetaTableSubscribe = () => {
             return _new[key] !== _old[key]
           })
           if (diff.includes('enabled') || diff.includes('code')) {
-            if (isDesktopMode) {
-              const { success } = await window.eidos.invoke("reload-data-space")
-              const { success: success2 } = await window.eidos.invoke("reload-query-worker")
-              const reloadDone = success && success2
-              if (!reloadDone) {
-                toast({
-                  title: "Reload compute engine failed",
-                  description: "Changing UDF may cause some table calculations to fail",
-                })
-              }
-            }
+            reload()
           }
         }
       }

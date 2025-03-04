@@ -4,7 +4,7 @@ import { BrowserWindow, Menu, Tray, app, dialog, ipcMain, nativeImage, shell } f
 import { log } from 'electron-log';
 import path from 'path';
 import { getConfigManager } from './config';
-import { getDataSpace, getOrSetDataSpace, reloadDataSpace } from './data-space';
+import { closeDataSpace, getDataSpace, getOrSetDataSpace, reloadDataSpace } from './data-space';
 import { initializePlayground } from './file-system/playground';
 import { getResourcePath } from './helper';
 import { ProtocolHandler } from './protocol-handler';
@@ -284,4 +284,8 @@ ipcMain.handle('reload-query-worker', async () => {
 
 ipcMain.handle('reload-data-space', async () => {
     return reloadDataSpace();
+});
+
+ipcMain.handle('close-data-space', async () => {
+    return closeDataSpace();
 });
