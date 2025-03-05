@@ -1,7 +1,7 @@
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react"
 import { IScript } from "@/worker/web-worker/meta-table/script"
 import { useLocalStorageState, useMount } from "ahooks"
-import { Code, Eye } from "lucide-react"
+import { Code, ExternalLink, Eye } from "lucide-react"
 import { useTheme } from "next-themes"
 import {
   useLoaderData,
@@ -11,6 +11,7 @@ import {
 
 import { compileCode } from "@/lib/v3/compiler"
 import { compileLexicalCode } from "@/lib/v3/lexical-compiler"
+import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
 import { Button } from "@/components/ui/button"
 import {
   ResizableHandle,
@@ -169,6 +170,7 @@ export const ScriptDetailPage = () => {
     [revalidator, script, toast, updateScript]
   )
   const { theme } = useTheme()
+  const { space } = useCurrentPathInfo()
 
   const manualSave = () => {
     editorRef.current?.save()
@@ -254,6 +256,23 @@ export const ScriptDetailPage = () => {
                   setLayoutMode(isPreviewMode ? "code" : "preview")
                 }
               />
+            )}
+            {script.type === "m_block" && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() =>
+                  window.open(
+                    `/${space}/standalone-blocks/${script.id}`,
+                    "_blank"
+                  )
+                }
+                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+                title="Open in standalone mode"
+              >
+                <span>Standalone</span>
+                <ExternalLink className="h-4 w-4" />
+              </Button>
             )}
             <ExtensionToolbar />
           </div>

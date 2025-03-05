@@ -1,6 +1,8 @@
 import { useState } from "react"
-import { Check, Plus, Trash2 } from "lucide-react"
+import { Check, ExternalLink, Plus, Trash2 } from "lucide-react"
 
+import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
+import { useGoto } from "@/hooks/use-goto"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -27,6 +29,8 @@ interface BindingsProps {
 }
 
 export const Bindings = ({ bindings, onUpdateBindings }: BindingsProps) => {
+  const { space } = useCurrentPathInfo()
+  const goto = useGoto()
   const [newBindingKey, setNewBindingKey] = useState("")
   const [newBindingValue, setNewBindingValue] = useState("")
   const [newBindingType, setNewBindingType] = useState<"table">("table")
@@ -57,6 +61,12 @@ export const Bindings = ({ bindings, onUpdateBindings }: BindingsProps) => {
       [key]: { type: "table" as const, value },
     }
     onUpdateBindings(newBindings)
+  }
+
+  const handleNavigateToTable = (tableName: string) => {
+    if (tableName) {
+      goto(space, tableName)
+    }
   }
 
   return (
@@ -90,6 +100,16 @@ export const Bindings = ({ bindings, onUpdateBindings }: BindingsProps) => {
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
+              {binding.value && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleNavigateToTable(binding.value)}
+                  title="Go to table"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                </Button>
+              )}
             </div>
           ))}
 
@@ -114,7 +134,9 @@ export const Bindings = ({ bindings, onUpdateBindings }: BindingsProps) => {
             />
             <TableSelector
               value={newBindingValue}
-              onSelect={setNewBindingValue}
+              onSelect={(value) =>
+                setNewBindingValue(newBindingValue === value ? "" : value)
+              }
             />
             <Button size="icon" onClick={handleAddBinding} variant="outline">
               {newBindingKey.trim() && newBindingValue.trim() ? (
