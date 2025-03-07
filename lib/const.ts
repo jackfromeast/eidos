@@ -68,6 +68,7 @@ export const DOMAINS = {
   IMAGE_PROXY: "https://proxy.eidos.space",
   LINK_PREVIEW: "https://link-preview.eidos.space",
   WIKI: "https://wiki.eidos.space",
+  DOWNLOAD: "https://eidos.space/download",
   ACTIVATION_SERVER: "https://active.eidos.space",
   EXTENSION_SERVER: "https://ext.eidos.space",
   API_AGENT_SERVER: "https://api.eidos.space",

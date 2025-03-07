@@ -35,15 +35,28 @@ export function UpdateStatusComponent() {
           <span>{t('nav.status.updateAvailable', { version: updateInfo?.version })}</span>
         </DropdownMenuItem>
       )}
+      {updateStatus === "checking" && (
+        <DropdownMenuItem disabled>
+          <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+          <span>{t('nav.status.checkingForUpdates')}</span>
+        </DropdownMenuItem>
+      )}
       {updateStatus === "not-available" && (
         <DropdownMenuItem disabled>
           <span>{t('nav.status.noUpdatesAvailable')}</span>
         </DropdownMenuItem>
       )}
-      <DropdownMenuItem onSelect={handleCheckForUpdates}>
-        <RefreshCw className="mr-2 h-4 w-4" />
-        <span>{t('nav.status.checkForUpdates')}</span>
-      </DropdownMenuItem>
+      {updateStatus === "error" && (
+        <DropdownMenuItem disabled>
+          <span>{t('nav.status.updateError')}</span>
+        </DropdownMenuItem>
+      )}
+      {updateStatus !== "checking" && (
+        <DropdownMenuItem onSelect={handleCheckForUpdates}>
+          <RefreshCw className="mr-2 h-4 w-4" />
+          <span>{t('nav.status.checkForUpdates')}</span>
+        </DropdownMenuItem>
+      )}
     </>
   )
 }

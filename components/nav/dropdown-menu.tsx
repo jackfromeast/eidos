@@ -1,3 +1,4 @@
+import { useState } from "react"
 import {
   CogIcon,
   CommandIcon,
@@ -9,15 +10,21 @@ import {
   MoreHorizontal,
   PackageIcon,
   ScanTextIcon,
-  Trash2Icon
+  Trash2Icon,
 } from "lucide-react"
-import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Link, useNavigate } from "react-router-dom"
 
-import { useExperimentConfigStore } from "@/apps/web-app/settings/experiment/store"
-import { DiscordIcon } from "@/components/icons/discord"
-import { NodeUpdateTime } from "@/components/nav/node-update-time"
+import { BGEM3 } from "@/lib/ai/llm_vendors/bge"
+import { DOMAINS } from "@/lib/const"
+import { EIDOS_VERSION, isDesktopMode } from "@/lib/env"
+import { useAppRuntimeStore } from "@/lib/store/runtime-store"
+import { useCurrentNode } from "@/hooks/use-current-node"
+import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
+import { useEmbedding } from "@/hooks/use-embedding"
+import { useHnsw } from "@/hooks/use-hnsw"
+import { useSqlite } from "@/hooks/use-sqlite"
+import { useVCardEmail } from "@/hooks/use-vcard-email"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -37,18 +44,11 @@ import {
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
-  DropdownMenuTrigger
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useCurrentNode } from "@/hooks/use-current-node"
-import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
-import { useEmbedding } from "@/hooks/use-embedding"
-import { useHnsw } from "@/hooks/use-hnsw"
-import { useSqlite } from "@/hooks/use-sqlite"
-import { useVCardEmail } from "@/hooks/use-vcard-email"
-import { BGEM3 } from "@/lib/ai/llm_vendors/bge"
-import { DOMAINS } from "@/lib/const"
-import { EIDOS_VERSION, isDesktopMode } from "@/lib/env"
-import { useAppRuntimeStore } from "@/lib/store/runtime-store"
+import { DiscordIcon } from "@/components/icons/discord"
+import { NodeUpdateTime } from "@/components/nav/node-update-time"
+import { useExperimentConfigStore } from "@/apps/web-app/settings/experiment/store"
 
 import { CopyShowHide } from "../copy-show-hide"
 import { NodeMoveInto } from "../node-menu/move-into"
@@ -254,7 +254,7 @@ export function NavDropdownMenu() {
               </>
             )}
             <DropdownMenuSeparator />
-            <Link to="/download">
+            <Link to={DOMAINS.DOWNLOAD}>
               <DropdownMenuItem>
                 <Download className="mr-2 h-4 w-4" />
                 <span>{t("common.download")}</span>
