@@ -16,6 +16,10 @@ export class FormulaField extends BaseField<TextCell, FormulaProperty> {
     return []
   }
 
+  get displayType() {
+    return this.column.property.displayType ?? FieldType.Text
+  }
+
   rawData2JSON(rawData: string) {
     return rawData
   }

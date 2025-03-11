@@ -17,7 +17,9 @@ import { IField } from "@/lib/store/interface"
 import { getTableIdByRawTableName } from "@/lib/utils"
 
 import { isInkServiceMode } from "@/lib/env"
+import { getFieldInstance } from "@/lib/fields"
 import { getShowColumns } from "./helper"
+import { useLookupContext } from "./views/grid/hooks/use-lookup-context"
 
 
 
@@ -214,9 +216,26 @@ export const useView = <T = any>(viewId: string) => {
 }
 
 export const useFileFields = () => {
-  const { tableName } = useContext(TableContext)
+  const { tableName, space } = useContext(TableContext)
   const { fields } = useTableFields(tableName)
+  const { contextMap } = useLookupContext(tableName, space)
+
+
+  const getFieldContext = useCallback(
+    (field: IField) => {
+      if (field.type === FieldType.Lookup) {
+        return contextMap[field.table_column_name]
+      }
+      return
+    },
+    [contextMap]
+  )
+
   return useMemo(() => {
-    return fields.filter((field) => field.type === FieldType.File)
-  }, [fields])
+    return fields.filter((field) => {
+      const fieldInstance = getFieldInstance(field, getFieldContext(field))
+      console.log("fieldInstance", fieldInstance, fieldInstance.displayType)
+      return fieldInstance?.displayType === FieldType.File
+    })
+  }, [fields, getFieldContext])
 }

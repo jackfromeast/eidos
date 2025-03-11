@@ -71,6 +71,11 @@ export class LookupField extends BaseField<
     return targetField
   }
 
+  get displayType(): FieldType {
+    if (!this.entityFieldInstance) return FieldType.Text
+    return this.entityFieldInstance.displayType
+  }
+
   rawData2JSON(rawData: any): any {
     const field = this.entityFieldInstance
     return field?.rawData2JSON(rawData as never) || null

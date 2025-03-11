@@ -69,6 +69,10 @@ export abstract class BaseField<CD, P, R = string, RC = any, FC = any>
     return field
   }
 
+  get displayType() {
+    return this.column.type
+  }
+
   // is this field can be transformed to another field
   get isTransformable() {
     return false
