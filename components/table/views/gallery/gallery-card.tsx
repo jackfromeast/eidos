@@ -124,6 +124,7 @@ export const GalleryCard = ({
                 item={item}
                 coverField={coverField}
                 coverPreview={properties?.coverPreview || ""}
+                fitContent={properties?.fitContent}
                 rawIdNameMap={rawIdNameMap}
               />
             </div>

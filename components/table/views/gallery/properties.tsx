@@ -1,13 +1,6 @@
 import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
-import {
-  BanIcon,
-  Columns,
-  FileText,
-  Grid3X3,
-  ImageIcon,
-  ToyBrickIcon,
-} from "lucide-react"
+import { BanIcon, FileText, ImageIcon, ToyBrickIcon } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { z } from "zod"
@@ -34,11 +27,13 @@ import { useFileFields, useView, useViewOperation } from "../../hooks"
 export interface IGalleryViewProperties {
   hideEmptyFields?: boolean
   coverPreview?: null | string | "content" | "cover"
+  fitContent?: boolean
 }
 
 const formSchema = z.object({
   hideEmptyFields: z.boolean().optional(),
   coverPreview: z.any().optional(),
+  fitContent: z.boolean().optional(),
 })
 
 const PreviewButton = ({
@@ -103,6 +98,7 @@ export const GalleryViewProperties = (props: { viewId: string }) => {
     defaultValues: {
       hideEmptyFields: view?.properties?.hideEmptyFields,
       coverPreview: view?.properties?.coverPreview,
+      fitContent: view?.properties?.fitContent || false,
     },
   })
   const { mblocks } = useAllMblocks()
@@ -221,6 +217,29 @@ export const GalleryViewProperties = (props: { viewId: string }) => {
                   </PopoverContent>
                 </Popover>
               </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        ></FormField>
+        <FormField
+          control={form.control}
+          name="fitContent"
+          render={({ field }) => (
+            <FormItem className="flex items-center justify-between rounded-md p-1 hover:bg-secondary">
+              <FormLabel>{t("table.view.gallery.fitContent")}</FormLabel>
+              <Switch
+                checked={field.value}
+                onCheckedChange={(checked) => {
+                  field.onChange(checked)
+                  updateView(props.viewId, {
+                    properties: {
+                      ...view.properties,
+                      fitContent: checked,
+                    },
+                  })
+                }}
+                className="!mt-0"
+              />
               <FormMessage />
             </FormItem>
           )}

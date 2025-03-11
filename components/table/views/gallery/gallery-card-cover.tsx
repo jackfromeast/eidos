@@ -3,6 +3,7 @@ import { useEffect, useState } from "react"
 import { FileField } from "@/lib/fields/file"
 import { IField } from "@/lib/store/interface"
 import {
+  cn,
   getBlockIdFromUrl,
   getBlockUrlWithParams,
   shortenId,
@@ -17,6 +18,7 @@ interface GalleryCardCoverProps {
   item: any
   coverField?: IField
   coverPreview?: string
+  fitContent?: boolean
   rawIdNameMap: Map<string, string>
 }
 
@@ -25,6 +27,7 @@ export const GalleryCardCover = ({
   coverField,
   coverPreview,
   rawIdNameMap,
+  fitContent,
 }: GalleryCardCoverProps) => {
   const getCoverUrl = (row: any, field?: IField) => {
     if (!field) return ""
@@ -68,7 +71,14 @@ export const GalleryCardCover = ({
   if (coverPreview?.startsWith("cl_")) {
     const coverUrl = getCoverUrl(item, coverField)
     return (
-      <img src={coverUrl} alt="" className="h-[200px] w-full object-cover" />
+      <img
+        src={coverUrl}
+        alt=""
+        className={cn(
+          "h-[200px] w-full",
+          fitContent ? "object-contain" : "object-cover"
+        )}
+      />
     )
   }
 
