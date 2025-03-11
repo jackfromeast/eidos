@@ -189,33 +189,35 @@ export const FileCellEditor: ReturnType<
         })}
       </DndProvider>
       {cell.data.displayData.length > 0 && <Separator className="my-1" />}
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="ghost"
-            className="w-full"
-            // onClick={showUploadFilePicker}
-          >
-            add new
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent
-          className="click-outside-ignore w-auto p-0"
-          container={container}
-        >
-          <FileSelector
-            onSelected={(url) => {
-              addUrls([url])
-              setOpen(false)
-            }}
-            onRemove={() => {}}
-            disableColor
-            hideRemove
-            height={300}
-          ></FileSelector>
-        </PopoverContent>
-      </Popover>
 
+      {!cell.readonly && (
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="ghost"
+              className="w-full"
+              // onClick={showUploadFilePicker}
+            >
+              add new
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent
+            className="click-outside-ignore w-auto p-0"
+            container={container}
+          >
+            <FileSelector
+              onSelected={(url) => {
+                addUrls([url])
+                setOpen(false)
+              }}
+              onRemove={() => {}}
+              disableColor
+              hideRemove
+              height={300}
+            ></FileSelector>
+          </PopoverContent>
+        </Popover>
+      )}
       {currentPreviewIndex > -1 && (
         <FilePreview
           url={currentPreview}

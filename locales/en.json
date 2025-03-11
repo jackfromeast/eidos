@@ -466,6 +466,7 @@
     "table.view.gallery": "Gallery",
     "table.view.gallery.content": "Content",
     "table.view.gallery.coverPreview": "Cover preview",
+    "table.view.gallery.fitContent": "Fit Content",
     "table.view.gallery.hideEmptyFields": "Hide empty fields",
     "table.view.gallery.none": "None",
     "table.view.grid": "Grid",

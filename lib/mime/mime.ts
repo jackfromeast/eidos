@@ -186,8 +186,10 @@ populateMaps(extensions, types)
 export const getFileType = (
   url: string
 ): boolean | string | "image" | "audio" | "video" => {
+  if (url?.startsWith("data:")) {
+    return "image"
+  }
   let fileType = lookup(url)
-
   if (!fileType) return false
   fileType = (fileType as string).split("/")[0]
   return fileType

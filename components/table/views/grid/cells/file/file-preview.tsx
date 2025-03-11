@@ -45,12 +45,30 @@ export const FilePreview = ({
       }}
     >
       {type === "image" && (
-        <img
-          src={url}
-          alt="preview"
-          onClick={(e) => e.stopPropagation()} // Add this line
-          style={{ maxWidth: "80%", maxHeight: "80%" }}
-        />
+        <div
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            backgroundColor: "white",
+            padding: "20px",
+            borderRadius: "8px",
+            maxWidth: "80%",
+            maxHeight: "80vh",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            overflow: "hidden",
+          }}
+        >
+          <img
+            src={url}
+            alt="preview"
+            style={{
+              maxWidth: "100%",
+              maxHeight: "calc(80vh - 40px)",
+              objectFit: "contain",
+            }}
+          />
+        </div>
       )}
       {type === "audio" && (
         <audio

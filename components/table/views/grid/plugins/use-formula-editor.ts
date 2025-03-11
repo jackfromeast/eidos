@@ -5,6 +5,7 @@ import { IField } from "@/lib/store/interface";
 import { DataEditorRef, GridSelection, Item } from "@glideapps/glide-data-grid";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { defaultConfig } from "../helper";
+import { getFieldInstance } from "@/lib/fields";
 
 
 export const useFormulaEditor = (
@@ -28,25 +29,25 @@ export const useFormulaEditor = (
                 selection.current.cell[1]
             );
             const newTop = (defaultConfig.rowHeight as number) + (bounds?.y as number) + 8;
-            
+
             if (bounds && formulaEditorRef.current) {
                 // Get editor dimensions
                 const editorWidth = formulaEditorRef.current.offsetWidth;
                 const editorHeight = formulaEditorRef.current.offsetHeight;
-                
+
                 // Get viewport dimensions
                 const viewportWidth = window.innerWidth;
                 const viewportHeight = window.innerHeight;
-                
+
                 // Calculate positions ensuring editor stays within viewport
                 let left = bounds.x;
                 let top = newTop;
-                
+
                 // Adjust horizontal position if needed
                 if (left + editorWidth > viewportWidth) {
                     left = Math.max(0, viewportWidth - editorWidth);
                 }
-                
+
                 // Adjust vertical position if needed
                 if (top + editorHeight > viewportHeight) {
                     // Try to position above the cell if there's not enough space below
@@ -58,7 +59,7 @@ export const useFormulaEditor = (
                         top = Math.max(0, viewportHeight - editorHeight);
                     }
                 }
-                
+
                 // Add smooth transition for position changes
                 formulaEditorRef.current.style.transition = 'left 0.15s ease-out, top 0.15s ease-out';
                 formulaEditorRef.current.style.left = `${left}px`;
@@ -80,12 +81,12 @@ export const useFormulaEditor = (
             const handleResize = () => {
                 refreshEditorPosition();
             };
-            
+
             window.addEventListener('resize', handleResize);
-            
+
             // Initial positioning
             refreshEditorPosition();
-            
+
             return () => {
                 window.removeEventListener('resize', handleResize);
             };
@@ -110,7 +111,7 @@ export const useFormulaEditor = (
     const onCellActivated = useCallback(
         (cell: Item) => {
             const column = showColumns[cell[0]];
-            const open = column.type === FieldType.Formula
+            const open = column.type === FieldType.Formula && getFieldInstance(column)?.displayType !== FieldType.File
             setIsActiveFormulaCell(open);
         },
         [showColumns, glideDataGridRef, formulaEditorRef]

@@ -54,8 +54,30 @@ export class FileField extends BaseField<FileCell, FileProperty, string> {
     })
   }
 
+  private encodeComma(str: string) {
+    // Don't encode data URI
+    if (str.startsWith('data:')) return str
+    return str.replace(/,/g, '%2C')
+  }
+
+  private decodeComma(str: string) {
+    // Don't decode data URI
+    if (str.startsWith('data:')) return str
+    return str.replace(/%2C/g, ',')
+  }
+
   getCellContent(rawData: string): FileCell {
-    const data = rawData?.split(",").filter(Boolean) ?? []
+    // First handle data URIs, then handle normal files
+    const data = rawData
+      ? rawData.match(/(?:data:[^,]+,[^,]+(?:,(?=[^,]*:))?|[^,]+)/g)
+        ?.filter(Boolean)
+        .map(item => {
+          // Don't decode data URIs
+          if (item.startsWith('data:')) return item.trim()
+          // Decode encoded commas in normal files
+          return this.decodeComma(item.trim())
+        }) ?? []
+      : []
     return {
       kind: GridCellKind.Custom,
       data: {
@@ -72,7 +94,9 @@ export class FileField extends BaseField<FileCell, FileProperty, string> {
 
   cellData2RawData(cell: FileCell) {
     return {
-      rawData: cell.data.data?.join(",") || null,
+      rawData: cell.data.data
+        ?.map(item => this.encodeComma(item))
+        .join(",") || null,
     }
   }
 }
