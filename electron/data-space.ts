@@ -113,7 +113,7 @@ export class DataSpaceManager {
                 setInterval,
             },
             hasLoadExtension: true,
-            dataEventChannel: new BroadcastChannel(EidosDataEventChannelName)
+            dataEventChannel: new BroadcastChannel('draft-data-event-channel')
         });
 
         const efsManager = await getEidosFileSystemManager();
