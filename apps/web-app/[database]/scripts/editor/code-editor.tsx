@@ -11,7 +11,7 @@ import {
 import { IScript } from "@/worker/web-worker/meta-table/script"
 import Editor, { DiffEditor, loader, useMonaco } from "@monaco-editor/react"
 import { useSize } from "ahooks"
-import { debounce } from "lodash"
+import debounce from "lodash/debounce"
 import * as monaco from "monaco-editor"
 import editorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker"
 import tsWorker from "monaco-editor/esm/vs/language/typescript/ts.worker?worker"

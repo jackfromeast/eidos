@@ -1,3 +1,4 @@
+import { useMemo, useState } from "react"
 import { IScript } from "@/worker/web-worker/meta-table/script"
 import { useMount } from "ahooks"
 import {
@@ -8,11 +9,11 @@ import {
   ShapesIcon,
   SparkleIcon,
   SquareCodeIcon,
-  ToyBrickIcon
+  ToyBrickIcon,
 } from "lucide-react"
-import { useMemo, useState } from "react"
 import { useLoaderData, useRevalidator } from "react-router-dom"
 
+import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -27,7 +28,6 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
 import { useToast } from "@/components/ui/use-toast"
-import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
 
 import { NewExtensionButton } from "./components/NewExtensionButton"
 import { ScriptCard } from "./components/ScriptCard"
@@ -38,18 +38,18 @@ import { useScript } from "./hooks/use-script"
 import { InstallScript } from "./install"
 
 const extensionTypes = [
-  {
-    id: "app",
-    name: "App",
-    icon: AppWindowIcon,
-    isGlobal: true,
-  },
-  {
-    id: "block",
-    name: "Block",
-    icon: ShapesIcon,
-    isGlobal: true,
-  },
+  // {
+  //   id: "app",
+  //   name: "App",
+  //   icon: AppWindowIcon,
+  //   isGlobal: true,
+  // },
+  // {
+  //   id: "block",
+  //   name: "Block",
+  //   icon: ShapesIcon,
+  //   isGlobal: true,
+  // },
   {
     id: "script",
     name: "Script",
@@ -263,9 +263,9 @@ export const ScriptPage = () => {
                     <div className="flex items-center gap-2">
                       <Icon size={18} className=" opacity-60" />
                       {type.name}{" "}
-                      {type.isGlobal && (
+                      {/* {type.isGlobal && (
                         <Badge variant="secondary">Global</Badge>
-                      )}
+                      )} */}
                     </div>
                   </SelectItem>
                 )

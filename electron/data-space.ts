@@ -143,6 +143,7 @@ export class DataSpaceManager {
             dataEventChannel: bc,
             efsManager: efsManager,
             draftDb: draftDataSpace,
+            enableFTS: true
         });
 
         return this.dataSpace;

@@ -13,7 +13,7 @@ const inkConfig: UserConfig = mergeConfig(sharedConfig, {
   },
   server: {
     proxy: {
-      "/server/api": "http://localhost:8000",
+      "/server/api": "http://localhost:8080",
     },
   },
 })

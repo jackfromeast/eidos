@@ -27,6 +27,11 @@ const coreConfig: UserConfig = {
         generatedCode: 'es2015',
         minifyInternalExports: false,
         banner: `import { Buffer } from "node:buffer";`
+      },
+      treeshake: {
+        moduleSideEffects: false,
+        propertyReadSideEffects: false,
+        tryCatchDeoptimization: false
       }
     },
     outDir: 'packages/core',

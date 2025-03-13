@@ -2,7 +2,7 @@
 
 import { useCallback } from "react"
 import type { DataSpace } from "@/worker/web-worker/DataSpace"
-import { orderBy } from "lodash"
+import orderBy from "lodash/orderBy"
 import { create } from "zustand"
 
 import { TreeTableName } from "@/lib/sqlite/const"

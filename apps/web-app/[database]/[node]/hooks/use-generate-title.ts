@@ -4,7 +4,7 @@ import { useAiConfig } from "@/hooks/use-ai-config"
 import { toast } from "@/components/ui/use-toast"
 import { uuidv7 } from "@/lib/utils"
 import { TaskType } from "@/apps/web-app/settings/ai/hooks"
-import { useState, useCallback, useRef } from "react"
+import { useState, useCallback, useRef, useMemo } from "react"
 
 export function useGenerateTitle() {
     const { t } = useTranslation()
@@ -12,6 +12,14 @@ export function useGenerateTitle() {
     const model = findAvailableModel(TaskType.Translation)
     const [title, setTitle] = useState("")
     const resolveRef = useRef<((value: string) => void) | null>(null)
+
+    const config = useMemo(() => {
+        try {
+            return getConfigByModel(model)
+        } catch (error) {
+            return {}
+        }
+    }, [model])
 
     const { setMessages, reload, isLoading } = useChat({
         onError(error) {
@@ -22,7 +30,7 @@ export function useGenerateTitle() {
             resolveRef.current?.("")
         },
         body: {
-            ...getConfigByModel(model),
+            ...config,
             model,
             useTools: false,
         },

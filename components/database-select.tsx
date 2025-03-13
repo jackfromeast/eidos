@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { kebabCase } from "lodash"
+import kebabCase from "lodash/kebabCase"
 import { Check, ChevronsUpDown, PlusCircle } from "lucide-react"
 import { useTranslation } from "react-i18next"
 

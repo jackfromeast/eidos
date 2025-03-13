@@ -1,4 +1,4 @@
-import { zip } from "lodash"
+import zip from "lodash/zip"
 
 import { LinkCell } from "@/components/table/views/grid/cells/link/link-cell"
 

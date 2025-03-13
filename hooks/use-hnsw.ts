@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react"
 import { DataSpace } from "@/worker/web-worker/DataSpace"
 import { IEmbedding } from "@/worker/web-worker/meta-table/embedding"
-import { chunk } from "lodash"
+import chunk from "lodash/chunk"
 import zip from "lodash/zip"
 
 import { DocLoader } from "@/lib/ai/doc_loader/doc"

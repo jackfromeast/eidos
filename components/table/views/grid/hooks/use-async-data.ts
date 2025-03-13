@@ -9,7 +9,8 @@ import {
   Item,
   Rectangle,
 } from "@glideapps/glide-data-grid"
-import { chunk, range } from "lodash"
+import chunk from "lodash/chunk"
+import range from "lodash/range"
 import {
   MutableRefObject,
   useCallback,
