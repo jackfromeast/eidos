@@ -8195,6 +8195,35 @@ declare module "@eidos.space/types" {
     export interface Eidos {
         space(spaceName: string): DataSpace;
         currentSpace: DataSpace;
+        /**
+         * Script functionality
+         */
+        script: {
+            /**
+             * Call a specific script
+             * @param scriptId The script ID
+             * @param args Arguments to pass to the script
+             * @returns The result of the script execution
+             */
+            call(scriptId: string, ...args: any[]): Promise<any>;
+        };
+        /**
+         * AI-related functionality
+         */
+        AI: {
+            /**
+             * Generate text using AI
+             * @param options Generation options including model and prompt
+             * @param options.model The AI model to use
+             * @param options.prompt The prompt text
+             * @returns The generated text
+             */
+            generateText(options: {
+                model?: string;
+                prompt: string;
+                [key: string]: any;
+            }): Promise<string>;
+        };
         utils: {
             /**
              * we can't use fetch directly in the iframe, so we need to use this method to fetch resource
