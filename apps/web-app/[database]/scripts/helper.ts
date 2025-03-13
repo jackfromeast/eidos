@@ -3,6 +3,7 @@ import z from "zod"
 import { toast } from "@/components/ui/use-toast"
 import { IScript } from "@/worker/web-worker/meta-table/script"
 import { generateId, proxyURL } from "@/lib/utils"
+// @ts-ignore
 import eidosTypes from "@eidos.space/types/index.d.ts?raw"
 
 import { parse } from "comment-parser"

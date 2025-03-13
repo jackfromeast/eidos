@@ -8,18 +8,37 @@
     "target": "es6",
     "module": "esnext",
     "skipLibCheck": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable", "WebWorker"],
+    "lib": [
+      "ES2020",
+      "DOM",
+      "DOM.Iterable",
+      "WebWorker"
+    ],
     "downlevelIteration": true,
     "esModuleInterop": true,
     "moduleResolution": "node",
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"],
+      "@/*": [
+        "./*"
+      ],
       // "@sqlite.org/sqlite-wasm": ["./types/sql.d.ts"],
-      "react": ["./node_modules/react/index.d.ts"]
+      "react": [
+        "./node_modules/react/index.d.ts"
+      ],
+      "*?raw": [
+        "./lib/types/vite-raw.d.ts"
+      ]
     }
   },
-  "include": ["lib/types/global.d.ts", "worker/web-worker/sdk/index.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "lib/types/global.d.ts",
+    "worker/web-worker/sdk/index.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "components/ui",
+    "**/*.?raw.ts"
+  ]
 }

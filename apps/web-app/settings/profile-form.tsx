@@ -99,7 +99,7 @@ export function ProfileForm() {
               <FormItem>
                 <Avatar
                   className="h-[64px] w-[64px]"
-                  onClick={() => handleChangeAvatar(field)}
+                  onClick={() => handleChangeAvatar(field as any)}
                 >
                   <AvatarImage src={field.value} className=" object-cover" />
                   <AvatarFallback>

@@ -50,15 +50,15 @@ export class SQLiteUndoRedo {
     this.undo.freeze = -1
   }
 
-  public freeze(): void {
+  public async freeze(): Promise<void> {
     if (!this.undo.freeze) return
 
     if (this.undo.freeze >= 0)
       throw new Error("recursive call to SQLiteUndoRedo.freeze")
 
-    this.undo.freeze = this.db
+    const result = await this.db
       ?.execute("SELECT coalesce(max(seq),0) FROM undolog")
-      .fetchone()[0]
+    this.undo.freeze = result.fetchone()[0]
   }
 
   public unfreeze(): void {
@@ -86,9 +86,9 @@ export class SQLiteUndoRedo {
       return
     }
 
-    const end = this.db
+    const result = await this.db
       .execute("SELECT coalesce(max(seq),0) FROM undolog")
-      .fetchone()[0]
+    const end = result.fetchone()[0]
 
     this.undo.undostack.push({
       begin: this.undo.firstlog,
@@ -189,29 +189,34 @@ export class SQLiteUndoRedo {
     }
   }
 
-  private _start_interval(): void {
-    const begin = this.db
+  private async _start_interval(): Promise<void> {
+    const result = await this.db
       .execute("SELECT coalesce(max(seq),0)+1 FROM undolog")
-      .fetchone()[0]
+    const begin = result.fetchone()[0]
     if (begin > this.undo.firstlog) {
       this.undo.firstlog = begin
     }
   }
 
-  private _step(from: StackEntry[], to: StackEntry[]): void {
+  private async _step(from: StackEntry[], to: StackEntry[]): Promise<void> {
     if (from.length === 0) return
     const { begin, end } = from.pop()!
-    const newBegin = this.db
+
+    const beginResult = await this.db
       .execute("SELECT coalesce(max(seq),0)+1 FROM undolog")
-      .fetchone()[0]
+    const newBegin = beginResult.fetchone()[0]
+
     const q1 = `SELECT sql FROM undolog WHERE seq>=${begin} AND seq<=${end} ORDER BY seq DESC`
-    const rows = this.db.execute(q1).fetchall()
-    const sql = rows.map((row) => row[0]).join(";\n")
+    const rowsResult = await this.db.execute(q1)
+    const rows = rowsResult.fetchall()
+    const sql = rows.map((row: any) => row[0]).join(";\n")
+
     // use exec wont trigger event
     this.db.exec(sql)
-    const newEnd = this.db
+
+    const endResult = await this.db
       .execute("SELECT coalesce(max(seq),0) FROM undolog")
-      .fetchone()[0]
+    const newEnd = endResult.fetchone()[0]
 
     to.push({
       begin: newBegin,

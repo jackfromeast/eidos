@@ -3,8 +3,11 @@ import { createOpenAI } from "@ai-sdk/openai";
 import { embed, embedMany } from 'ai';
 import { useAiConfig } from "./use-ai-config";
 
-
-export const useEmbedding = () => {
+export const useEmbedding = (): {
+    embedding: (text: string) => Promise<number[] | undefined>;
+    hasEmbeddingModel: boolean;
+    embeddingTexts: (text: string[]) => Promise<number[][] | undefined>;
+} => {
     const { getConfigByModel } = useAiConfig()
 
     const { aiConfig: { embeddingModel } } = useAIConfigStore()

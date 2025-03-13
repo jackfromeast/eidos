@@ -99,12 +99,12 @@ export const OpSelector = ({
         <SelectValue placeholder="Field" />
       </SelectTrigger>
       <SelectContent position="popper">
-        <SelectItem value={BinaryOperator.And} hidecheckicon className="pl-2">
+        <SelectItem value={BinaryOperator.And} className="pl-2">
           <span className="flex items-center gap-2 text-sm">
             {t("table.view.and")}
           </span>
         </SelectItem>
-        <SelectItem value={BinaryOperator.Or} hidecheckicon className="pl-2">
+        <SelectItem value={BinaryOperator.Or} className="pl-2">
           <span className="flex items-center gap-2 text-sm">
             {t("table.view.or")}
           </span>

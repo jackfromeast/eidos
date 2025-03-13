@@ -33,7 +33,7 @@ export const FieldCompareSelector = ({
       <SelectContent position="popper">
         {fieldCompareOperators.map((op) => {
           return (
-            <SelectItem value={op} key={op} hidecheckicon className="pl-2">
+            <SelectItem value={op} key={op} className="pl-2">
               <span className="flex items-center gap-2">{op}</span>
             </SelectItem>
           )

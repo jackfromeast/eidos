@@ -23,7 +23,6 @@
     "typecheck": "tsc --noEmit",
     "format:write": "prettier --write \"**/*.{ts,tsx,mdx}\" --cache",
     "format:check": "prettier --check \"**/*.{ts,tsx,mdx}\" --cache",
-    "gen-types": "tsc -p tsconfig.typings.json && tsx scripts/fix-types.ts",
     "patch": "node scripts/version.cjs patch",
     "minor": "node scripts/version.cjs minor",
     "major": "node scripts/version.cjs major",
@@ -34,7 +33,8 @@
     "pkg:desktop:dev": "cross-env BUILD_MODE=1 electron-builder --publish never --config electron/electron-builder.dev.json",
     "postinstall": "electron-builder install-app-deps",
     "download-libsimple": "node scripts/download-libsimple.cjs",
-    "build:core": "cross-env EIDOS_SERVICE_MODE=core vite build"
+    "build:core": "cross-env EIDOS_SERVICE_MODE=core vite build",
+    "build:types": "tsc -p tsconfig.typings.json && tsx scripts/fix-types.ts"
   },
   "start": "electron .",
   "main": "dist-electron/main.js",

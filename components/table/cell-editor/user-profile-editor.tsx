@@ -11,6 +11,7 @@ export const UserProfileEditor = ({ value }: IUserProfileEditorProps) => {
   const { userMap } = useUserMap()
   const user = userMap[value] || {
     name: "unknown",
+    avatar: "",
   }
   return (
     <div className="not-prose flex items-center gap-2">
