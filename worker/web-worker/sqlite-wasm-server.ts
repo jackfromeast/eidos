@@ -143,7 +143,8 @@ export class SqliteServer {
       context: {
         setInterval: setInterval,
       },
-      dataEventChannel: new BroadcastChannel(`${EidosDataEventChannelName}-draft`)
+      dataEventChannel: new BroadcastChannel(`${EidosDataEventChannelName}-draft`),
+      isUDFWithCtx: true
     })
   }
 
@@ -199,7 +200,8 @@ export class SqliteServer {
       context: {
         setInterval: setInterval,
       },
-      dataEventChannel: new BroadcastChannel(EidosDataEventChannelName)
+      dataEventChannel: new BroadcastChannel(EidosDataEventChannelName),
+      isUDFWithCtx: true
     })
   }
 }

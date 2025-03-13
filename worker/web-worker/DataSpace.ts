@@ -98,7 +98,7 @@ export class DataSpace {
   // for auto migration
   hasMigrated = false
   tableFullTextSearch: TableFullTextSearch
-  isServer = false
+  isUDFWithCtx = false
   constructor(config: {
     db: EidosDatabase
     activeUndoManager: boolean
@@ -114,12 +114,12 @@ export class DataSpace {
     efsManager?: EidosFileSystemManager
     dataEventChannel: BroadcastChannel,
     cacheSize?: number
-    isServer?: boolean
+    isUDFWithCtx?: boolean
   }) {
-    const { db, activeUndoManager, dbName, draftDb, context, createUDF, postMessage, efsManager, dataEventChannel, hasLoadExtension, callRenderer, cacheSize, isServer } = config
+    const { db, activeUndoManager, dbName, draftDb, context, createUDF, postMessage, efsManager, dataEventChannel, hasLoadExtension, callRenderer, cacheSize, isUDFWithCtx } = config
     this.db = db
 
-    this.isServer = isServer || db instanceof BaseServerDatabase
+    this.isUDFWithCtx = Boolean(isUDFWithCtx)
     this.hasLoadExtension = Boolean(hasLoadExtension)
     if (cacheSize) {
       this.setCacheSize(cacheSize)
@@ -216,7 +216,7 @@ export class DataSpace {
   private initUDF() {
     const allUfs = withSqlite3AllUDF(this.dataEventChannel)
     // system functions
-    if (this.isServer) {
+    if (!this.isUDFWithCtx) {
       allUfs.ALL_UDF_NO_CTX.forEach((udf) => {
         this.db.createFunction(udf as any)
       })

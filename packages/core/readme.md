@@ -80,7 +80,6 @@ const dataSpace = new DataSpace({
   },
   // TODO: Filesystem manager implementation
   efsManager: new EidosFileSystemManager(),
-  isServer: true,
 })
 
 // 3. Use DataSpace APIs
