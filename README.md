@@ -79,7 +79,7 @@ Eidos is built around several core modules that are iteratively developed. Docum
   - [ ] Publish Service: Publish your data to the web.
   - [ ] P2p sync based on CRDT: local-first, not local-only. Sync your data across devices.
 
-Check [changelogs](./docs/changelogs.md) for more details.
+Check [changelogs](./docs/changelogs/index.md) for more details.
 
 ## Contributors
 
