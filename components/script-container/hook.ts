@@ -1,17 +1,9 @@
 import { useAppRuntimeStore } from "@/lib/store/runtime-store"
-import { callPythonScript } from "./helper"
+import { callJavaScript, callPythonScript } from "./helper"
+import { IScriptContext } from "components/script-container/hook"
+import { IScriptInput } from "components/script-container/hook"
 
-type IScriptInput = Record<string, any>
 
-interface IScriptContext {
-  tables: any
-  env: Record<string, any>
-  currentNodeId?: string | null
-  currentRowId?: string | null
-  currentViewId?: string | null
-  currentViewQuery?: string | null
-  callFromTableAction?: boolean
-}
 
 export const useScriptFunction = () => {
   const { scriptContainerRef, setRunningCommand } = useAppRuntimeStore()
@@ -30,10 +22,10 @@ export const useScriptFunction = () => {
     setRunningCommand(command)
 
     try {
-      const result = props.type === "py_script" 
+      const result = props.type === "py_script"
         ? await callPythonScript(props)
         : await callJavaScript(props, scriptContainerRef)
-      
+
       setRunningCommand(null)
       return result
     } catch (error) {
@@ -47,40 +39,6 @@ export const useScriptFunction = () => {
   }
 }
 
-// Helper function to handle JavaScript execution
-const callJavaScript = (
-  props: {
-    input: IScriptInput
-    context: IScriptContext
-    code: string
-    command: string
-    id: string
-    bindings?: Record<string, any>
-  },
-  scriptContainerRef: any
-): Promise<any> => {
-  const channel = new MessageChannel()
-  
-  scriptContainerRef?.current?.contentWindow?.postMessage(
-    {
-      type: "ScriptFunctionCall",
-      data: props,
-    },
-    "*",
-    [channel.port2]
-  )
-
-  return new Promise((resolve, reject) => {
-    channel.port1.onmessage = (event) => {
-      const { type, data } = event.data
-      if (type === "ScriptFunctionCallResponse") {
-        resolve(data)
-      } else if (type === "ScriptFunctionCallError") {
-        reject(data)
-      }
-    }
-  })
-}
 
 export const useCallScript = () => {
   const { callFunction } = useScriptFunction()

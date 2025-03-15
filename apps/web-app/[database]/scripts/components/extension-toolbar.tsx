@@ -1,14 +1,11 @@
-import { useCallback, useRef, useState } from "react"
 import { IScript } from "@/worker/web-worker/meta-table/script"
 import { useMount } from "ahooks"
-import { BlendIcon, Copy } from "lucide-react"
+import { BlendIcon, Copy, Play } from "lucide-react"
+import { useCallback, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useLoaderData, useNavigate, useRevalidator } from "react-router-dom"
 
-import { isDesktopMode } from "@/lib/env"
-import { compileCode } from "@/lib/v3/compiler"
-import { openCursor } from "@/lib/web/schema"
-import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
+import { usePlayground } from "@/apps/desktop/hooks/usePlayground"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -21,7 +18,12 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { useToast } from "@/components/ui/use-toast"
-import { usePlayground } from "@/apps/desktop/hooks/usePlayground"
+import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
+import { useScriptCall } from "@/hooks/use-script-call"
+import { isDesktopMode } from "@/lib/env"
+import { useAppRuntimeStore } from "@/lib/store/runtime-store"
+import { compileCode } from "@/lib/v3/compiler"
+import { openCursor } from "@/lib/web/schema"
 
 import { useRemixPrompt } from "../hooks/use-remix-prompt"
 import { useScript } from "../hooks/use-script"
@@ -35,6 +37,7 @@ export const ExtensionToolbar = () => {
   const editorRef = useRef<{ save: () => void; layout: () => void }>(null)
   const revalidator = useRevalidator()
 
+  const { callScript } = useScriptCall()
   useMount(() => {
     revalidator.revalidate()
   })
@@ -104,6 +107,8 @@ export const ExtensionToolbar = () => {
     setIsRemixMode(!isRemixMode)
   }, [isRemixMode, setIsRemixMode])
 
+  const { scriptContainerRef } = useAppRuntimeStore()
+
   const handleOpenInCursor = useCallback(async () => {
     const remixPrompt = await getRemixPrompt(script.bindings)
     initializePlayground(space, script.id, [
@@ -131,6 +136,10 @@ export const ExtensionToolbar = () => {
     getRemixPrompt,
     initializePlayground,
   ])
+
+  const handleRunScript = useCallback(() => {
+    callScript(script.id, {})
+  }, [script.id])
 
   return (
     <div className="flex items-center gap-2">
@@ -168,6 +177,13 @@ export const ExtensionToolbar = () => {
         <Copy className="mr-2 h-4 w-4" />
         {t("extension.toolbar.copy")}
       </Button>
+
+      {(script.type === "script" || script.type === "py_script") && (
+        <Button variant="outline" size="xs" onClick={handleRunScript}>
+          <Play className="mr-2 h-4 w-4" />
+          {t("extension.toolbar.run")}
+        </Button>
+      )}
 
       {script.type === "m_block" && (
         <Button

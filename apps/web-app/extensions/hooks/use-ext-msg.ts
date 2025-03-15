@@ -3,14 +3,13 @@ import { useCallback } from "react"
 import { MsgType } from "@/lib/const"
 import { uuidv7 } from "@/lib/utils"
 
-import { callScriptById } from "@/components/script-container/helper"
-import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
+import { useAiConfig } from "@/hooks/use-ai-config"
 import { useEidosFileSystemManager } from "@/hooks/use-fs"
-import { getSqliteChannel, getSqliteProxy } from "@/lib/sqlite/channel"
+import { useScriptCall } from "@/hooks/use-script-call"
+import { getSqliteChannel } from "@/lib/sqlite/channel"
+import { useAppRuntimeStore } from "@/lib/store/runtime-store"
 import { generateText } from "ai"
 import { useExtensions } from "./use-extensions"
-import { useAiConfig } from "@/hooks/use-ai-config"
-import { createOpenAI } from "@ai-sdk/openai"
 
 
 export enum ExtMsgType {
@@ -53,9 +52,10 @@ const shouldHandle = (event: MessageEvent, source: ExtensionSourceType) => {
 
 export const useExtMsg = (source: ExtensionSourceType) => {
   const { getExtensionIndex } = useExtensions()
+  const { setRunningCommand } = useAppRuntimeStore()
 
-  const { space: database } = useCurrentPathInfo()
   const { getLLModel } = useAiConfig()
+  const { callScript } = useScriptCall()
 
   const { efsManager } = useEidosFileSystemManager()
   const handleMsg = useCallback(
@@ -119,12 +119,17 @@ export const useExtMsg = (source: ExtensionSourceType) => {
               break
             case "callScript":
               const [scriptId, input] = _args
-              const sqlWorker = getSqliteProxy(database, "")
-              callScriptById(scriptId, input, sqlWorker).then((res) => {
+              callScript(scriptId, input).then((res) => {
                 event.ports[0].postMessage({
                   type: ExtMsgType.scriptCallMainResp,
                   data: res,
                 })
+              }).catch((error) => {
+                event.ports[0].postMessage({
+                  type: ExtMsgType.scriptCallMainError,
+                  data: error,
+                })
+                setRunningCommand(null)
               })
               break
             case "generateText":
@@ -139,12 +144,19 @@ export const useExtMsg = (source: ExtensionSourceType) => {
                     type: ExtMsgType.scriptCallMainResp,
                     data: text,
                   })
+                }).catch((error) => {
+                  event.ports[0].postMessage({
+                    type: ExtMsgType.scriptCallMainError,
+                    data: error,
+                  })
+                  setRunningCommand(null)
                 })
               } catch (error) {
                 event.ports[0].postMessage({
                   type: ExtMsgType.scriptCallMainError,
                   data: error,
                 })
+                setRunningCommand(null)
               }
               break
             case "tableHighlightRow":

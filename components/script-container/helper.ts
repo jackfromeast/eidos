@@ -2,6 +2,19 @@ import { getPythonWorker } from "@/lib/python/worker";
 import { DataSpace } from "@/worker/web-worker/DataSpace";
 import sdkInjectScript from "./sdk-inject-script.html?raw";
 
+
+export type IScriptInput = Record<string, any>
+
+export interface IScriptContext {
+    tables: any
+    env: Record<string, any>
+    currentNodeId?: string | null
+    currentRowId?: string | null
+    currentViewId?: string | null
+    currentViewQuery?: string | null
+    callFromTableAction?: boolean
+}
+
 export const makeSdkInjectScript = ({
     bindings,
     space,
@@ -34,6 +47,42 @@ export interface IPythonScriptCallProps {
     dependencies?: string[]
 }
 
+
+// Helper function to handle JavaScript execution
+export const callJavaScript = (
+    props: {
+        input: IScriptInput
+        context: IScriptContext
+        code: string
+        command: string
+        id: string
+        bindings?: Record<string, any>
+    },
+    scriptContainerRef: any
+): Promise<any> => {
+    const channel = new MessageChannel()
+
+    scriptContainerRef?.current?.contentWindow?.postMessage(
+        {
+            type: "ScriptFunctionCall",
+            data: props,
+        },
+        "*",
+        [channel.port2]
+    )
+
+    return new Promise((resolve, reject) => {
+        channel.port1.onmessage = (event) => {
+            const { type, data } = event.data
+            if (type === "ScriptFunctionCallResponse") {
+                resolve(data)
+            } else if (type === "ScriptFunctionCallError") {
+                reject(data)
+            }
+        }
+    })
+}
+
 export const callPythonScript = (props: IPythonScriptCallProps): Promise<any> => {
     const pythonWorker = getPythonWorker()
     const channel = new MessageChannel()
@@ -58,20 +107,33 @@ export const callPythonScript = (props: IPythonScriptCallProps): Promise<any> =>
     })
 }
 
-export const callScriptById = async (id: string, input: Record<string, any>, sqlite: DataSpace) => {
+export const callScriptById = async (id: string, input: Record<string, any>, sqlite: DataSpace, scriptContainerRef: any) => {
     const script = await sqlite.getScript(id)
     if (!script) {
         throw new Error("Script not found")
     }
-    return callPythonScript({
-        input,
-        code: script.code,
-        id,
-        context: {
-            tables: script.tables,
-            env: {},
-        },
-        command: 'main',
-        dependencies: script.dependencies,
-    })
+    if (script.type === "py_script") {
+        return callPythonScript({
+            input,
+            code: script.code,
+            id,
+            context: {
+                tables: script.tables,
+                env: {},
+            },
+            command: 'main',
+            dependencies: script.dependencies,
+        })
+    } else if (script.type === "script") {
+        return callJavaScript({
+            input,
+            code: script.code,
+            id,
+            context: {
+                tables: script.tables,
+                env: {},
+            },
+            command: 'default',
+        }, scriptContainerRef)
+    }
 }
