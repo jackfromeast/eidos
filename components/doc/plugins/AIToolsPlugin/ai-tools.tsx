@@ -22,22 +22,21 @@ import { Button } from "@/components/ui/button"
 import { toast } from "@/components/ui/use-toast"
 import { BlockRenderer } from "@/components/block-renderer/block-renderer"
 import { Chart, ChartConfig } from "@/components/chart"
-import { Loading } from "@/components/loading"
+import { Thinking } from "@/components/thinking"
 import { useAllMblocks } from "@/apps/web-app/[database]/scripts/hooks/use-all-mblocks"
 import { useScript } from "@/apps/web-app/[database]/scripts/hooks/use-script"
 
 import { $createChartNode } from "../../blocks/chart/node"
 import { $createCustomBlockNode } from "../../blocks/custom/node"
+import { $isMermaidNode } from "../../blocks/mermaid/node"
 import { useAllDocBlocks } from "../../hooks/use-all-doc-blocks"
 import { useExtBlocks } from "../../hooks/use-ext-blocks"
-import { $transformExtCodeBlock } from "../../utils/helper"
 import { allTransformers } from "../const"
 import { AIActionEnum, AIActionList } from "./ai-action-list"
 import { AIContentEditor } from "./ai-msg-editor"
 import { useGenerateChartConfig } from "./hooks/use-generate-chart"
 import { useUpdateLocation } from "./hooks/use-update-location"
 import { PromptList } from "./prompt-list"
-import { Thinking } from "@/components/thinking"
 
 function setPlaceholderHeight(height: number) {
   document
@@ -238,14 +237,20 @@ export function AITools({
           } catch (error) {}
           if (node) {
             try {
-              const parent = node.getParent()
-              if (parent) {
-                let currentNode: LexicalNode = parent
-                for (const node of generatedNodes) {
-                  currentNode.insertAfter(node)
-                  currentNode = node
+              const insertionPointNode = $isTextNode(node) ? node.getParent() : node
+              
+              if (insertionPointNode) {
+                let insertAfterNode = insertionPointNode
+                
+                for (const newNode of generatedNodes) {
+                  insertAfterNode.insertAfter(newNode)
+                  insertAfterNode = newNode
                 }
-                currentNode.selectEnd()
+                insertAfterNode.selectEnd()
+              } else {
+                const root = $getRoot()
+                root.append(...generatedNodes)
+                generatedNodes[generatedNodes.length - 1].selectEnd()
               }
             } catch (error) {
               const root = $getRoot()
@@ -257,10 +262,6 @@ export function AITools({
             root.append(...generatedNodes)
             generatedNodes[generatedNodes.length - 1].selectEnd()
           }
-        } else {
-          const root = $getRoot()
-          root.append(...generatedNodes)
-          generatedNodes[generatedNodes.length - 1].selectEnd()
         }
       }
 
@@ -270,7 +271,7 @@ export function AITools({
           editor.update(() => {
             const generatedNodes = getGeneratedNodes(scriptId)
             appendNodesAfterSelection(generatedNodes)
-            $transformExtCodeBlock(allBlocks)
+            // $transformExtCodeBlock(allBlocks)
           })
           resetState()
           break
@@ -285,6 +286,7 @@ export function AITools({
               const isOneLine = start?.key === end?.key
               const isGeneratedNodesOnlyATextNode =
                 generatedNodes.length === 1 && $isTextNode(generatedNodes[0])
+              // single line and only one text node
               if (isOneLine && isGeneratedNodesOnlyATextNode) {
                 selection.insertText(text)
                 const textNode = generatedNodes[0]
@@ -292,7 +294,12 @@ export function AITools({
                   selection.setTextNodeRange(textNode, 0, textNode, text.length)
                 }
               } else {
-                if (isGenerateChartRef.current || isMakeItRealRef.current) {
+                const generatedNode = generatedNodes[0]
+                if (
+                  $isMermaidNode(generatedNode) ||
+                  isGenerateChartRef.current ||
+                  isMakeItRealRef.current
+                ) {
                   appendNodesAfterSelection(generatedNodes)
                   selection.removeText()
                 } else {
