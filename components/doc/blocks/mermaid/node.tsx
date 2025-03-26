@@ -1,5 +1,4 @@
-import { ReactNode } from "react"
-import { TextMatchTransformer } from "@lexical/markdown"
+import { MultilineElementTransformer } from "@lexical/markdown"
 import { BlockWithAlignableContents } from "@lexical/react/LexicalBlockWithAlignableContents"
 import {
   DecoratorBlockNode,
@@ -8,7 +7,6 @@ import {
 import {
   EditorConfig,
   ElementFormatType,
-  ElementNode,
   LexicalEditor,
   LexicalNode,
   NodeKey,
@@ -103,12 +101,9 @@ export function $isMermaidNode(
   return node instanceof MermaidNode
 }
 
-export const MERMAID_NODE_TRANSFORMER: TextMatchTransformer = {
+export const MERMAID_NODE_TRANSFORMER: MultilineElementTransformer = {
   dependencies: [MermaidNode],
-  export: (
-    node: LexicalNode,
-    traverseChildren: (node: ElementNode) => string
-  ) => {
+  export: (node: LexicalNode, traverseChildren: (node: any) => string) => {
     if (!$isMermaidNode(node)) {
       return null
     }
@@ -121,16 +116,26 @@ export const MERMAID_NODE_TRANSFORMER: TextMatchTransformer = {
       "```"
     )
   },
-
-  // not working cause the bug
-  // https://github.com/facebook/lexical/issues/2564
-  importRegExp: /```mermaid([\s\S]*?)```/,
-  regExp: /```mermaid([\s\S]*?)```$/,
-  replace: (textNode, match) => {
-    const text = match[1].trim()
-    const imageNode = $createMermaidNode(text)
-    textNode.replace(imageNode)
+  regExpStart: /```mermaid/,
+  regExpEnd: {
+    regExp: /```/,
+    optional: true,
   },
-  trigger: "```",
-  type: "text-match",
+  replace: (
+    rootNode,
+    children,
+    startMatch,
+    endMatch,
+    linesInBetween,
+    isImport
+  ) => {
+    const text = linesInBetween?.join("\n").trim()
+    if (!text) {
+      return false
+    }
+    const mermaidNode = $createMermaidNode(text)
+    rootNode.append(mermaidNode)
+    return true
+  },
+  type: "multiline-element",
 }

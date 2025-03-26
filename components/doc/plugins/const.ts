@@ -18,6 +18,8 @@ import { BookmarkPayload } from "../blocks/bookmark/node"
 import { HR, TABLE } from "./MarkdownTransformers"
 
 export const allTransformers = [
+  // let the priority of the plugin be higher
+  ...BuiltInBlocks.map((block) => block.transform).filter(Boolean),
   TABLE,
   CHECK_LIST,
   CODE,
@@ -30,7 +32,6 @@ export const allTransformers = [
   QUOTE,
   HR,
   ...TRANSFORMERS,
-  ...BuiltInBlocks.map((block) => block.transform).filter(Boolean),
 ] as Transformer[]
 
 export const fgColors = [
