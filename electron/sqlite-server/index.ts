@@ -99,7 +99,14 @@ export class NodeServerDatabase extends BaseServerDatabase {
                 if (_bind == null) {
                     return stmt.run();
                 }
-                return stmt.run(_bind);
+                try {
+                    return stmt.run(_bind);
+                } catch (error) {
+                    console.error("Error executing statement:", error);
+                    console.error("SQL:", sql);
+                    console.error("Bind:", _bind);
+                    throw error
+                }
             }
             if (opts.rowMode === 'array') {
                 return res.map((item: any) => Object.values(item));

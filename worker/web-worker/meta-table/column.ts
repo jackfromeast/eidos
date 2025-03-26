@@ -68,6 +68,8 @@ export class ColumnTable extends BaseTableImpl implements BaseTable<IField> {
     const tableId = getTableIdByRawTableName(table_name)
 
     try {
+      await this.dataSpace.db.exec("PRAGMA foreign_keys = OFF;");
+
       await this.dataSpace.db.prepare('BEGIN TRANSACTION;').run()
 
       let _property = property
@@ -122,6 +124,8 @@ export class ColumnTable extends BaseTableImpl implements BaseTable<IField> {
       await this.dataSpace.db.prepare('ROLLBACK;').run()
       console.error('Error in add transaction:', error)
       throw error
+    } finally {
+      await this.dataSpace.db.exec("PRAGMA foreign_keys = ON;");
     }
   }
 
