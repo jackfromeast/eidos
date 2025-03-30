@@ -26,19 +26,19 @@ import { useView, useViewOperation } from "../../hooks"
 import { CoverPreviewField } from "../shared/cover-preview-field"
 
 export interface IKanbanViewProperties {
-  hideEmptyFields?: boolean
+  //   hideEmptyFields?: boolean
   groupByField?: string
   cardSize?: "small" | "medium" | "large"
-  collapseAll?: boolean
-  coverPreview?: null | string | "content" | "cover"
+  //   collapseAll?: boolean
+  //   coverPreview?: null | string | "content" | "cover"
 }
 
 const formSchema = z.object({
-  hideEmptyFields: z.boolean().optional(),
+  //   hideEmptyFields: z.boolean().optional(),
   groupByField: z.string().optional(),
   cardSize: z.enum(["small", "medium", "large"]).optional(),
-  collapseAll: z.boolean().optional(),
-  coverPreview: z.enum(["content", "cover"]).optional().nullable(),
+  //   collapseAll: z.boolean().optional(),
+  //   coverPreview: z.enum(["content", "cover"]).optional().nullable(),
 })
 
 export const KanbanViewProperties = ({ viewId }: { viewId: string }) => {
@@ -51,11 +51,15 @@ export const KanbanViewProperties = ({ viewId }: { viewId: string }) => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      hideEmptyFields: view?.properties?.hideEmptyFields,
+      //   hideEmptyFields: view?.properties?.hideEmptyFields,
       groupByField: view?.properties?.groupByField,
       cardSize: view?.properties?.cardSize,
-      collapseAll: view?.properties?.collapseAll,
-      coverPreview: (view?.properties?.coverPreview as "content" | "cover" | null | undefined),
+      //   collapseAll: view?.properties?.collapseAll,
+      //   coverPreview: view?.properties?.coverPreview as
+      //     | "content"
+      //     | "cover"
+      //     | null
+      //     | undefined,
     },
   })
 
@@ -79,7 +83,7 @@ export const KanbanViewProperties = ({ viewId }: { viewId: string }) => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
-        <FormField
+        {/* <FormField
           control={form.control}
           name="hideEmptyFields"
           render={({ field }) => (
@@ -101,7 +105,7 @@ export const KanbanViewProperties = ({ viewId }: { viewId: string }) => {
               <FormMessage />
             </FormItem>
           )}
-        />
+        /> */}
 
         {/* <FormField
           control={form.control}
@@ -217,7 +221,7 @@ export const KanbanViewProperties = ({ viewId }: { viewId: string }) => {
             </FormItem>
           )}
         />
-
+        {/* 
         <FormField
           control={form.control}
           name="collapseAll"
@@ -249,7 +253,7 @@ export const KanbanViewProperties = ({ viewId }: { viewId: string }) => {
           updateView={updateView}
           viewProperties={view.properties}
           namespace="kanban"
-        />
+        /> */}
       </form>
     </Form>
   )
