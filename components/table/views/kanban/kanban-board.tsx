@@ -71,10 +71,10 @@ export const KanbanBoard = memo(
     )
     const cardWidth =
       properties?.cardSize === "small"
-        ? "min-w-[300px]"
+        ? "w-[300px]"
         : properties?.cardSize === "medium"
-        ? "min-w-[350px]"
-        : "min-w-[400px]"
+        ? "w-[350px]"
+        : "w-[400px]"
 
     return (
       <OriginKanbanBoard
