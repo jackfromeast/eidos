@@ -16,6 +16,7 @@ import { MultiSelectEditor } from "./multi-select-editor"
 import { RatingEditor } from "./rating-editor"
 import { SelectEditor } from "./select-editor"
 import { TextBaseEditor } from "./text-base-editor"
+import { UrlEditor } from "./url-editor"
 import { UserProfileEditor } from "./user-profile-editor"
 
 export const CellEditorMap: Record<
@@ -31,7 +32,7 @@ export const CellEditorMap: Record<
   [FieldType.Date]: DateEditor,
   [FieldType.Text]: TextBaseEditor,
   [FieldType.Title]: TextBaseEditor,
-  [FieldType.URL]: TextBaseEditor,
+  [FieldType.URL]: UrlEditor,
   [FieldType.Number]: TextBaseEditor,
   [FieldType.Select]: SelectEditor as any,
   [FieldType.MultiSelect]: MultiSelectEditor as any,
@@ -103,10 +104,17 @@ export const CellEditor = ({
     switch (field.type) {
       case FieldType.Text:
       case FieldType.Title:
-      case FieldType.URL:
         return (
           <TextBaseEditor
             type="text"
+            value={value}
+            onChange={run}
+            isEditing={disableTextBaseEditor ? false : _isEditing}
+          />
+        )
+      case FieldType.URL:
+        return (
+          <UrlEditor
             value={value}
             onChange={run}
             isEditing={disableTextBaseEditor ? false : _isEditing}

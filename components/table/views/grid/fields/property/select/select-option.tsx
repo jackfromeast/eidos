@@ -1,8 +1,8 @@
 import { useState } from "react"
-import { Trash, GripVertical } from "lucide-react"
-import { useTheme } from "next-themes"
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
+import { GripVertical, Trash } from "lucide-react"
+import { useTheme } from "next-themes"
 
 import { SelectOption as ISelectOption, SelectField } from "@/lib/fields/select"
 import { Input } from "@/components/ui/input"
@@ -45,18 +45,13 @@ export const SelectOption = ({
     onDelete(option.id)
   }
 
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-  } = useSortable({ id: option.id })
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({ id: option.id })
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    width: '100%',
+    width: "100%",
   }
 
   return (
@@ -111,6 +106,7 @@ export const SelectOption = ({
             {SelectField.colors[theme as "light"].map((color) => (
               <div
                 data-color={color.name}
+                key={color.name}
                 onClick={handleColorChange}
                 className="flex cursor-pointer items-center gap-3 p-[6px] hover:bg-secondary"
               >
