@@ -135,7 +135,7 @@ export const DataCard = ({
                   const value = item[k]
                   if (!value && properties?.hideEmptyFields) return null
                   return (
-                    <TooltipProvider>
+                    <TooltipProvider key={`${item._id}:${k}`}>
                       <Tooltip delayDuration={200}>
                         <TooltipTrigger asChild>
                           <div

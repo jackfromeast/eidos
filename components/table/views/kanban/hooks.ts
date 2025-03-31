@@ -12,7 +12,7 @@ import { transformSql } from "@/lib/sqlite/sql-parser"
 import { IView } from "@/lib/store/IView"
 import { getRawTableNameById } from "@/lib/utils"
 import { IField } from "lib/store/interface"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 
 export type KanbanItem = {
     id: string
@@ -35,11 +35,57 @@ export const useKanbanViewData = (view: IView) => {
     const [statusCounts, setStatusCounts] = useState<StatusCount[]>([])
     const [loading, setLoading] = useState(false)
     const { space } = useCurrentPathInfo()
-    const { nameRawIdMap, fieldRawColumnNameFieldMap } = useUiColumns(tableName, space)
+    const { nameRawIdMap, fieldRawColumnNameFieldMap, uiColumns } = useUiColumns(tableName, space)
 
     const groupByField = properties?.groupByField || 'status'
 
     const groupByFieldInstance = fieldRawColumnNameFieldMap[groupByField]
+    const sql = useMemo(() => {
+        const defaultQuery = `select * from ${tableName}`
+        const q = query.trim().length ? query : defaultQuery
+        const sql = transformSql(q, tableName, nameRawIdMap)
+        return sql
+    }, [query, tableName, nameRawIdMap])
+
+    const fetchStatusCounts = useCallback(async () => {
+        if (!sqlite || !tableName) return
+
+        const countSql = `
+            SELECT 
+                COALESCE(${groupByField}, 'Todo') as status,
+                COUNT(*) as count 
+            FROM (${sql}) as filtered_data
+            GROUP BY ${groupByField}
+            ORDER BY count DESC
+        `
+        try {
+            const counts = await sqlite.sql2`${countSql}`
+            if (groupByFieldInstance?.type === FieldType.Select) {
+                // combo statusCounts and groupByFieldInstance.options
+                const options = (groupByFieldInstance as IField<SelectProperty>).property.options
+                const statusCountsWithOptions = options.map(option => {
+                    const count = counts.find(count => count.status === option.name)
+                    return {
+                        status: option.name,
+                        count: count?.count || 0,
+                        color: option.color
+                    }
+                })
+                setStatusCounts(statusCountsWithOptions)
+            } else {
+                console.warn("groupByField is not a select field", {
+                    fieldRawColumnNameFieldMap,
+                    groupByFieldInstance,
+                    groupByField,
+                    uiColumns
+                })
+                setStatusCounts(counts)
+            }
+        } catch (error) {
+            console.error('Error fetching status counts:', error)
+        }
+    }, [sqlite, tableName, groupByField, groupByFieldInstance, fieldRawColumnNameFieldMap, uiColumns, sql])
+
 
 
     const updateItemStatus = async (itemId: string, newStatus: string) => {
@@ -58,47 +104,10 @@ export const useKanbanViewData = (view: IView) => {
         await fetchStatusCounts()
 
     }
-    const fetchStatusCounts = async () => {
-        if (!sqlite || !tableName) return
-
-        const countSql = `
-            SELECT 
-                COALESCE(${groupByField}, 'Todo') as status,
-                COUNT(*) as count 
-            FROM ${tableName} 
-            GROUP BY ${groupByField}
-            ORDER BY count DESC
-        `
-        try {
-            const counts = await sqlite.sql2`${countSql}`
-            setStatusCounts(counts)
-            if (groupByFieldInstance?.type === FieldType.Select) {
-                // combo statusCounts and groupByFieldInstance.options
-                const options = (groupByFieldInstance as IField<SelectProperty>).property.options
-                const statusCountsWithOptions = options.map(option => {
-                    const count = counts.find(count => count.status === option.name)
-                    return {
-                        status: option.name,
-                        count: count?.count || 0,
-                        color: option.color
-                    }
-                })
-                setStatusCounts(statusCountsWithOptions)
-            }
-
-        } catch (error) {
-            console.error('Error fetching status counts:', error)
-        }
-    }
 
     useEffect(() => {
         if (sqlite && nameRawIdMap.size && tableName) {
             setLoading(true)
-            const defaultQuery = `select * from ${tableName}`
-            const q = query.trim().length ? query : defaultQuery
-            console.log(q, "q")
-            const sql = transformSql(q, tableName, nameRawIdMap)
-
             Promise.all([
                 sqlite.sql2`${sql}`,
                 fetchStatusCounts()
@@ -114,7 +123,7 @@ export const useKanbanViewData = (view: IView) => {
                 setLoading(false)
             })
         }
-    }, [sqlite, query, tableName, view.id, nameRawIdMap, fieldRawColumnNameFieldMap, setRows, tableId, groupByField])
+    }, [sqlite, sql, tableName, view.id, nameRawIdMap, setRows, tableId, groupByField])
 
     useEffect(() => {
         const bc = new BroadcastChannel(EidosDataEventChannelName)
@@ -138,7 +147,7 @@ export const useKanbanViewData = (view: IView) => {
             bc.removeEventListener("message", handleMsg)
             bc.close()
         }
-    }, [tableName, groupByField])
+    }, [tableName, groupByField, fetchStatusCounts])
 
     return {
         items,
