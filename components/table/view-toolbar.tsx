@@ -346,9 +346,9 @@ export const ViewToolbar = (props: {
               className="container h-[95vh] p-0 md:max-w-[756px]"
               onMaximize={handleMaximize}
             >
-              <ScrollArea className="h-full">
+              <div className="h-full w-full overflow-x-hidden">
                 <NodeComponent nodeId={subPageId} />
-              </ScrollArea>
+              </div>
             </DialogContent>
           </Dialog>
         </div>

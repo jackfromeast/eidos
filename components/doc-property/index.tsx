@@ -51,7 +51,7 @@ export const DocProperty = (props: IDocPropertyProps) => {
     })
   }
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-1 w-full">
       {fields.map(({ uiColumn, iconSvgString, name, value }) => {
         return (
           <div key={uiColumn.name} className="flex w-full items-center gap-2">
