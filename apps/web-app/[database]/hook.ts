@@ -136,7 +136,11 @@ export const useLayoutInit = () => {
     }
     const sqlWorker = getSqliteProxy(database, userId || "")
 
-    setSqlWorker(sqlWorker)
+    sqlWorker.isInitReady().then((isReady) => {
+      if (isReady) {
+        setSqlWorker(sqlWorker)
+      }
+    })
     if (isDesktopMode) {
       const readonlySqlite = getSqliteProxy(database, userId || "", {
         isReadonly: true,

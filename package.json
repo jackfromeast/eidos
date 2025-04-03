@@ -79,7 +79,7 @@
     "@lexical/text": "^0.21.0",
     "@lexical/utils": "^0.21.0",
     "@lezer/highlight": "^1.2.1",
-    "@libsql/client": "^0.8.1",
+    "@libsql/client": "^0.15.1",
     "@mlc-ai/web-llm": "^0.2.40",
     "@monaco-editor/react": "^4.6.0",
     "@octokit/rest": "^20.0.2",

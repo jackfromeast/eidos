@@ -37,6 +37,8 @@ export abstract class BaseServerDatabase {
   abstract prepare(sql: string): {
     run: (bind?: any[]) => void;
   };
+  abstract sync(): Promise<void>;
+  abstract executeMultiple(sql: string): Promise<void>;
   abstract close(): void;
   abstract selectObjects(sql: string, bind?: any[]): Promise<{ [columnName: string]: any }[]>;
   abstract transaction(func: (db: BaseServerDatabase) => void): any;

@@ -1,11 +1,13 @@
 import { FieldType } from "@/lib/fields/const"
 import { ILinkProperty } from "@/lib/fields/link"
-import { ColumnTableName } from "@/lib/sqlite/const"
+import { ChangelogTableName, ColumnTableName } from "@/lib/sqlite/const"
 import { IField } from "@/lib/store/interface"
 import { getTableIdByRawTableName } from "@/lib/utils"
 
 import { DataSpace, EidosDatabase } from "../../DataSpace"
 import { TableManager } from "../table"
+import { EidosDataEventChannelMsgType } from "@/lib/const"
+import { DataUpdateSignalType } from "@/lib/const"
 
 interface IRelation {
   self: string
@@ -361,14 +363,42 @@ export class LinkFieldService {
         AFTER DELETE ON ${relationTableName}
         FOR EACH ROW
         BEGIN
-            SELECT eidos_data_event_delete('${relationTableName}', json_object('self',OLD.self,'ref',OLD.ref,'link_field_id',OLD.link_field_id));
+            INSERT INTO ${ChangelogTableName} (
+                id,
+                table_name,
+                type,
+                event_type,
+                old_data,
+                is_processed
+            ) VALUES (
+                uuid7(),
+                '${relationTableName}',
+                '${DataUpdateSignalType.Delete}',
+                '${EidosDataEventChannelMsgType.DataUpdateSignalType}',
+                json_object('self',OLD.self,'ref',OLD.ref,'link_field_id',OLD.link_field_id),
+                0
+            );
         END;
 
         CREATE TRIGGER IF NOT EXISTS data_insert_trigger_${relationTableName}
         AFTER INSERT ON ${relationTableName}
         FOR EACH ROW
         BEGIN
-            SELECT eidos_data_event_insert('${relationTableName}', json_object('self',NEW.self,'ref',NEW.ref,'link_field_id',NEW.link_field_id));
+            INSERT INTO ${ChangelogTableName} (
+                id,
+                table_name,
+                type,
+                event_type,
+                new_data,
+                is_processed
+            ) VALUES (
+                uuid7(),
+                '${relationTableName}',
+                '${DataUpdateSignalType.Insert}',
+                '${EidosDataEventChannelMsgType.DataUpdateSignalType}',
+                json_object('self',NEW.self,'ref',NEW.ref,'link_field_id',NEW.link_field_id),
+                0
+            );
         END;
 
         CREATE TABLE IF NOT EXISTS ${reverseRelationTableName} (
@@ -384,14 +414,42 @@ export class LinkFieldService {
         AFTER DELETE ON ${reverseRelationTableName}
         FOR EACH ROW
         BEGIN
-            SELECT eidos_data_event_delete('${reverseRelationTableName}', json_object('self',OLD.self,'ref',OLD.ref,'link_field_id',OLD.link_field_id));
+            INSERT INTO ${ChangelogTableName} (
+                id,
+                table_name,
+                type,
+                event_type,
+                old_data,
+                is_processed
+            ) VALUES (
+                uuid7(),
+                '${reverseRelationTableName}',
+                '${DataUpdateSignalType.Delete}',
+                '${EidosDataEventChannelMsgType.DataUpdateSignalType}',
+                json_object('self',OLD.self,'ref',OLD.ref,'link_field_id',OLD.link_field_id),
+                0
+            );
         END;
 
         CREATE TRIGGER IF NOT EXISTS data_insert_trigger_${reverseRelationTableName}
         AFTER INSERT ON ${reverseRelationTableName}
         FOR EACH ROW
         BEGIN
-            SELECT eidos_data_event_insert('${reverseRelationTableName}', json_object('self',NEW.self,'ref',NEW.ref,'link_field_id',NEW.link_field_id));
+            INSERT INTO ${ChangelogTableName} (
+                id,
+                table_name,
+                type,
+                event_type,
+                new_data,
+                is_processed
+            ) VALUES (
+                uuid7(),
+                '${reverseRelationTableName}',
+                '${DataUpdateSignalType.Insert}',
+                '${EidosDataEventChannelMsgType.DataUpdateSignalType}',
+                json_object('self',NEW.self,'ref',NEW.ref,'link_field_id',NEW.link_field_id),
+                0
+            );
         END;
         `,
     )

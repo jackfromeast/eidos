@@ -1,5 +1,7 @@
-import { ChatTableName } from "@/lib/sqlite/const"
+import { ChangelogTableName, ChatTableName } from "@/lib/sqlite/const"
 import { BaseTable, BaseTableImpl } from "./base"
+import { EidosDataEventChannelMsgType } from "@/lib/const"
+import { DataUpdateSignalType } from "@/lib/const"
 
 export type Chat = {
   id: string
@@ -21,18 +23,29 @@ export class ChatTable extends BaseTableImpl<Chat> implements BaseTable<Chat> {
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );
 
-  CREATE TEMP TRIGGER IF NOT EXISTS ${ChatTableName}_insert_trigger
+  CREATE TRIGGER IF NOT EXISTS ${ChatTableName}_insert_trigger
   AFTER INSERT ON ${ChatTableName}
   BEGIN
-    SELECT eidos_meta_table_event_insert(
-      '${ChatTableName}',
-      json_object(
-        'id', new.id,
-        'title', new.title,
-        'user_id', new.user_id,
-        'project_id', new.project_id,
-        'created_at', new.created_at
-      )
+    INSERT INTO ${ChangelogTableName} (
+        id,
+        table_name,
+        type,
+        event_type,
+        new_data,
+        is_processed
+    ) VALUES (
+        uuid7(),
+        '${ChatTableName}',
+        '${DataUpdateSignalType.Insert}',
+        '${EidosDataEventChannelMsgType.MetaTableUpdateSignalType}',
+        json_object(
+            'id', NEW.id,
+            'title', NEW.title,
+            'user_id', NEW.user_id,
+            'project_id', NEW.project_id,
+            'created_at', NEW.created_at
+        ),
+        0
     );
   END;
   `

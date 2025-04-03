@@ -1,8 +1,10 @@
-import { TreeTableName } from "@/lib/sqlite/const"
+import { ChangelogTableName, TreeTableName } from "@/lib/sqlite/const"
 import { ITreeNode } from "@/lib/store/ITreeNode"
 import { extractIdFromShortId, getRawTableNameById } from "@/lib/utils"
 
 import { BaseTable, BaseTableImpl } from "./base"
+import { EidosDataEventChannelMsgType } from "@/lib/const"
+import { DataUpdateSignalType } from "@/lib/const"
 
 export class TreeTable extends BaseTableImpl implements BaseTable<ITreeNode> {
   name = TreeTableName
@@ -24,27 +26,38 @@ export class TreeTable extends BaseTableImpl implements BaseTable<ITreeNode> {
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );
   
-  CREATE TEMP TRIGGER IF NOT EXISTS ${TreeTableName}_insert_trigger
+  CREATE TRIGGER IF NOT EXISTS ${TreeTableName}_insert_trigger
   AFTER INSERT ON ${TreeTableName}
   BEGIN
-    SELECT eidos_meta_table_event_insert(
-      '${TreeTableName}',
-      json_object(
-        'id', new.id,
-        'name', new.name,
-        'type', new.type,
-        'parent_id', new.parent_id,
-        'is_pinned', new.is_pinned,
-        'is_full_width', new.is_full_width,
-        'is_locked', new.is_locked,
-        'icon', new.icon,
-        'cover', new.cover,
-        'is_deleted', new.is_deleted,
-        'hide_properties', new.hide_properties,
-        'position', new.position,
-        'created_at', new.created_at,
-        'updated_at', new.updated_at
-      )
+    INSERT INTO ${ChangelogTableName} (
+        id,
+        table_name,
+        type,
+        event_type,
+        new_data,
+        is_processed
+    ) VALUES (
+        uuid7(),
+        '${TreeTableName}',
+        '${DataUpdateSignalType.Insert}',
+        '${EidosDataEventChannelMsgType.MetaTableUpdateSignalType}',
+        json_object(
+            'id', NEW.id,
+            'name', NEW.name,
+            'type', NEW.type,
+            'parent_id', NEW.parent_id,
+            'is_pinned', NEW.is_pinned,
+            'is_full_width', NEW.is_full_width,
+            'is_locked', NEW.is_locked,
+            'icon', NEW.icon,
+            'cover', NEW.cover,
+            'is_deleted', NEW.is_deleted,
+            'hide_properties', NEW.hide_properties,
+            'position', NEW.position,
+            'created_at', NEW.created_at,
+            'updated_at', NEW.updated_at
+        ),
+        0
     );
   END;
   `

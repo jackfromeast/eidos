@@ -94,12 +94,17 @@ export const useSpace = () => {
     }
   }, [])
 
+  const syncSpace = useCallback(async () => {
+    await sqlite?.sync()
+  }, [])
+
   return {
     spaceList,
     updateSpaceList,
     createSpace,
     exportSpace,
     deleteSpace,
-    rebuildIndex
+    rebuildIndex,
+    syncSpace
   }
 }

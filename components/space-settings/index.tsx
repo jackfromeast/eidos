@@ -34,7 +34,7 @@ import { Button } from "../ui/button"
 export function Settings() {
   const { t } = useTranslation()
   const { space } = useCurrentPathInfo()
-  const { exportSpace, deleteSpace, rebuildIndex } = useSpace()
+  const { exportSpace, deleteSpace, rebuildIndex, syncSpace } = useSpace()
   const navigate = useNavigate()
   const [confirmName, setConfirmName] = useState("")
   const [isRebuilding, setIsRebuilding] = useState(false)
@@ -85,6 +85,10 @@ export function Settings() {
     }
   }
 
+  const handleSync = async () => {
+    await syncSpace()
+  }
+
   return (
     <Card className="border-0 p-0">
       <CardHeader>
@@ -114,6 +118,20 @@ export function Settings() {
             </div>
           </div>
           <hr />
+          <div className="grid gap-3">
+            <Label htmlFor="sync">{t("space.settings.sync")}</Label>
+            <p className="text-sm text-muted-foreground">
+              {t("space.settings.syncDescription")}
+            </p>
+            <Button
+              size="sm"
+              className="max-w-max"
+              variant="outline"
+              onClick={handleSync}
+            >
+              {t("space.settings.sync")}
+            </Button>
+          </div>
           <div className="grid gap-3">
             <Label htmlFor="description">{t("common.export")}</Label>
             <p className="text-sm text-muted-foreground">

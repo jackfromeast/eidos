@@ -1,5 +1,4 @@
-
-import { MsgType } from "@/lib/const"
+import { EidosDataEventChannelMsgType, MsgType } from "@/lib/const"
 import { FieldType } from "@/lib/fields/const"
 import { ColumnTableName } from "@/lib/sqlite/const"
 import { buildSql, isReadOnlySql } from "@/lib/sqlite/helper"
@@ -47,6 +46,8 @@ import { ViewTable } from "./meta-table/view"
 import { RowsManager } from "./sdk/rows"
 import { TableManager } from "./sdk/table"
 import { withSqlite3AllUDF } from "./udf"
+import { ChangelogTable } from "./meta-table/changelog"
+import { Transaction } from "@libsql/client"
 // import { QueueTable } from "./meta-table/queue"
 
 export type EidosTable =
@@ -78,6 +79,8 @@ export class DataSpace {
   reference: ReferenceTable
   embedding: EmbeddingTable
   // queue: QueueTable
+  changelog: ChangelogTable
+
   chat: ChatTable
   message: MessageTable
   file: FileTable
@@ -99,6 +102,7 @@ export class DataSpace {
   hasMigrated = false
   tableFullTextSearch: TableFullTextSearch
   isUDFWithCtx = false
+  isReady = false
   constructor(config: {
     db: EidosDatabase
     activeUndoManager: boolean
@@ -168,19 +172,20 @@ export class DataSpace {
     this.chat = new ChatTable(this)
     this.message = new MessageTable(this)
     // this.queue = new QueueTable(this)
+    this.changelog = new ChangelogTable(this)
     //
     this.allTables = [
-      this.doc,
       this.action,
-      this.script,
+      this.chat,
       this.tree,
+      this.script,
       this.view,
       this.column,
       this.embedding,
       this.file,
       this.reference,
-      this.chat,
       this.message,
+      this.doc,
       // this.queue
     ]
     this.initMetaTable()
@@ -197,9 +202,9 @@ export class DataSpace {
       // })
     }
 
-    if (createUDF) {
-      createUDF(this.db)
-    }
+    // if (createUDF) {
+    //   createUDF(this.db)
+    // }
 
     // other
     this.undoRedoManager = new SQLiteUndoRedo(this)
@@ -219,6 +224,9 @@ export class DataSpace {
   }
 
   private initUDF() {
+    if (typeof this.db.sync !== 'function') {
+      return
+    }
     const allUfs = withSqlite3AllUDF(this.dataEventChannel)
     // system functions
     if (!this.isUDFWithCtx) {
@@ -232,10 +240,46 @@ export class DataSpace {
     }
   }
 
-  private initMetaTable() {
-    this.allTables.forEach((table) => {
-      this.db.exec(table.createTableSql);
-    })
+  private async initMetaTable() {
+    if (typeof this.db.sync !== 'function') {
+      console.log('skip init meta table')
+      return
+    }
+    try {
+      await this.db.exec({ sql: this.changelog.createTableSql });
+
+    } catch (error) {
+      console.log('error create changelog table', error)
+    }
+    for (const table of this.allTables) {
+      console.log('create table', table.name, table.createTableSql)
+      if (typeof this.db.executeMultiple === 'function') {
+        await this.db.executeMultiple(table.createTableSql);
+      } else {
+        const res = await this.db.exec(table.createTableSql);
+        console.log('create table', table.name, res)
+      }
+    }
+    if (typeof this.db.sync === 'function') {
+      try {
+        // await this.db.sync()
+        console.log('sync success')
+      } catch (error) {
+        console.error(error)
+      }
+      this.startChangelogPolling()
+      this.isReady = true
+    }
+  }
+
+  public async sync() {
+    try {
+      await this.db.sync()
+    } catch (error) {
+    }
+  }
+  public async isInitReady() {
+    return this.isReady
   }
 
   public async getUDFs() {
@@ -1210,5 +1254,40 @@ export class DataSpace {
 
   public async hasTableFTS(tableName: string) {
     return await this.tableFullTextSearch.hasFTS(tableName)
+  }
+
+  private startChangelogPolling() {
+    const pollInterval = 1000 // 1 second
+
+    setInterval(async () => {
+      const logs = await this.changelog.getUnprocessedLogs()
+      if (!logs.length) return
+
+      // Process logs
+      for (const log of logs) {
+        this.dataEventChannel.postMessage({
+          type: log.event_type,
+          payload: {
+            type: log.type,
+            table: log.table_name,
+            _new: log.new_data ? JSON.parse(log.new_data) : undefined,
+            _old: log.old_data ? JSON.parse(log.old_data) : undefined
+          }
+        })
+      }
+
+      // Mark as processed
+      await this.changelog.markAsProcessed(logs.map(log => log.id))
+    }, pollInterval)
+  }
+
+  private startChangelogCleanup() {
+    const cleanupInterval = 24 * 60 * 60 * 1000 // 24 hours
+
+    setInterval(async () => {
+      const beforeDate = new Date()
+      beforeDate.setDate(beforeDate.getDate() - 7) // Keep 7 days of logs
+      await this.changelog.cleanup(beforeDate.toISOString())
+    }, cleanupInterval)
   }
 }

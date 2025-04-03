@@ -1,4 +1,6 @@
+import { ChangelogTableName } from "@/lib/sqlite/const"
 import { DataSpace } from "../DataSpace"
+import { DataUpdateSignalType, EidosDataEventChannelMsgType } from "@/lib/const"
 
 type IRegisterTrigger = {
   update: string
@@ -76,21 +78,69 @@ export class DataChangeTrigger {
     AFTER UPDATE ON ${tableName}
     FOR EACH ROW
     BEGIN
-        SELECT eidos_data_event_update('${tableName}', ${new_json_object}, ${old_json_object});
+        INSERT INTO ${ChangelogTableName} (
+            id,
+            table_name,
+            type,
+            event_type,
+            new_data,
+            old_data,
+            is_processed
+        ) VALUES (
+            uuidv7(),
+            '${tableName}',
+            '${DataUpdateSignalType.Update}',
+            '${EidosDataEventChannelMsgType.DataUpdateSignalType}',
+            ${new_json_object},
+            ${old_json_object},
+            0
+        );
     END;`
 
     const insertSql = `CREATE TEMP TRIGGER data_insert_trigger_${tableName}
     AFTER INSERT ON ${tableName}
     FOR EACH ROW
     BEGIN
-        SELECT eidos_data_event_insert('${tableName}', ${new_json_object});
+        INSERT INTO ${ChangelogTableName} (
+            id,
+            table_name,
+            type,
+            event_type,
+            new_data,
+            old_data,
+            is_processed
+        ) VALUES (
+            uuidv7(),
+            '${tableName}',
+            '${DataUpdateSignalType.Insert}',
+            '${EidosDataEventChannelMsgType.DataUpdateSignalType}',
+            ${new_json_object},
+            ${old_json_object},
+            0
+        );
     END;`
 
     const deleteSql = `CREATE TEMP TRIGGER data_delete_trigger_${tableName}
     AFTER DELETE ON ${tableName}
     FOR EACH ROW
     BEGIN
-        SELECT eidos_data_event_delete('${tableName}', ${old_json_object});
+        INSERT INTO ${ChangelogTableName} (
+            id,
+            table_name,
+            type,
+            event_type,
+            new_data,
+            old_data,
+            is_processed
+        ) VALUES (
+            uuidv7(),
+            '${tableName}',
+            '${DataUpdateSignalType.Delete}',
+            '${EidosDataEventChannelMsgType.DataUpdateSignalType}',
+            ${old_json_object},
+            ${old_json_object},
+            0
+        );
     END;`
 
     // if trigger not changed, do nothing

@@ -1,8 +1,10 @@
 import { JsonSchema7ObjectType } from "zod-to-json-schema"
 
-import { ScriptTableName } from "@/lib/sqlite/const"
+import { ChangelogTableName, ScriptTableName } from "@/lib/sqlite/const"
 
 import { BaseTable, BaseTableImpl } from "./base"
+import { EidosDataEventChannelMsgType } from "@/lib/const"
+import { DataUpdateSignalType } from "@/lib/const"
 
 export type ScriptStatus = "all" | "enabled" | "disabled"
 
@@ -98,22 +100,38 @@ export class ScriptTable
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
-    CREATE TEMP TRIGGER IF NOT EXISTS ${this.name}_after_update
+    CREATE TRIGGER IF NOT EXISTS ${this.name}_after_update
     AFTER UPDATE ON ${this.name}
     BEGIN
-      SELECT eidos_meta_table_event_update('${this.name}', json_object(
-        'id', NEW.id,
-        'type', NEW.type,
-        'name', NEW.name,
-        'code', NEW.code,
-        'enabled', NEW.enabled
-      ), json_object(
-        'id', OLD.id,
-        'type', OLD.type,
-        'name', OLD.name,
-        'code', OLD.code,
-        'enabled', OLD.enabled
-      ));
+      INSERT INTO ${ChangelogTableName} (
+          id,
+          table_name,
+          type,
+          event_type,
+          new_data,
+          old_data,
+          is_processed
+      ) VALUES (
+          uuid7(),
+          '${this.name}',
+          '${DataUpdateSignalType.Update}',
+          '${EidosDataEventChannelMsgType.MetaTableUpdateSignalType}',
+          json_object(
+              'id', NEW.id,
+              'type', NEW.type,
+              'name', NEW.name,
+              'code', NEW.code,
+              'enabled', NEW.enabled
+          ),
+          json_object(
+              'id', OLD.id,
+              'type', OLD.type,
+              'name', OLD.name,
+              'code', OLD.code,
+              'enabled', OLD.enabled
+          ),
+          0
+      );
     END;
 
 `

@@ -69,6 +69,7 @@ const desktopConfig: UserConfig = mergeConfig(sharedConfig, {
               ],
               external: [
                 'better-sqlite3',
+                '@libsql/client/node',
               ]
             },
           },

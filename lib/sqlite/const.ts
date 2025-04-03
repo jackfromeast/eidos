@@ -40,3 +40,6 @@ export const MessageTableName = `eidos__messages`
 
 // store queue
 export const QueueTableName = `eidos__queue`
+
+// store changelog
+export const ChangelogTableName = `eidos__changelogs`

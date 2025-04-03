@@ -7,6 +7,7 @@ import { win } from "./main";
 import { NodeServerDatabase } from "./sqlite-server";
 import { getResourcePath } from "./helper";
 import { EventEmitter } from 'events';
+import { TursoServerDatabase } from "./sqlite-server/turso";
 
 
 function requestFromRenderer(webContents: WebContents, arg: any) {
@@ -90,16 +91,22 @@ export class DataSpaceManager {
         const libPath = getResourcePath(`dist-simple/libsimple`);
         const dictPath = getResourcePath('dist-simple/dict');
 
-        const serverDb = new NodeServerDatabase({
+        // const serverDb = new NodeServerDatabase({
+        //     path: getSpaceDbPath(spaceName),
+        //     options: {
+        //         timeout: 3000,
+        //     }
+        // }, {
+        //     simple: {
+        //         libPath,
+        //         dictPath,
+        //     },
+        // });
+
+        const serverDb = new TursoServerDatabase({
             path: getSpaceDbPath(spaceName),
-            options: {
-                timeout: 3000,
-            }
-        }, {
-            simple: {
-                libPath,
-                dictPath,
-            },
+            syncUrl: `libsql://offline-demo-mayneyao.turso.io`,
+            authToken: `eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3NDM0NTExNDAsImlkIjoiODE3NTcxMTUtNWVlMi00MmU5LWE1ZTItYmY5YTgxZmIwZGZjIn0.0AMZockSVLnkwg3mfp_lcb4ck-LsVcWcDsrdTmq6m1Oa-QECKPIiVRqJqrgiqjZRvNFah518PPzyUB_7rGVHDg`,
         });
 
         const draftDataSpace = new DataSpace({
@@ -163,7 +170,7 @@ export class DataSpaceManager {
                 setInterval,
             },
             createUDF: initUDF,
-            hasLoadExtension: true,
+            hasLoadExtension: false,
             postMessage: (data: any, transfer?: any[]) => {
                 win?.webContents.send(EidosMessageChannelName, data, transfer);
             },
@@ -173,7 +180,7 @@ export class DataSpaceManager {
             dataEventChannel: dataEventChannel,
             efsManager: efsManager,
             draftDb: draftDataSpace,
-            enableFTS: true
+            enableFTS: false
         });
 
         return this.dataSpace;

@@ -5,7 +5,7 @@ import {
 import { allFieldTypesMap } from "@/lib/fields"
 import { FieldType } from "@/lib/fields/const"
 import { ILinkProperty } from "@/lib/fields/link"
-import { ColumnTableName } from "@/lib/sqlite/const"
+import { ChangelogTableName, ColumnTableName } from "@/lib/sqlite/const"
 import { alterColumnType } from "@/lib/sqlite/sql-alter-column-type"
 import { findDependentFormulaFields, getFormulaFieldDeletionOrder, transformFormula2VirtualGeneratedField } from "@/lib/sqlite/sql-formula-parser"
 import { IField } from "@/lib/store/interface"
@@ -41,14 +41,44 @@ export class ColumnTable extends BaseTableImpl implements BaseTable<IField> {
   AFTER INSERT ON ${ColumnTableName}
   FOR EACH ROW
   BEGIN
-      SELECT eidos_column_event_insert(new.table_name, json_object('name', new.name, 'type', new.type, 'table_name', new.table_name, 'table_column_name', new.table_column_name, 'property', new.property));
+      INSERT INTO ${ChangelogTableName} (
+          id,
+          table_name,
+          type,
+          event_type,
+          new_data,
+          is_processed
+      ) VALUES (
+          uuid7(),
+          NEW.table_name,
+          '${DataUpdateSignalType.AddColumn}',
+          '${EidosDataEventChannelMsgType.DataUpdateSignalType}',
+          json_object('name', NEW.name, 'type', NEW.type, 'table_name', NEW.table_name, 'table_column_name', NEW.table_column_name, 'property', NEW.property),
+          0
+      );
   END;
 
   CREATE TRIGGER IF NOT EXISTS column_update_trigger_${ColumnTableName}
   AFTER UPDATE ON ${ColumnTableName}
   FOR EACH ROW
   BEGIN
-      SELECT eidos_column_event_update(new.table_name, json_object('name', new.name, 'type', new.type, 'table_name', new.table_name, 'table_column_name', new.table_column_name, 'property', new.property), json_object('name', old.name, 'type', old.type, 'table_name', old.table_name, 'table_column_name', old.table_column_name, 'property', old.property));
+      INSERT INTO ${ChangelogTableName} (
+          id,
+          table_name,
+          type,
+          event_type,
+          new_data,
+          old_data,
+          is_processed
+      ) VALUES (
+          uuid7(),
+          NEW.table_name,
+          '${DataUpdateSignalType.UpdateColumn}',
+          '${EidosDataEventChannelMsgType.DataUpdateSignalType}',
+          json_object('name', NEW.name, 'type', NEW.type, 'table_name', NEW.table_name, 'table_column_name', NEW.table_column_name, 'property', NEW.property),
+          json_object('name', OLD.name, 'type', OLD.type, 'table_name', OLD.table_name, 'table_column_name', OLD.table_column_name, 'property', OLD.property),
+          0
+      );
   END;
 `
   JSONFields: string[] = ["property"]
