@@ -28,6 +28,9 @@ export type StatusCount = {
     color?: string
 }
 
+
+export const NULL_STATUS = "EIDOS_NULL_STATUS"
+
 export const useKanbanViewData = (view: IView) => {
     const { table_id: tableId, query, properties } = view
     const tableName = getRawTableNameById(tableId)
@@ -54,18 +57,21 @@ export const useKanbanViewData = (view: IView) => {
 
         const countSql = `
             SELECT 
-                COALESCE(${groupByField}, 'Todo') as status,
+                CASE
+                    WHEN ${groupByField} IS NULL OR ${groupByField} = '' THEN '${NULL_STATUS}'
+                    ELSE ${groupByField}
+                END as status,
                 COUNT(*) as count 
             FROM (${sql}) as filtered_data
             GROUP BY ${groupByField}
             ORDER BY count DESC
         `
         try {
-            const counts = await sqlite.sql2`${countSql}`
+            const counts: StatusCount[] = await sqlite.sql2`${countSql}`
             if (groupByFieldInstance?.type === FieldType.Select) {
                 // combo statusCounts and groupByFieldInstance.options
                 const options = (groupByFieldInstance as IField<SelectProperty>).property.options
-                const statusCountsWithOptions = options.map(option => {
+                const statusCountsWithOptions: StatusCount[] = options.map(option => {
                     const count = counts.find(count => count.status === option.name)
                     return {
                         status: option.name,
@@ -73,6 +79,13 @@ export const useKanbanViewData = (view: IView) => {
                         color: option.color
                     }
                 })
+                const nullStatus = counts.find(count => count.status === NULL_STATUS) || { count: 0 }
+                if (!statusCountsWithOptions.some(item => item.status === NULL_STATUS) && nullStatus.count > 0) {
+                    statusCountsWithOptions.unshift({
+                        status: NULL_STATUS,
+                        count: nullStatus.count,
+                    })
+                }
                 setStatusCounts(statusCountsWithOptions)
             } else {
                 console.warn("groupByField is not a select field", {
@@ -100,7 +113,7 @@ export const useKanbanViewData = (view: IView) => {
                 item.id === itemId ? { ...item, [groupByField]: newStatus, status: newStatus } : item
             )
         )
-        await sqlite?.table(tableId).rows.update(itemId, { [groupByField]: newStatus }, {
+        await sqlite?.table(tableId).rows.update(itemId, { [groupByField]: newStatus === NULL_STATUS ? null : newStatus }, {
             useFieldId: true
         })
         await fetchStatusCounts()
@@ -118,7 +131,7 @@ export const useKanbanViewData = (view: IView) => {
                 setItems(
                     data.map((item: any) => ({
                         id: item._id,
-                        status: item[groupByField] || "Todo",
+                        status: item[groupByField] || NULL_STATUS,
                         ...item,
                     }))
                 )
@@ -143,7 +156,7 @@ export const useKanbanViewData = (view: IView) => {
                 if (isUpdate) {
                     setItems((prevItems) =>
                         prevItems.map((item) =>
-                            item.id === _new._id ? { ...item, [groupByField]: _new[groupByField], status: _new[groupByField] } : item
+                            item.id === _new._id ? { ...item, [groupByField]: _new[groupByField], status: _new[groupByField] || NULL_STATUS } : item
                         )
                     )
                 } else if (isDelete) {
@@ -151,7 +164,7 @@ export const useKanbanViewData = (view: IView) => {
                         prevItems.filter((item) => item.id !== _old._id)
                     )
                 } else if (isCreate) {
-                    setItems((prevItems) => [...prevItems, { ..._new, id: _new._id, status: _new[groupByField] }])
+                    setItems((prevItems) => [...prevItems, { ..._new, id: _new._id, status: _new[groupByField] || NULL_STATUS }])
                 }
                 await fetchStatusCounts()
             }

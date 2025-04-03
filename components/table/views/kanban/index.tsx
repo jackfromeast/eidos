@@ -56,6 +56,15 @@ export const KanbanView = ({
   const statusCountsToShow = isBoardTooLong
     ? statusCounts.slice(0, 50)
     : statusCounts
+  if (!view.properties?.groupByField) {
+    return (
+      <div className="p-4 h-full flex w-full overflow-x-auto">
+        <div>
+          No group by field, please configure the view to group by a field.
+        </div>
+      </div>
+    )
+  }
   return (
     <KanbanProvider
       onDragEnd={handleDragEnd}

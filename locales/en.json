@@ -494,9 +494,12 @@
     "table.view.queryDescription": "SQL query to use for this view.",
     "table.view.typeDescription": "The type of view to use for this table.",
     "table.view.where": "Where",
-    "kanban.addNew": "Add New Item",
+    "kanban.addNew": "Add Item",
     "kanban.newItem.title": "New Item",
     "kanban.newItem.inputTitle": "Title",
     "kanban.newItem.create": "Create",
-    "kanban.newItem.cancel": "Cancel"
+    "kanban.newItem.cancel": "Cancel",
+    "kanban.status.unassigned": "Unassigned",
+    "kanban.collapse.tooltip": "Collapse list",
+    "kanban.expand.tooltip": "Expand list"
 }
