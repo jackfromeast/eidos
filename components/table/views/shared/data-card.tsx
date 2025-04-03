@@ -3,10 +3,11 @@ import { useDraggable } from "@dnd-kit/core"
 import { MoveDiagonalIcon, MoveUpRightIcon, Trash2Icon } from "lucide-react"
 
 import { IField } from "@/lib/store/interface"
-import { cn, shortenId } from "@/lib/utils"
+import { cn, getRawTableNameById, shortenId } from "@/lib/utils"
 import { useCurrentSubPage } from "@/hooks/use-current-sub-page"
 import { useGoto } from "@/hooks/use-goto"
 import { useSqlite } from "@/hooks/use-sqlite"
+import { useTableOperation } from "@/hooks/use-table"
 import {
   ContextMenu,
   ContextMenuContent,
@@ -60,6 +61,14 @@ export const DataCard = ({
   const goto = useGoto()
   const { setProperty } = useRowDataOperation()
   const { getOrCreateTableSubDoc } = useSqlite()
+  const { deleteRowsByIds } = useTableOperation(
+    getRawTableNameById(tableId),
+    space
+  )
+
+  const deleteItem = async () => {
+    await deleteRowsByIds([item._id], getRawTableNameById(tableId))
+  }
 
   const { setSubPage } = useCurrentSubPage()
 
@@ -189,7 +198,7 @@ export const DataCard = ({
           <MoveDiagonalIcon className="pr-2" />
           Open in full page
         </ContextMenuItem>
-        <ContextMenuItem disabled>
+        <ContextMenuItem onClick={deleteItem}>
           <Trash2Icon className="pr-2" />
           Delete
         </ContextMenuItem>
