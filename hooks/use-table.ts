@@ -155,9 +155,17 @@ export const useTableOperation = (tableName: string, databaseName: string) => {
     }
   }
 
-  const addRow = async (_uuid?: string) => {
+  const addRow = async (
+    _uuid?: string,
+    data?: Record<string, any>,
+    options?: {
+      useFieldId?: boolean
+    }
+  ) => {
     if (sqlite) {
-      return await sqlite.addRow(tableId, { _id: _uuid || uuidv7() })
+      return await sqlite.addRow(tableId, { _id: _uuid || uuidv7(), ...data },
+        options
+      )
     }
   }
 

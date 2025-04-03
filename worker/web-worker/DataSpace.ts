@@ -569,11 +569,14 @@ export class DataSpace {
   @timeit(100)
   public async addRow(
     tableName: string,
-    data: Record<string, any>
+    data: Record<string, any>,
+    options?: {
+      useFieldId?: boolean
+    }
   ): Promise<Record<string, any>> {
     const tableId = getTableIdByRawTableName(tableName)
     const tm = new TableManager(tableId, this)
-    const res = await tm.rows.create(data)
+    const res = await tm.rows.create(data, options)
     // this.undoRedoManager.event()
     const row = await tm.rows.get(res._id, { raw: true, withRowId: true })
     return row

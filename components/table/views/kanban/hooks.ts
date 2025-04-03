@@ -1,5 +1,6 @@
 import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
 import { useSqlite, useSqliteStore } from "@/hooks/use-sqlite"
+import { useTableOperation } from "@/hooks/use-table"
 import { useUiColumns } from "@/hooks/use-ui-columns"
 import {
     EidosDataEventChannelMsg,
@@ -13,6 +14,7 @@ import { IView } from "@/lib/store/IView"
 import { getRawTableNameById } from "@/lib/utils"
 import { IField } from "lib/store/interface"
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { uuidv7 } from "@/lib/utils"
 
 export type KanbanItem = {
     id: string
@@ -134,11 +136,23 @@ export const useKanbanViewData = (view: IView) => {
                 payload.table === tableName
             ) {
                 const { _new, _old } = payload
-                setItems((prevItems) =>
-                    prevItems.map((item) =>
-                        item.id === _new._id ? { ...item, [groupByField]: _new[groupByField], status: _new[groupByField] } : item
+                const isUpdate = _new && _old
+                const isDelete = !_new && _old
+                const isCreate = _new && !_old
+
+                if (isUpdate) {
+                    setItems((prevItems) =>
+                        prevItems.map((item) =>
+                            item.id === _new._id ? { ...item, [groupByField]: _new[groupByField], status: _new[groupByField] } : item
+                        )
                     )
-                )
+                } else if (isDelete) {
+                    setItems((prevItems) =>
+                        prevItems.filter((item) => item.id !== _old._id)
+                    )
+                } else if (isCreate) {
+                    setItems((prevItems) => [...prevItems, { ..._new, id: _new._id, status: _new[groupByField] }])
+                }
                 await fetchStatusCounts()
             }
         }
@@ -155,4 +169,31 @@ export const useKanbanViewData = (view: IView) => {
         statusCounts,
         updateItemStatus: updateItemStatus,
     }
-} 
+}
+
+export const useKanbanItemOperations = (
+    tableId: string,
+    space: string,
+    groupByField?: string
+) => {
+    const { addRow } = useTableOperation(getRawTableNameById(tableId), space)
+
+    const createItem = async (title: string, status: string) => {
+        if (!title || !groupByField) return
+
+        return await addRow(
+            uuidv7(),
+            {
+                title: title,
+                [groupByField]: status,
+            },
+            {
+                useFieldId: true,
+            }
+        )
+    }
+    return {
+        createItem,
+    }
+}
+

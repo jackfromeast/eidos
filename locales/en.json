@@ -493,5 +493,10 @@
     "table.view.query": "Query",
     "table.view.queryDescription": "SQL query to use for this view.",
     "table.view.typeDescription": "The type of view to use for this table.",
-    "table.view.where": "Where"
+    "table.view.where": "Where",
+    "kanban.addNew": "Add New Item",
+    "kanban.newItem.title": "New Item",
+    "kanban.newItem.inputTitle": "Title",
+    "kanban.newItem.create": "Create",
+    "kanban.newItem.cancel": "Cancel"
 }
