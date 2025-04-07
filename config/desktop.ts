@@ -68,7 +68,7 @@ const desktopConfig: UserConfig = mergeConfig(sharedConfig, {
                 esmShim() as unknown as Plugin,
               ],
               external: [
-                'better-sqlite3',
+                '@eidos.space/better-sqlite3',
               ]
             },
           },

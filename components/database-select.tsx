@@ -37,6 +37,7 @@ import { useLastOpened } from "@/apps/web-app/[database]/hook"
 
 import { Input } from "./ui/input"
 import { Label } from "./ui/label"
+import { Switch } from "@/components/ui/switch"
 
 interface IDatabaseSelectorProps {
   databases: string[]
@@ -56,6 +57,8 @@ export function DatabaseSelect({ databases }: IDatabaseSelectorProps) {
   const [showNewTeamDialog, setShowNewTeamDialog] = React.useState(false)
   const [databaseName, setDatabaseName] = React.useState("")
   const [spaceNameFromFile, setSpaceNameFromFile] = React.useState("")
+  const [enableSync, setEnableSync] = React.useState(false)
+  const [volumeId, setVolumeId] = React.useState("")
 
   const reset = () => {
     setDatabaseName("")
@@ -111,7 +114,7 @@ export function DatabaseSelect({ databases }: IDatabaseSelectorProps) {
       if (file) {
         await spaceFileSystem.import(databaseName, file)
       } else {
-        await createSpace(databaseName)
+        await createSpace(databaseName, enableSync)
       }
       setLoading(false)
       setShowNewTeamDialog(false)
@@ -238,6 +241,31 @@ export function DatabaseSelect({ databases }: IDatabaseSelectorProps) {
                 </span>
               )}
             </div>
+          </div>
+          <div className="space-y-4 py-2 pb-4">
+            <div className="flex items-center justify-between space-x-2">
+              <Label htmlFor="enable-sync">{t('space.select.enableSync')}</Label>
+              <Switch
+                id="enable-sync"
+                checked={enableSync}
+                onCheckedChange={setEnableSync}
+              />
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {t('space.select.enableSyncDescription')}
+            </p>
+            {enableSync && (
+              <div className="mt-2">
+                <Label htmlFor="volume-id">{t('space.select.volumeId')}</Label>
+                <Input
+                  id="volume-id"
+                  value={volumeId}
+                  onChange={(e) => setVolumeId(e.target.value)}
+                  placeholder={t('space.select.volumeIdPlaceholder')}
+                  className="mt-1"
+                />
+              </div>
+            )}
           </div>
         </div>
         <DialogFooter>

@@ -208,6 +208,18 @@ export class DataSpace {
     this.tableFullTextSearch = new TableFullTextSearch(this, enableFTS)
   }
 
+
+  public pull() {
+    if ('pull' in this.db) {
+      return this.db.pull()
+    }
+    return Promise.resolve(null)
+  }
+
+  public reset() {
+    return this.db.reset()
+  }
+
   // close db
   public close() {
     this.db.close()

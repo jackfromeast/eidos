@@ -34,6 +34,20 @@ export interface ISqlite<T, D> {
 
 export abstract class BaseServerDatabase {
   filename?: string
+
+  pull(): Promise<{ [key: string]: any; }> {
+    return Promise.resolve({})
+  }
+
+  push(): Promise<{ [key: string]: any; }> {
+    return Promise.resolve({})
+  }
+
+  reset(): Promise<{ [key: string]: any; }> {
+    return Promise.resolve({})
+  }
+
+
   abstract prepare(sql: string): {
     run: (bind?: any[]) => void;
   };

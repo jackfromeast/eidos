@@ -3,6 +3,7 @@ import { FolderOpen, SettingsIcon } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { Link, useNavigate } from "react-router-dom"
 
+import { MsgType } from "@/lib/const"
 import { isDesktopMode } from "@/lib/env"
 import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
 import { useEngine } from "@/hooks/use-engine"
@@ -84,6 +85,14 @@ export function Settings() {
       window.eidos.openFolder(spacePath)
     }
   }
+  const handlePull = async () => {
+    const res = await window.eidos.invoke(MsgType.Pull, { spaceName: space })
+    console.log("pull:", res)
+  }
+  const handleReset = async () => {
+    const res = await window.eidos.invoke(MsgType.Reset, { spaceName: space })
+    console.log("reset:", res)
+  }
 
   return (
     <Card className="border-0 p-0">
@@ -114,6 +123,34 @@ export function Settings() {
             </div>
           </div>
           <hr />
+          <div className="grid gap-3">
+            <Label htmlFor="pull">{t("space.settings.pull")}</Label>
+            <p className="text-sm text-muted-foreground">
+              {t("space.settings.pullDescription")}
+            </p>
+            <Button
+              size="sm"
+              className="max-w-max"
+              variant="outline"
+              onClick={handlePull}
+            >
+              {t("space.settings.pull")}
+            </Button>
+          </div>
+          <div className="grid gap-3">
+            <Label htmlFor="reset">{t("space.settings.reset")}</Label>
+            <p className="text-sm text-muted-foreground">
+              {t("space.settings.resetDescription")}
+            </p>
+            <Button
+              size="sm"
+              className="max-w-max"
+              variant="outline"
+              onClick={handleReset}
+            >
+              {t("space.settings.reset")}
+            </Button>
+          </div>
           <div className="grid gap-3">
             <Label htmlFor="description">{t("common.export")}</Label>
             <p className="text-sm text-muted-foreground">
