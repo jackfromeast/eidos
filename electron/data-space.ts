@@ -78,7 +78,7 @@ export class DataSpaceManager {
         return true;
     }
 
-    public async getOrSetDataSpace(spaceName: string): Promise<DataSpace> {
+    public async getOrSetDataSpace(spaceName: string, enableSync: boolean = false, volumeId?: string): Promise<DataSpace> {
         if (this.dataSpace && this.dataSpace.dbName !== spaceName) {
             // Close both main and draft databases when switching to a different space
             this.dataSpace.close();
@@ -89,6 +89,7 @@ export class DataSpaceManager {
         console.log("init space", spaceName)
         const libPath = getResourcePath(`dist-simple/libsimple`);
         const dictPath = getResourcePath('dist-simple/dict');
+        const graftLibPath = getResourcePath('dist-simple/libgraft');
 
         const serverDb = new NodeServerDatabase({
             path: getSpaceDbPath(spaceName),
@@ -100,6 +101,11 @@ export class DataSpaceManager {
                 libPath,
                 dictPath,
             },
+            graft: {
+                libPath: graftLibPath,
+            },
+            enableSync,
+            volumeId
         });
 
         const draftDataSpace = new DataSpace({
@@ -110,6 +116,7 @@ export class DataSpaceManager {
                     libPath,
                     dictPath,
                 },
+                enableSync: false
             }),
             activeUndoManager: false,
             dbName: 'draft',
@@ -186,8 +193,8 @@ export function getDataSpace(): DataSpace | null {
     return DataSpaceManager.getInstance().getDataSpace();
 }
 
-export function getOrSetDataSpace(spaceName: string): Promise<DataSpace> {
-    return DataSpaceManager.getInstance().getOrSetDataSpace(spaceName);
+export function getOrSetDataSpace(spaceName: string, enableSync: boolean = false, volumeId?: string): Promise<DataSpace> {
+    return DataSpaceManager.getInstance().getOrSetDataSpace(spaceName, enableSync, volumeId);
 }
 
 export function reloadDataSpace(): Promise<{ success: boolean }> {

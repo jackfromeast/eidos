@@ -102,10 +102,23 @@ ipcMain.handle(MsgType.SwitchDatabase, (event, args) => {
     return { id, data }
 })
 
-ipcMain.handle(MsgType.CreateSpace, (event, args) => {
+ipcMain.handle(MsgType.Pull, async (event, args) => {
     const { spaceName } = args
+    const dataSpace = await getOrSetDataSpace(spaceName)
+    return dataSpace?.pull()
+})
+ipcMain.handle(MsgType.Reset, async (event, args) => {
+    const { spaceName } = args
+    const dataSpace = await getOrSetDataSpace(spaceName)
+    return dataSpace?.reset()
+})
+
+
+
+ipcMain.handle(MsgType.CreateSpace, (event, args) => {
+    const { spaceName, enableSync, volumeId } = args
     const data = { spaceName }
-    getOrSetDataSpace(spaceName)
+    getOrSetDataSpace(spaceName, enableSync, volumeId)
     return { data }
 })
 

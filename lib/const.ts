@@ -6,6 +6,11 @@ export enum MsgType {
   CreateSpace = "CreateSpace",
   Syscall = "Syscall",
 
+  // sync
+  Pull = "Pull",
+  Push = "Push",
+  Reset = "Reset",
+
   // msg worker => window
   Error = "Error",
   QueryResp = "QueryResp",

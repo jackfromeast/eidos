@@ -61,11 +61,11 @@ export const useSpace = () => {
     })
   }, [])
 
-  const createSpace = useCallback(async (spaceName: string) => {
+  const createSpace = useCallback(async (spaceName: string, enableSync: boolean = false, volumeId?: string) => {
     await spaceFileSystem.create(spaceName)
 
     if (isDesktopMode) {
-      const res = await window.eidos.invoke(MsgType.CreateSpace, { spaceName })
+      const res = await window.eidos.invoke(MsgType.CreateSpace, { spaceName, enableSync, volumeId })
       return res
     } else {
       const msgId = uuidv7()
