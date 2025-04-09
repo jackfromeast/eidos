@@ -85,13 +85,17 @@ export function Settings() {
       window.eidos.openFolder(spacePath)
     }
   }
-  const handlePull = async () => {
-    const res = await window.eidos.invoke(MsgType.Pull, { spaceName: space })
+  const handleStatus = async () => {
+    const res = await window.eidos.invoke(MsgType.Status, { spaceName: space })
     console.log("pull:", res)
   }
   const handleReset = async () => {
     const res = await window.eidos.invoke(MsgType.Reset, { spaceName: space })
     console.log("reset:", res)
+  }
+  const handlePages = async () => {
+    const res = await window.eidos.invoke(MsgType.Pages, { spaceName: space })
+    console.log("pages:", res)
   }
 
   return (
@@ -124,17 +128,17 @@ export function Settings() {
           </div>
           <hr />
           <div className="grid gap-3">
-            <Label htmlFor="pull">{t("space.settings.pull")}</Label>
+            <Label htmlFor="status">{t("space.settings.status")}</Label>
             <p className="text-sm text-muted-foreground">
-              {t("space.settings.pullDescription")}
+              {t("space.settings.statusDescription")}
             </p>
             <Button
               size="sm"
               className="max-w-max"
               variant="outline"
-              onClick={handlePull}
+              onClick={handleStatus}
             >
-              {t("space.settings.pull")}
+              {t("space.settings.status")}
             </Button>
           </div>
           <div className="grid gap-3">
@@ -149,6 +153,20 @@ export function Settings() {
               onClick={handleReset}
             >
               {t("space.settings.reset")}
+            </Button>
+          </div>
+          <div className="grid gap-3">
+            <Label htmlFor="pages">{t("space.settings.pages")}</Label>
+            <p className="text-sm text-muted-foreground">
+              {t("space.settings.pagesDescription")}
+            </p>
+            <Button
+              size="sm"
+              className="max-w-max"
+              variant="outline"
+              onClick={handlePages}
+            >
+              {t("space.settings.pages")}
             </Button>
           </div>
           <div className="grid gap-3">

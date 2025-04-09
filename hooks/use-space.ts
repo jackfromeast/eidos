@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react"
+import { useCallback, useEffect, useState } from "react"
 
 import { useLastOpened } from "@/apps/web-app/[database]/hook"
 import { MsgType } from "@/lib/const"
@@ -14,6 +14,30 @@ export const useSpaceFileSystem = () => {
     ? window.eidos.spaceFileSystem
     : new SpaceFileSystem()
   return { spaceFileSystem }
+}
+
+export type SpaceInfo = {
+  isSyncEnabled: boolean
+  graftId?: string
+}
+
+export const useSpaceInfo = (spaceName: string) => {
+  const { spaceFileSystem } = useSpaceFileSystem()
+  const [spaceInfo, setSpaceInfo] = useState<SpaceInfo | null>(null)
+  const getSpaceInfo = useCallback(async (spaceName: string) => {
+    if (!spaceName) {
+      setSpaceInfo(null)
+      return
+    }
+    const info = await spaceFileSystem.getSpaceInfo(spaceName)
+    setSpaceInfo(info)
+  }, [spaceName])
+
+  useEffect(() => {
+    getSpaceInfo(spaceName)
+  }, [getSpaceInfo, spaceName])
+
+  return { getSpaceInfo, spaceInfo }
 }
 
 export const useSpace = () => {
@@ -33,6 +57,7 @@ export const useSpace = () => {
   const exportSpace = useCallback(async (spaceName: string) => {
     await spaceFileSystem.export(spaceName)
   }, [])
+
 
   const deleteSpace = useCallback(
     async (spaceName: string) => {
@@ -100,6 +125,6 @@ export const useSpace = () => {
     createSpace,
     exportSpace,
     deleteSpace,
-    rebuildIndex
+    rebuildIndex,
   }
 }

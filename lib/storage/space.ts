@@ -66,4 +66,24 @@ export class SpaceFileSystem {
     }
     return spaces
   }
+
+
+  getSpaceInfo = async (space: string) => {
+    const dir = ["spaces", space]
+    const dirHandle = await getDirHandle(dir, this.rootDirHandle)
+    // check the graft file is exist
+    const graftFile = await dirHandle.getFileHandle("graft", { create: false })
+    if (!graftFile) {
+      return {
+        isSyncEnabled: false
+      }
+    }
+    const file = await graftFile.getFile()
+    const text = await file.text()
+    const graftId = text.split("\n")[0]
+    return {
+      isSyncEnabled: true,
+      graftId
+    }
+  }
 }

@@ -113,6 +113,17 @@ ipcMain.handle(MsgType.Reset, async (event, args) => {
     return dataSpace?.reset()
 })
 
+ipcMain.handle(MsgType.Status, async (event, args) => {
+    const { spaceName } = args
+    const dataSpace = await getOrSetDataSpace(spaceName)
+    return dataSpace?.status()
+})
+
+ipcMain.handle(MsgType.Pages, async (event, args) => {
+    const { spaceName } = args
+    const dataSpace = await getOrSetDataSpace(spaceName)
+    return dataSpace?.pages()
+})
 
 
 ipcMain.handle(MsgType.CreateSpace, (event, args) => {
