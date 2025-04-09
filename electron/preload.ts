@@ -153,6 +153,10 @@ async function main() {
       };
     },
     getApiAgentStatus: () => ipcRenderer.invoke('get-api-agent-status'),
+
+    fetch(url: string, options: RequestInit = {}) {
+      return ipcRenderer.invoke('fetch', url, options);
+    }
   })
 
 }
