@@ -7,7 +7,55 @@ import { win } from "./main";
 import { NodeServerDatabase } from "./sqlite-server";
 import { getResourcePath } from "./helper";
 import { EventEmitter } from 'events';
+import { getConfigManager } from "./config";
 
+
+// --- START: Helper function to apply Graft Config to Environment --- 
+function applyGraftConfigToEnv(): void {
+    try {
+        const configManager = getConfigManager();
+        const graftConfig = configManager.getGraftConfig();
+
+        console.log('Applying Graft config to environment variables:', graftConfig);
+
+        // Only set env vars if the corresponding config value is present
+        if (graftConfig.metastore) {
+            process.env.GRAFT_METASTORE = graftConfig.metastore;
+            console.log(`Set GRAFT_METASTORE=${graftConfig.metastore}`);
+        }
+        if (graftConfig.pagestore) {
+            process.env.GRAFT_PAGESTORE = graftConfig.pagestore;
+            console.log(`Set GRAFT_PAGESTORE=${graftConfig.pagestore}`);
+        }
+        if (graftConfig.token) { // Check if token exists
+            process.env.GRAFT_TOKEN = graftConfig.token;
+            console.log(`Set GRAFT_TOKEN=***`); // Avoid logging the actual token
+        } else {
+            // Ensure env var is unset if config value is missing/undefined
+            delete process.env.GRAFT_TOKEN;
+            console.log('Unset GRAFT_TOKEN');
+        }
+        // Always set autosync (default is true)
+        process.env.GRAFT_AUTOSYNC = String(graftConfig.autosync);
+        console.log(`Set GRAFT_AUTOSYNC=${graftConfig.autosync}`);
+
+        if (graftConfig.clientId) { // Check if clientId exists
+            process.env.GRAFT_CLIENT_ID = graftConfig.clientId;
+            console.log(`Set GRAFT_CLIENT_ID=${graftConfig.clientId}`);
+        } else {
+            // Ensure env var is unset if config value is missing/undefined
+            delete process.env.GRAFT_CLIENT_ID;
+            console.log('Unset GRAFT_CLIENT_ID');
+        }
+        // GRAFT_DIR is not handled here as NodeServerDatabase manages the file path directly.
+        // If the rust extension absolutely needs GRAFT_DIR, it might require further changes.
+
+    } catch (error) {
+        console.error('Failed to read graft config or set environment variables:', error);
+        // Decide if this is fatal. For now, just log and continue.
+    }
+}
+// --- END: Helper function --- 
 
 function requestFromRenderer(webContents: WebContents, arg: any) {
     return new Promise((resolve, reject) => {
@@ -90,6 +138,10 @@ export class DataSpaceManager {
         const libPath = getResourcePath(`dist-simple/libsimple`);
         const dictPath = getResourcePath('dist-simple/dict');
         const graftLibPath = getResourcePath('dist-simple/libgraft');
+
+        // --- START: Set Graft Environment Variables from Config ---
+        applyGraftConfigToEnv(); // Call the helper function
+        // --- END: Set Graft Environment Variables from Config ---
 
         const serverDb = new NodeServerDatabase({
             path: getSpaceDbPath(spaceName),

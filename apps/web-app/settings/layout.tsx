@@ -55,7 +55,7 @@ const sidebarNavItems = [
   {
     titleKey: "settings.sync",
     href: "/settings/sync",
-    disabled: true,
+    disabled: !isDesktopMode,
     icon: Cloud,
   },
   {
