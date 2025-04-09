@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { GraftConfig } from "@/electron/config"
+import { AppConfig, GraftConfig } from "@/electron/config"
 import { useForm } from "react-hook-form"
 
 import { useEngine } from "@/hooks/use-engine"
@@ -20,42 +20,69 @@ import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import { toast } from "@/components/ui/use-toast"
 
-type FormData = Partial<GraftConfig>
+// Define a type for the form data, including the top-level enabled flag
+// and the graft settings.
+type SyncFormData = {
+  enabled: boolean
+} & Partial<GraftConfig>
+
+// Define a type for the full sync config object
+type SyncConfig = AppConfig["sync"]
 
 export function SyncForm() {
-  const [initialConfig, setInitialConfig] = useState<GraftConfig | null>(null)
+  // State to hold the full initial sync config (enabled + graft)
+  const [initialConfig, setInitialConfig] = useState<SyncConfig | null>(null)
 
   const { reload } = useEngine()
-  const form = useForm<FormData>({
-    // We will set defaultValues once the config is loaded
-    defaultValues: {},
+  const form = useForm<SyncFormData>({
+    // Default values will be set once the config is loaded
+    defaultValues: {
+      enabled: false, // Start with a default for enabled
+      // Graft defaults will come from fetched config
+    },
   })
 
   useEffect(() => {
     async function fetchConfig() {
       if (window.eidos?.config) {
         const syncConfig = await window.eidos.config.get("sync")
-        setInitialConfig(syncConfig.graft)
-        // Reset form with fetched values
-        form.reset(syncConfig.graft)
+        setInitialConfig(syncConfig)
+        // Reset form with fetched values, merging enabled and graft
+        form.reset({
+          enabled: syncConfig.enabled,
+          ...syncConfig.graft, // Spread graft properties
+        })
       }
     }
     fetchConfig()
-  }, [form]) // Dependency array includes form to ensure reset happens correctly
+  }, [form]) // Dependency array includes form
 
-  async function onSubmit(data: FormData) {
+  async function onSubmit(data: SyncFormData) {
     if (window.eidos?.config) {
       try {
-        await window.eidos.config.set("sync", { graft: data as GraftConfig })
+        // Separate enabled flag from graft settings
+        const { enabled, ...graftConfig } = data
+
+        // Construct the full sync object to save
+        const syncConfigToSave: SyncConfig = {
+          enabled: enabled,
+          graft: graftConfig as GraftConfig, // Assume graftConfig has all needed fields or defaults
+        }
+
+        await window.eidos.config.set("sync", syncConfigToSave)
         toast({
           title: "Success",
           description: "Sync settings saved.",
         })
-        // Optionally refetch or update state if needed
+
+        // Refetch and reset form
         const updatedConfig = await window.eidos.config.get("sync")
-        setInitialConfig(updatedConfig.graft)
-        form.reset(updatedConfig.graft) // Reset form with potentially updated values (e.g., auto-generated clientId)
-        await reload()
+        setInitialConfig(updatedConfig)
+        form.reset({
+          enabled: updatedConfig.enabled,
+          ...updatedConfig.graft,
+        })
+        await reload() // Reload engine after successful save
       } catch (error) {
         console.error("Failed to save sync settings:", error)
         toast({
@@ -191,6 +218,32 @@ export function SyncForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        {/* Enable Sync Toggle */}
+        <FormField
+          control={form.control}
+          name="enabled" // Target the top-level enabled flag
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <FormLabel className="text-base">Enable Sync</FormLabel>
+                <FormDescription>
+                  Enable or disable all synchronization features.
+                </FormDescription>
+              </div>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+
+        {/* Graft Settings Section (Conditionally Rendered?) */}
+        {/* You might want to disable/hide these when sync is disabled */}
+        {/* For now, just keep them always visible but controlled by the form */}
+
         {/* MetaStore URL */}
         <FormField
           control={form.control}
@@ -275,7 +328,7 @@ export function SyncForm() {
         {/* AutoSync Toggle */}
         <FormField
           control={form.control}
-          name="autosync"
+          name="autosync" // This now correctly maps to graft.autosync via form data
           render={({ field }) => (
             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
               <div className="space-y-0.5">

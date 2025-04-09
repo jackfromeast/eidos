@@ -30,6 +30,7 @@ export interface AppConfig {
     };
     // Sync configuration
     sync: {
+        enabled: boolean;
         graft: GraftConfig;
         // Future sync-related settings can go here
     };
@@ -45,6 +46,7 @@ const emptyConfig: AppConfig = {
         webSecurity: true,
     },
     sync: { // Updated structure
+        enabled: false,
         graft: {
             metastore: 'http://127.0.0.1:3001', // Default from docs
             pagestore: 'http://127.0.0.1:3000', // Default from docs
@@ -63,8 +65,8 @@ export class ConfigManager extends EventEmitter {
         super();
         this.configPath = configPath;
         this.config = this.loadConfig();
-        // Ensure existing configs have the new graft structure within sync
-        this.ensureDefaultSyncGraftConfig();
+        // Ensure existing configs have the new sync structure and defaults
+        this.ensureDefaultSyncConfig();
     }
 
     private loadConfig(): AppConfig {
@@ -78,19 +80,21 @@ export class ConfigManager extends EventEmitter {
                 if (parsedData.graft && !parsedData.sync) {
                     console.warn("Migrating top-level 'graft' config to 'sync.graft'.");
                     parsedData.sync = { graft: parsedData.graft };
+                    // We don't know the old intent for 'enabled', so default it.
+                    // The ensureDefaultSyncConfig will handle setting it if missing.
                     delete parsedData.graft; // Remove old top-level key
-                    // Consider triggering a save after migration? For now, rely on ensureDefaultSyncGraftConfig save.
                 }
 
                 // Deep merge ensuring 'sync' and 'sync.graft' exist
+                // We need to handle the merge carefully to include the new 'enabled' field
                 loadedConfig = {
-                    ...loadedConfig,
-                    ...parsedData,
-                    sync: {
-                        ...(loadedConfig.sync || {}), // Ensure sync object exists
-                        ...(parsedData.sync || {}),   // Overlay saved sync settings
-                        graft: {
-                            ...(loadedConfig.sync.graft),        // Start with defaults for graft
+                    ...loadedConfig, // Start with defaults
+                    ...parsedData,   // Overlay saved config
+                    sync: {          // Merge the sync object explicitly
+                        ...(loadedConfig.sync || {}), // Start with default sync object structure
+                        ...(parsedData.sync || {}),   // Overlay saved sync settings (potentially including 'enabled')
+                        graft: {                      // Ensure graft structure is merged
+                            ...(loadedConfig.sync?.graft || {}), // Start with default graft settings
                             ...((parsedData.sync && parsedData.sync.graft) || {}), // Overlay saved graft settings
                         },
                     },
@@ -104,27 +108,48 @@ export class ConfigManager extends EventEmitter {
         return loadedConfig;
     }
 
-    // Ensure that the loaded config has the sync.graft structure, applying defaults if missing
-    private ensureDefaultSyncGraftConfig(): void {
+    // Ensure that the loaded config has the sync structure, applying defaults if missing
+    // Renamed from ensureDefaultSyncGraftConfig to handle sync.enabled as well
+    private ensureDefaultSyncConfig(): void {
         let needsSave = false;
         // Ensure sync object exists
         if (typeof this.config.sync !== 'object' || this.config.sync === null) {
             console.warn("Sync config section missing, initializing with defaults.");
             this.config.sync = JSON.parse(JSON.stringify(emptyConfig.sync)); // Deep clone default sync
             needsSave = true;
-        }
-        // Ensure sync.graft object exists
-        if (typeof this.config.sync.graft !== 'object' || this.config.sync.graft === null) {
-            console.warn("Sync.graft config section missing, initializing with defaults.");
-            this.config.sync.graft = { ...emptyConfig.sync.graft };
-            needsSave = true;
         } else {
-            // Check individual keys within sync.graft and apply defaults if missing
-            for (const key of Object.keys(emptyConfig.sync.graft) as Array<keyof GraftConfig>) {
-                if (!(key in this.config.sync.graft)) {
-                    console.warn(`Sync.graft config key '${key}' missing, applying default.`);
-                    (this.config.sync.graft as any)[key] = emptyConfig.sync.graft[key];
-                    needsSave = true;
+             // Check if sync.enabled is missing and apply default
+            if (typeof this.config.sync.enabled !== 'boolean') {
+                 console.warn(`Sync config key 'enabled' missing or invalid, applying default.`);
+                 this.config.sync.enabled = emptyConfig.sync.enabled;
+                 needsSave = true;
+            }
+
+            // Ensure sync.graft object exists
+            if (typeof this.config.sync.graft !== 'object' || this.config.sync.graft === null) {
+                console.warn("Sync.graft config section missing, initializing with defaults.");
+                this.config.sync.graft = { ...emptyConfig.sync.graft };
+                needsSave = true;
+            } else {
+                // Check individual keys within sync.graft and apply defaults if missing
+                for (const key of Object.keys(emptyConfig.sync.graft) as Array<keyof GraftConfig>) {
+                    // Ensure the key exists and is of the correct type (basic check)
+                    // If graft exists, we assume its internal keys might be missing or wrong type
+                    if (!(key in this.config.sync.graft) || typeof (this.config.sync.graft as any)[key] !== typeof emptyConfig.sync.graft[key]) {
+                         // Apply default only if key is missing, handle type mismatch potentially elsewhere if needed
+                         if (!(key in this.config.sync.graft)) {
+                            console.warn(`Sync.graft config key '${key}' missing, applying default.`);
+                           (this.config.sync.graft as any)[key] = emptyConfig.sync.graft[key];
+                            needsSave = true;
+                         } else if (key === 'token' && typeof this.config.sync.graft.token === 'undefined') {
+                             // Special case: allow undefined for token
+                         }
+                         else if (typeof (this.config.sync.graft as any)[key] !== typeof emptyConfig.sync.graft[key]) {
+                            console.warn(`Sync.graft config key '${key}' has incorrect type, applying default.`);
+                            (this.config.sync.graft as any)[key] = emptyConfig.sync.graft[key];
+                             needsSave = true;
+                         }
+                    }
                 }
             }
         }
@@ -172,7 +197,7 @@ export class ConfigManager extends EventEmitter {
     public setGraftConfig(graftConfig: Partial<GraftConfig>): void {
         // Ensure sync object exists
         if (!this.config.sync) {
-             this.config.sync = JSON.parse(JSON.stringify(emptyConfig.sync));
+            this.config.sync = JSON.parse(JSON.stringify(emptyConfig.sync));
         }
         const oldGraftConfig = { ...(this.config.sync.graft || emptyConfig.sync.graft) };
         const newGraftConfig = { ...oldGraftConfig, ...graftConfig }; // Merge partial updates
@@ -183,6 +208,27 @@ export class ConfigManager extends EventEmitter {
             console.log('Graft config changed (within sync):', { oldValue: oldGraftConfig, newValue: newGraftConfig });
             // Emit a specific event or use the generic one, adjusting payload structure
             this.emit('configChanged', { key: 'sync.graft', oldValue: oldGraftConfig, newValue: newGraftConfig });
+        }
+    }
+
+    // Getter for sync enabled status
+    public isSyncEnabled(): boolean {
+        // Ensure sync exists before accessing, falling back to default if necessary
+        return this.config.sync?.enabled ?? emptyConfig.sync.enabled;
+    }
+
+    // Setter for sync enabled status
+    public setSyncEnabled(enabled: boolean): void {
+        // Ensure sync object exists
+        if (!this.config.sync) {
+            this.config.sync = JSON.parse(JSON.stringify(emptyConfig.sync));
+        }
+        const oldValue = this.config.sync.enabled;
+        if (oldValue !== enabled) {
+            this.config.sync.enabled = enabled;
+            this.saveConfig();
+            console.log('Sync enabled status changed:', { oldValue, newValue: enabled });
+            this.emit('configChanged', { key: 'sync.enabled', oldValue, newValue: enabled });
         }
     }
 }

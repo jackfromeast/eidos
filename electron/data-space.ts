@@ -14,8 +14,12 @@ import { getConfigManager } from "./config";
 function applyGraftConfigToEnv(): void {
     try {
         const configManager = getConfigManager();
+        const isSyncEnabled = configManager.isSyncEnabled();
         const graftConfig = configManager.getGraftConfig();
-
+        if (!isSyncEnabled) {
+            console.log('Sync is disabled, skipping Graft config application');
+            return;
+        }
         console.log('Applying Graft config to environment variables:', graftConfig);
 
         // Only set env vars if the corresponding config value is present
