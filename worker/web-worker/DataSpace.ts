@@ -209,11 +209,16 @@ export class DataSpace {
   }
 
 
+  public status() {
+    return this.db.status()
+  }
+
+  public pages() {
+    return this.db.pages()
+  }
+
   public pull() {
-    if ('pull' in this.db) {
-      return this.db.pull()
-    }
-    return Promise.resolve(null)
+    return this.db.pull()
   }
 
   public reset() {

@@ -17,6 +17,8 @@ import {
 import { AvatarList } from "@/components/avatar-list"
 import { useSpaceAppStore } from "@/apps/web-app/[database]/store"
 
+import { SyncStatusIndicator } from "../sync-status-indicator"
+
 export const NavStatus = () => {
   const { t } = useTranslation()
   const {
@@ -46,6 +48,7 @@ export const NavStatus = () => {
 
   return (
     <>
+      <SyncStatusIndicator />
       <AvatarList nameList={nameList} />
       {Boolean(currentNode?.is_locked) && (
         <Button

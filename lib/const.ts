@@ -6,11 +6,12 @@ export enum MsgType {
   CreateSpace = "CreateSpace",
   Syscall = "Syscall",
 
-  // sync
+  // sync related commands. git-like
+  Status = "Status",
   Pull = "Pull",
   Push = "Push",
   Reset = "Reset",
-
+  Pages = "Pages",
   // msg worker => window
   Error = "Error",
   QueryResp = "QueryResp",
