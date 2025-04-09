@@ -16,7 +16,6 @@ import { Outlet } from "react-router-dom"
 
 import { isDesktopMode } from "@/lib/env"
 import { cn } from "@/lib/utils"
-import { isWindowsDesktop } from "@/lib/web/helper"
 import { useGoto } from "@/hooks/use-goto"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -57,6 +56,7 @@ const sidebarNavItems = [
     href: "/settings/sync",
     disabled: !isDesktopMode,
     icon: Cloud,
+    isAlpha: true,
   },
   {
     titleKey: "settings.security",
@@ -88,7 +88,7 @@ export default function SettingsLayout() {
     <ScrollArea className="h-[100vh] w-full">
       <div
         className={cn("h-8 fixed drag-region z-0", {
-          "w-[calc(100vw-100px)]": isWindowsDesktop,
+          "w-[calc(100vw-100px)]": isDesktopMode,
         })}
       ></div>
       <div className="grid w-full grid-cols-5 ">
