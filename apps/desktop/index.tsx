@@ -10,6 +10,8 @@ import { FileManager } from "@/apps/web-app/[database]/files/page"
 
 import "@/locales/i18n"
 import SettingsApiPage from "@/apps/desktop/settings/api/page"
+import SettingsSecurityPage from "@/apps/desktop/settings/security/page"
+import SettingsSyncPage from "@/apps/desktop/settings/sync/page"
 // space
 import SpaceHomePage from "@/apps/web-app/[database]/page"
 import { LandingPage } from "@/apps/web-app/page"
@@ -40,7 +42,6 @@ import { DesktopSpaceLayout } from "./[database]/layout"
 import BlockPage from "./[database]/standalone-blocks/page"
 // extensions
 import RootLayout from "./layout"
-import SettingsSecurityPage from "./settings/security/page"
 
 const router = createBrowserRouter([
   {
@@ -109,6 +110,10 @@ const router = createBrowserRouter([
           {
             path: "backup",
             element: <BackupSettings />,
+          },
+          {
+            path: "sync",
+            element: <SettingsSyncPage />,
           },
         ],
       },

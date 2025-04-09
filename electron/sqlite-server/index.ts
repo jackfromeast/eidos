@@ -305,7 +305,7 @@ export class NodeServerDatabase extends BaseServerDatabase {
         }
         if (!this.db) throw new Error("Database is not initialized.");
         const rawResult = this.db.pragma('graft_status');
-        console.log('Raw graft_status:', rawResult);
+        // console.log('Raw graft_status:', rawResult);
 
         if (!rawResult || !Array.isArray(rawResult) || rawResult.length === 0 || typeof rawResult[0] !== 'object' || rawResult[0] === null) {
             console.error('Unexpected graft_status format:', rawResult);
@@ -323,7 +323,7 @@ export class NodeServerDatabase extends BaseServerDatabase {
 
         const parsedStatus = parseGraftStatus(statusString);
 
-        console.log('Parsed graft_status:', parsedStatus);
+        // console.log('Parsed graft_status:', parsedStatus);
         return Promise.resolve(parsedStatus);
     }
 
