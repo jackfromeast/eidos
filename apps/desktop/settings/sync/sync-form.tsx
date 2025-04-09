@@ -100,114 +100,78 @@ export function SyncForm() {
     }
   }
 
-  async function testMetaStoreConnection() {
-    const metaStoreUrl = form.getValues("metastore")
-    if (!metaStoreUrl) {
+  // Reusable function to test store connection
+  async function testStoreConnection(
+    storeFieldName: keyof GraftConfig,
+    storeName: string
+  ) {
+    const storeUrlValue = form.getValues(storeFieldName)
+
+    // Check if it's a non-empty string
+    if (typeof storeUrlValue !== "string" || !storeUrlValue) {
       toast({
         title: "Error",
-        description: "Please enter a MetaStore URL.",
+        description: `Please enter a valid ${storeName} URL.`,
         variant: "destructive",
       })
       return
     }
+
+    // Now TypeScript knows storeUrlValue is a string
+    const storeUrl: string = storeUrlValue
 
     let healthUrl: URL
     try {
       // Ensure the base URL ends with a slash before appending /health
-      const baseUrl = metaStoreUrl.endsWith("/")
-        ? metaStoreUrl
-        : `${metaStoreUrl}/`
+      const baseUrl = storeUrl.endsWith("/") ? storeUrl : `${storeUrl}/`
       healthUrl = new URL("health", baseUrl)
     } catch (error) {
       toast({
         title: "Error",
-        description: "Invalid MetaStore URL format.",
+        description: `Invalid ${storeName} URL format.`,
         variant: "destructive",
       })
       return
     }
 
     try {
-      const response = await fetch(healthUrl.toString())
+      const response = await window.eidos.fetch(healthUrl.toString(), {
+        method: "GET",
+      })
+      console.log("response", response)
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`)
       }
-      const text = await response.text()
+      const text = response.data
       // Convert response text to lowercase for case-insensitive comparison
       if (text.trim().toLowerCase() === "ok") {
         toast({
           title: "Success",
-          description: "MetaStore connection successful!",
+          description: `${storeName} connection successful!`,
         })
       } else {
         toast({
           title: "Error",
-          description: `MetaStore connection test failed. Expected "ok", received "${text}".`,
+          description: `${storeName} connection test failed. Expected "ok", received "${text}".`,
           variant: "destructive",
         })
       }
     } catch (error: any) {
-      console.error("MetaStore connection test failed:", error)
+      console.error(`${storeName} connection test failed:`, error)
       toast({
         title: "Error",
-        description: `MetaStore connection failed: ${error.message}`,
+        description: `${storeName} connection failed: ${error.message}`,
         variant: "destructive",
       })
     }
   }
 
+  async function testMetaStoreConnection() {
+    await testStoreConnection("metastore", "MetaStore")
+  }
+
   async function testPageStoreConnection() {
-    const pageStoreUrl = form.getValues("pagestore")
-    if (!pageStoreUrl) {
-      toast({
-        title: "Error",
-        description: "Please enter a PageStore URL.",
-        variant: "destructive",
-      })
-      return
-    }
-
-    let healthUrl: URL
-    try {
-      const baseUrl = pageStoreUrl.endsWith("/")
-        ? pageStoreUrl
-        : `${pageStoreUrl}/`
-      healthUrl = new URL("health", baseUrl)
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Invalid PageStore URL format.",
-        variant: "destructive",
-      })
-      return
-    }
-
-    try {
-      const response = await fetch(healthUrl.toString())
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`)
-      }
-      const text = await response.text()
-      if (text.trim().toLowerCase() === "ok") {
-        toast({
-          title: "Success",
-          description: "PageStore connection successful!",
-        })
-      } else {
-        toast({
-          title: "Error",
-          description: `PageStore connection test failed. Expected "ok", received "${text}".`,
-          variant: "destructive",
-        })
-      }
-    } catch (error: any) {
-      console.error("PageStore connection test failed:", error)
-      toast({
-        title: "Error",
-        description: `PageStore connection failed: ${error.message}`,
-        variant: "destructive",
-      })
-    }
+    await testStoreConnection("pagestore", "PageStore")
   }
 
   if (!initialConfig) {
