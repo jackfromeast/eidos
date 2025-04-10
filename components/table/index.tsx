@@ -39,7 +39,6 @@ export const Table = ({
     tableName,
     viewId,
   })
-
   const udfs = useUDFs()
 
   const { updateUiColumns } = useUiColumns(tableName, space)
@@ -53,7 +52,7 @@ export const Table = ({
       value={{
         tableName,
         space,
-        viewId,
+        viewId: currentView?.id || viewId,
         isReadOnly,
         udfs,
       }}
