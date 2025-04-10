@@ -1,7 +1,7 @@
 import React from "react"
 import { useClickAway } from "ahooks"
 import { Trash2 } from "lucide-react"
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next"
 
 import { FieldType } from "@/lib/fields/const"
 import { IField } from "@/lib/store/interface"
@@ -18,6 +18,7 @@ import { LinkPropertyEditor } from "./property/link/link-property-editor"
 import { LookupPropertyEditor } from "./property/lookup/lookup-property-editor"
 import { NumberPropertyEditor } from "./property/number/number-property-editor"
 import { SelectPropertyEditor } from "./property/select/select-property-editor"
+import { TextPropertyEditor } from "./property/text/text-property-editor"
 
 export const PropertyEditorTypeMap: {
   [type: string]: React.FC<{
@@ -34,6 +35,7 @@ export const PropertyEditorTypeMap: {
   lookup: LookupPropertyEditor,
   file: FilePropertyEditor,
   number: NumberPropertyEditor,
+  text: TextPropertyEditor,
 }
 
 export const NotImplementEditor = () => {
@@ -55,7 +57,7 @@ export const FieldPropertyEditor = ({
   databaseName,
   deleteField,
 }: IFieldPropertyEditorProps) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation()
   const ref = React.useRef<HTMLDivElement>(null)
   const { setIsFieldPropertiesEditorOpen, currentUiColumn: currentField } =
     useTableAppStore()
@@ -97,7 +99,7 @@ export const FieldPropertyEditor = ({
         <div className="flex h-full flex-col space-y-2">
           <div className="flex-none space-y-2">
             <div className="flex items-center justify-between">
-              <Label>{t('common.name')}</Label>
+              <Label>{t("common.name")}</Label>
               <div className="w-[200px]">
                 <FieldNameEdit
                   field={currentField}
@@ -107,7 +109,7 @@ export const FieldPropertyEditor = ({
               </div>
             </div>
             <div className="flex items-center justify-between">
-              <Label>{t('table.fieldType')}</Label>
+              <Label>{t("table.fieldType")}</Label>
               <FieldTypeSelect
                 value={currentField?.type}
                 onChange={handleChangeFieldType}
@@ -123,7 +125,7 @@ export const FieldPropertyEditor = ({
               <FieldDelete field={currentField} deleteField={handleDeleteField}>
                 <CommonMenuItem>
                   <Trash2 className="mr-2 h-4 w-4" />
-                  {t('table.deleteField')}
+                  {t("table.deleteField")}
                 </CommonMenuItem>
               </FieldDelete>
             )}
