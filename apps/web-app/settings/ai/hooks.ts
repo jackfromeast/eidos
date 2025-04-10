@@ -1,7 +1,6 @@
 import { toast } from "@/components/ui/use-toast"
 import { useAiConfig } from "@/hooks/use-ai-config"
 import { getProvider } from "@/lib/ai/helper"
-import { createOpenAI } from "@ai-sdk/openai"
 import { embedMany, generateText } from "ai"
 import { useState } from "react"
 
@@ -44,12 +43,8 @@ export const useModelTest = () => {
                 case TaskType.Embedding:
                     const embeddingTexts = async (text: string[]) => {
                         if (!model) return []
-                        const openai = createOpenAI({
-                            apiKey: config.apiKey,
-                            baseURL: config.baseUrl,
-                        })
                         const { embeddings } = await embedMany({
-                            model: openai.embedding(config.modelId),
+                            model: (modelProvider as any).textEmbedding(config.modelId),
                             values: text,
                         })
                         return embeddings as number[][]

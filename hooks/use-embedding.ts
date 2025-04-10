@@ -1,5 +1,5 @@
 import { useAIConfigStore } from "@/apps/web-app/settings/ai/store";
-import { createOpenAI } from "@ai-sdk/openai";
+import { getProvider } from "@/lib/ai/helper";
 import { embed, embedMany } from 'ai';
 import { useAiConfig } from "./use-ai-config";
 
@@ -17,12 +17,14 @@ export const useEmbedding = (): {
 
     const embedding = async (text: string) => {
         if (!model) return
-        const openai = createOpenAI({
-            apiKey: model.apiKey,
-            baseURL: model.baseUrl,
+        const config = getConfigByModel(embeddingModel)
+        const modelProvider = getProvider({
+            apiKey: config.apiKey,
+            baseUrl: config.baseUrl,
+            type: config.type,
         })
         const { embedding } = await embed({
-            model: openai.embedding(model.modelId),
+            model: (modelProvider as any).textEmbedding(config.modelId),
             value: text,
         });
         return embedding
@@ -30,12 +32,15 @@ export const useEmbedding = (): {
 
     const embeddingTexts = async (text: string[]) => {
         if (!model) return []
-        const openai = createOpenAI({
-            apiKey: model.apiKey,
-            baseURL: model.baseUrl,
+
+        const config = getConfigByModel(embeddingModel)
+        const modelProvider = getProvider({
+            apiKey: config.apiKey,
+            baseUrl: config.baseUrl,
+            type: config.type,
         })
         const { embeddings } = await embedMany({
-            model: openai.embedding(model.modelId),
+            model: (modelProvider as any).textEmbedding(config.modelId),
             values: text,
         });
         return embeddings as number[][]
