@@ -127,7 +127,7 @@ export function Settings() {
             </div>
           </div>
           <hr />
-          <div className="grid gap-3">
+          {/* <div className="grid gap-3">
             <Label htmlFor="status">{t("space.settings.status")}</Label>
             <p className="text-sm text-muted-foreground">
               {t("space.settings.statusDescription")}
@@ -168,7 +168,7 @@ export function Settings() {
             >
               {t("space.settings.pages")}
             </Button>
-          </div>
+          </div> */}
           <div className="grid gap-3">
             <Label htmlFor="description">{t("common.export")}</Label>
             <p className="text-sm text-muted-foreground">

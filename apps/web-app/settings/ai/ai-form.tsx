@@ -110,7 +110,7 @@ export function AIConfigForm() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* <FormField
+            <FormField
               control={form.control}
               name="embeddingModel"
               render={({ field }) => (
@@ -139,7 +139,7 @@ export function AIConfigForm() {
                   <FormMessage />
                 </FormItem>
               )}
-            /> */}
+            />
             <FormField
               control={form.control}
               name="translationModel"
