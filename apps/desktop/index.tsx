@@ -8,10 +8,10 @@ import EverydayPage from "@/apps/web-app/[database]/everyday/[day]/page"
 import EverydayHomePage from "@/apps/web-app/[database]/everyday/page"
 import { FileManager } from "@/apps/web-app/[database]/files/page"
 
-import "@/locales/i18n"
 import SettingsApiPage from "@/apps/desktop/settings/api/page"
 import SettingsSecurityPage from "@/apps/desktop/settings/security/page"
 import SettingsSyncPage from "@/apps/desktop/settings/sync/page"
+import "@/locales/i18n"
 // space
 import SpaceHomePage from "@/apps/web-app/[database]/page"
 import { LandingPage } from "@/apps/web-app/page"
@@ -37,6 +37,8 @@ import { DocEditor } from "../web-app/eidtor/doc"
 import { ErrorBoundary } from "../web-app/error"
 import { LabPage } from "../web-app/lab"
 import { LicenseManagePage } from "../web-app/license-manage/page"
+import { SettingsAILayout } from "../web-app/settings/ai/layout"
+import { ProviderPage } from "../web-app/settings/ai/provider/page"
 import { DevtoolsPage } from "../web-app/settings/dev/page"
 import { DesktopSpaceLayout } from "./[database]/layout"
 import BlockPage from "./[database]/standalone-blocks/page"
@@ -93,7 +95,22 @@ const router = createBrowserRouter([
           },
           {
             path: "ai",
-            element: <SettingsAIPage />,
+            element: <SettingsAILayout />,
+            children: [
+              {
+                index: true,
+                element: <SettingsAIPage />,
+              },
+              {
+                path: "provider",
+                children: [
+                  {
+                    path: ":providerId",
+                    element: <ProviderPage />, // /settings/ai/provider/:providerId 的目标组件
+                  },
+                ],
+              },
+            ],
           },
           {
             path: "appearance",

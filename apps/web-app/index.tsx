@@ -38,6 +38,7 @@ import { DocEditor } from "./eidtor/doc"
 import { ErrorBoundary } from "./error"
 import { LabPage } from "./lab"
 import { LicenseManagePage } from "./license-manage/page"
+import { ProviderPage } from "./settings/ai/provider/page"
 import { DevtoolsPage } from "./settings/dev/page"
 
 const router = createBrowserRouter([
@@ -85,6 +86,17 @@ const router = createBrowserRouter([
           {
             path: "ai",
             element: <SettingsAIPage />,
+            children: [
+              {
+                path: "provider",
+                children: [
+                  {
+                    path: ":providerId",
+                    element: <ProviderPage />, // /settings/ai/provider/:providerId 的目标组件
+                  },
+                ],
+              },
+            ],
           },
           {
             path: "appearance",

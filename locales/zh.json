@@ -26,7 +26,7 @@
     "common.delete": "删除",
     "common.description": "描述",
     "common.download": "下载",
-    "common.error": "错误",
+    "common.error": "发生错误：{{error}}",
     "common.error.createIssue": "创建问题",
     "common.error.forBetterAssistance": "以获得更好的帮助。",
     "common.error.forHelp": "寻求帮助。提供",
@@ -547,5 +547,6 @@
     "theme.dark": "深色",
     "theme.light": "浅色",
     "theme.syncWithSystem": "同步系统",
-    "theme.title": "主题"
+    "theme.title": "主题",
+    "common.more": "还有 {{count}} 个"
 }
