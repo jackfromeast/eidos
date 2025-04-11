@@ -1,19 +1,9 @@
-import { useEffect } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useLocation } from "react-router-dom"
 
-import { isDesktopMode } from "@/lib/env"
-import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { toast } from "@/components/ui/use-toast"
 import { AIModelSelect } from "@/components/ai-chat/ai-chat-model-select"
 import {
   Form,
@@ -24,9 +14,10 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/react-hook-form/form"
+import { toast } from "@/components/ui/use-toast"
+import { isDesktopMode } from "@/lib/env"
 
 import { TaskType } from "./hooks"
-import { LLMProviderManage } from "./llm-provider-manage"
 import { LocalLLMManage } from "./local-llm-manage"
 import { ModelTestButton } from "./model-test-button"
 import { AIFormValues, aiFormSchema, useAIConfigStore } from "./store"
@@ -58,11 +49,11 @@ export function AIConfigForm() {
     onSubmit(form.getValues())
   }
 
-  function updateProviders(providers: AIFormValues["llmProviders"]) {
-    form.setValue("llmProviders", providers)
-    form.trigger("llmProviders")
-    onSubmit(form.getValues())
-  }
+  // function updateProviders(providers: AIFormValues["llmProviders"]) {
+  //   form.setValue("llmProviders", providers)
+  //   form.trigger("llmProviders")
+  //   onSubmit(form.getValues())
+  // }
 
   const getCardClassName = (cardId: string) => {
     return location.hash === `#${cardId}` ? "ring" : ""
@@ -77,134 +68,113 @@ export function AIConfigForm() {
             setModels={updateModels}
           />
         )}
-        <Card id="provider" className={getCardClassName("provider")}>
-          <CardHeader>
-            <CardTitle>{t("settings.ai.provider")}</CardTitle>
-            <CardDescription>
-              {t("settings.ai.providerDescription")}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <FormField
-              control={form.control}
-              name="llmProviders"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormControl>
-                    <LLMProviderManage {...field} onChange={updateProviders} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </CardContent>
-        </Card>
-        <Card
+        <div
           id="model-preferences"
-          className={getCardClassName("model-preferences")}
+          className={`space-y-6 rounded-lg border p-4 ${getCardClassName(
+            "model-preferences"
+          )}`}
         >
-          <CardHeader>
-            <CardTitle>{t("settings.ai.modelPreferences")}</CardTitle>
-            <CardDescription>
+          <div className="space-y-2">
+            <h3 className="text-lg font-medium">
+              {t("settings.ai.modelPreferences")}
+            </h3>
+            <p className="text-sm text-muted-foreground">
               {t("settings.ai.modelPreferencesDescription")}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <FormField
-              control={form.control}
-              name="embeddingModel"
-              render={({ field }) => (
-                <FormItem>
-                  <div className="flex justify-between items-center">
-                    <FormLabel className="w-1/3">
-                      {t("settings.ai.embeddingModel")}
-                    </FormLabel>
-                    <div className="w-2/3 flex space-x-2">
-                      <FormControl className="flex-grow">
-                        <AIModelSelect
-                          value={field.value ?? ""}
-                          onValueChange={field.onChange}
-                          localModels={aiConfig.localModels}
-                        />
-                      </FormControl>
-                      <ModelTestButton
-                        taskType={TaskType.Embedding}
-                        modelValue={field.value}
+            </p>
+          </div>
+          <FormField
+            control={form.control}
+            name="embeddingModel"
+            render={({ field }) => (
+              <FormItem>
+                <div className="flex justify-between items-center">
+                  <FormLabel className="w-1/3">
+                    {t("settings.ai.embeddingModel")}
+                  </FormLabel>
+                  <div className="w-2/3 flex space-x-2">
+                    <FormControl className="flex-grow">
+                      <AIModelSelect
+                        value={field.value ?? ""}
+                        onValueChange={field.onChange}
+                        localModels={aiConfig.localModels}
                       />
-                    </div>
+                    </FormControl>
+                    <ModelTestButton
+                      taskType={TaskType.Embedding}
+                      modelValue={field.value}
+                    />
                   </div>
-                  <FormDescription>
-                    {t("settings.ai.embeddingModelDescription")}
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="translationModel"
-              render={({ field }) => (
-                <FormItem>
-                  <div className="flex justify-between items-center">
-                    <FormLabel className="w-1/3">
-                      {t("settings.ai.translationModel")}
-                    </FormLabel>
-                    <div className="w-2/3 flex space-x-2">
-                      <FormControl className="flex-grow">
-                        <AIModelSelect
-                          value={field.value ?? ""}
-                          onValueChange={field.onChange}
-                          onlyLocal={false}
-                          localModels={aiConfig.localModels}
-                        />
-                      </FormControl>
-                      <ModelTestButton
-                        taskType={TaskType.Translation}
-                        modelValue={field.value}
+                </div>
+                <FormDescription>
+                  {t("settings.ai.embeddingModelDescription")}
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="translationModel"
+            render={({ field }) => (
+              <FormItem>
+                <div className="flex justify-between items-center">
+                  <FormLabel className="w-1/3">
+                    {t("settings.ai.translationModel")}
+                  </FormLabel>
+                  <div className="w-2/3 flex space-x-2">
+                    <FormControl className="flex-grow">
+                      <AIModelSelect
+                        value={field.value ?? ""}
+                        onValueChange={field.onChange}
+                        onlyLocal={false}
+                        localModels={aiConfig.localModels}
                       />
-                    </div>
+                    </FormControl>
+                    <ModelTestButton
+                      taskType={TaskType.Translation}
+                      modelValue={field.value}
+                    />
                   </div>
-                  <FormDescription>
-                    {t("settings.ai.translationModelDescription")}
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="codingModel"
-              render={({ field }) => (
-                <FormItem>
-                  <div className="flex justify-between items-center">
-                    <FormLabel className="w-1/3">
-                      {t("settings.ai.codingModel")}
-                    </FormLabel>
-                    <div className="w-2/3 flex space-x-2">
-                      <FormControl className="flex-grow">
-                        <AIModelSelect
-                          value={field.value ?? ""}
-                          onValueChange={field.onChange}
-                          onlyLocal={false}
-                          localModels={aiConfig.localModels}
-                        />
-                      </FormControl>
-                      <ModelTestButton
-                        taskType={TaskType.Coding}
-                        modelValue={field.value}
+                </div>
+                <FormDescription>
+                  {t("settings.ai.translationModelDescription")}
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="codingModel"
+            render={({ field }) => (
+              <FormItem>
+                <div className="flex justify-between items-center">
+                  <FormLabel className="w-1/3">
+                    {t("settings.ai.codingModel")}
+                  </FormLabel>
+                  <div className="w-2/3 flex space-x-2">
+                    <FormControl className="flex-grow">
+                      <AIModelSelect
+                        value={field.value ?? ""}
+                        onValueChange={field.onChange}
+                        onlyLocal={false}
+                        localModels={aiConfig.localModels}
                       />
-                    </div>
+                    </FormControl>
+                    <ModelTestButton
+                      taskType={TaskType.Coding}
+                      modelValue={field.value}
+                    />
                   </div>
-                  <FormDescription>
-                    {t("settings.ai.codingModelDescription")}
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </CardContent>
-        </Card>
-        <Button type="submit">{t("common.update")}</Button>
+                </div>
+                <FormDescription>
+                  {t("settings.ai.codingModelDescription")}
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
       </form>
     </Form>
   )

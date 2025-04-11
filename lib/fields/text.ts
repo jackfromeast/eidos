@@ -22,7 +22,7 @@ export class TextField extends BaseField<TextCell, TextProperty> {
     return rawData
   }
 
-  getCellContent(rawData: string | null, context: {
+  getCellContent(rawData: string | null, context?: {
     row: Record<string, any>
   }): TextCell {
 
@@ -36,7 +36,7 @@ export class TextField extends BaseField<TextCell, TextProperty> {
     }
     const fieldId = this.column.table_column_name
     const vecMetaFieldId = `${fieldId}__vec_meta`
-    const vecMeta = context.row[vecMetaFieldId] ? JSON.parse(context.row[vecMetaFieldId]) as IVecMeta : null
+    const vecMeta = context?.row?.[vecMetaFieldId] ? JSON.parse(context.row[vecMetaFieldId]) as IVecMeta : null
     const isCellOutOfDate = vecMeta?.outOfDate
     if (isCellOutOfDate) {
       return {
