@@ -21,6 +21,7 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
+      "@/locales/*": ["./packages/locales/*"],
       "@/worker/*": ["./packages/worker/*"],
       "@/lib/*": ["./packages/lib/*"],
       "@/*": ["./*"]

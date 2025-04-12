@@ -38,6 +38,7 @@ export const createHtmlPlugin = (serviceMode: string): Plugin => {
 }
 
 export const sharedAlias = {
+  "@/locales": path.resolve(__dirname, "../packages/locales"),
   '@/worker': path.resolve(__dirname, '../packages/worker'),
   '@/lib': path.resolve(__dirname, '../packages/lib'),
   "@": path.resolve(__dirname, "../"),
