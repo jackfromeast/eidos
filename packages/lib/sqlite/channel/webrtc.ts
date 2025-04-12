@@ -4,8 +4,8 @@ import {
     ECollaborationMsgType,
     IMsgForward,
     IMsgQueryResp,
-} from "@/lib/collaboration/interface"
-import { EidosDataEventChannelName } from "@/lib/const"
+} from "@/packages/lib/collaboration/interface"
+import { EidosDataEventChannelName } from "@/packages/lib/const"
 
 export interface ISqlite<T, D> {
   connector: T

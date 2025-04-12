@@ -1,4 +1,4 @@
-import { embeddingTexts } from "@/lib/embedding/worker"
+import { embeddingTexts } from "@/packages/lib/embedding/worker"
 import { LLMBaseVendor } from "./base"
 
 export class BGEM3 implements LLMBaseVendor {

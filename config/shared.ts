@@ -52,6 +52,7 @@ export const sharedConfig: UserConfig = {
   ],
   resolve: {
     alias: {
+      '@/lib': path.resolve(__dirname, '../packages/lib'),
       "@": path.resolve(__dirname, "../"),
     },
   },

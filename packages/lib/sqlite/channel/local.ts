@@ -1,5 +1,5 @@
 import { toast } from "@/components/ui/use-toast"
-import { MsgType } from "@/lib/const"
+import { MsgType } from "@/packages/lib/const"
 import type { IpcRenderer } from 'electron';
 
 export interface ISqlite<T, D> {

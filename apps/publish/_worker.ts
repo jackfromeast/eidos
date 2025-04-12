@@ -1,7 +1,7 @@
 // Note: You would need to compile your TS into JS and output it as a `_worker.js` file. We do not read `_worker.ts`
 import { DurableObjectNamespace, ExportedHandler, Fetcher, KVNamespace, R2Bucket, Request } from "@cloudflare/workers-types"
 
-import { DataSpaceObject } from "./lib/DataSpaceObject"
+import { DataSpaceObject } from "/lib/DataSpaceObject"
 
 interface Env {
   ASSETS: Fetcher

@@ -1,4 +1,4 @@
-import { FieldType } from "@/lib/fields/const"
+import { FieldType } from "@/packages/lib/fields/const"
 
 import { ITreeNode } from "./ITreeNode"
 import { IView } from "./IView"

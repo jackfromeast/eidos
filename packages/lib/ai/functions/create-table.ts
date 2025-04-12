@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { FieldType } from "@/lib/fields/const"
+import { FieldType } from "@/packages/lib/fields/const"
 
 // Create an enum for field types based on FieldType
 const fieldTypeEnum = z.enum([
