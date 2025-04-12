@@ -1,4 +1,4 @@
-import { LLMProvider } from "@/apps/web-app/settings/ai/store"
+import { LLMProvider } from "@/lib/ai/config"
 import type { Message } from "ai"
 
 export interface IData {

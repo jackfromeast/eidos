@@ -2,7 +2,7 @@ import esmShim from '@rollup/plugin-esm-shim'
 import path from "path"
 import { Plugin, UserConfig, mergeConfig } from "vite"
 import electron from 'vite-plugin-electron/simple'
-import { createHtmlPlugin, sharedConfig } from "./shared"
+import { createHtmlPlugin, sharedAlias, sharedConfig } from "./shared"
 import fs from "fs/promises"
 
 
@@ -58,10 +58,7 @@ const desktopConfig: UserConfig = mergeConfig(sharedConfig, {
         ],
         vite: {
           resolve: {
-            alias: {
-              "@/lib": path.resolve(__dirname, '../packages/lib'),
-              "@": path.resolve(__dirname, "../"),
-            },
+            alias: sharedAlias,
           },
           build: {
             rollupOptions: {
@@ -79,10 +76,7 @@ const desktopConfig: UserConfig = mergeConfig(sharedConfig, {
         input: 'apps/desktop/electron/preload.ts',
         vite: {
           resolve: {
-            alias: {
-              "@/lib": path.resolve(__dirname, '../packages/lib'),
-              "@": path.resolve(__dirname, "../"),
-            },
+            alias: sharedAlias,
           },
           build: {
             rollupOptions: {
