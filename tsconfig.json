@@ -26,6 +26,9 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
+      "@/lib/*": [
+        "./packages/lib/*"
+      ],
       "@/*": [
         "./*"
       ]

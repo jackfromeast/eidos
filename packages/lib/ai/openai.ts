@@ -2,7 +2,7 @@ import { ChatRequest } from "ai"
 import OpenAI from "openai"
 import { nanoid } from "nanoid"
 
-import { IField } from "@/lib/store/interface"
+import { IField } from "@/packages/lib/store/interface"
 
 import { functionParamsSchemaMap } from "./functions"
 

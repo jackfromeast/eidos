@@ -76,9 +76,9 @@ interface Window {
   eidos: import('electron').IpcRenderer & {
       on: (channel: string, listener: IpcListener) => string | undefined
       off: (channel: string, listenerId: string) => void
-      efsManager: import('@/lib/storage/eidos-file-system').EidosFileSystemManager
+      efsManager: import('@/packages/lib/storage/eidos-file-system').EidosFileSystemManager
       spaceList: string[]
-      spaceFileSystem: import('@/lib/storage/space').SpaceFileSystem
+      spaceFileSystem: import('@/packages/lib/storage/space').SpaceFileSystem
       openTabs: string[]
       config: import('./config/index').ConfigManager
       selectFolder: () => Promise<string | undefined>

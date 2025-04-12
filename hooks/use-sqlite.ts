@@ -13,7 +13,7 @@ import { getRawTableNameById, uuidv7 } from "@/lib/utils"
 import { DefaultState } from "@/components/doc/plugins/AutoLoadSaveFocusPlugin"
 import { createTemplateTableSql } from "@/components/table/views/grid/helper"
 
-import { IDataStore, IField } from "../lib/store/interface"
+import { IDataStore, IField } from "@/lib/store/interface"
 import { useAllNodes } from "./use-nodes"
 import { isDesktopMode } from "@/lib/env"
 
