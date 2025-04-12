@@ -27,7 +27,7 @@ import ShareLayout from "@/apps/web-app/share/[database]/layout"
 // share
 import SharePage from "@/apps/web-app/share/page"
 
-import { SpaceFileSystem } from "../../lib/storage/space"
+import { SpaceFileSystem } from "@/lib/storage/space"
 import { NotFound } from "./404"
 import { AppPage } from "./[database]/apps/page"
 import { ScriptDetailPage } from "./[database]/scripts/detail"
