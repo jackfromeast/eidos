@@ -37,6 +37,12 @@ export const createHtmlPlugin = (serviceMode: string): Plugin => {
   }
 }
 
+export const sharedAlias = {
+  '@/worker': path.resolve(__dirname, '../packages/worker'),
+  '@/lib': path.resolve(__dirname, '../packages/lib'),
+  "@": path.resolve(__dirname, "../"),
+}
+
 export const sharedConfig: UserConfig = {
   base: '/',
   plugins: [
@@ -51,10 +57,7 @@ export const sharedConfig: UserConfig = {
     // }) as Plugin,
   ],
   resolve: {
-    alias: {
-      '@/lib': path.resolve(__dirname, '../packages/lib'),
-      "@": path.resolve(__dirname, "../"),
-    },
+    alias: sharedAlias
   },
   optimizeDeps: {
     exclude: ["@sqlite.org/sqlite-wasm", "whisper-webgpu", "pyodide"],
