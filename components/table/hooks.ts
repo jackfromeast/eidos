@@ -98,6 +98,18 @@ export const useViewOperation = () => {
     [sqlite, updateViews]
   )
 
+  const freezeColumn = useCallback(async (viewId: string, colIndex: number) => {
+    if (sqlite) {
+      const view = await sqlite.view.get(viewId)
+      updateView(viewId, {
+        properties: {
+          ...(view?.properties || {}),
+          freezeColumns: colIndex
+        }
+      })
+    }
+  }, [sqlite, updateView])
+
   const addSort = useCallback(
     (view: IView, column: string, direction: "ASC" | "DESC") => {
       const parsedSql = parseFirst(view?.query ?? "") as SelectFromStatement
@@ -154,10 +166,11 @@ export const useViewOperation = () => {
     updateView,
     addSort,
     moveViewPosition,
+    freezeColumn,
   }
 }
 
-export const useCurrentView = ({
+export const useCurrentView = <T = any>({
   space,
   tableName,
   viewId,
@@ -190,7 +203,7 @@ export const useCurrentView = ({
   }, [views, currentViewId])
 
   return {
-    currentView: currentView!,
+    currentView: currentView as IView<T>,
     setCurrentViewId,
     defaultViewId,
   }

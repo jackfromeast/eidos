@@ -1,18 +1,18 @@
-import { useEffect, useRef, useState } from "react"
 import { useClickAway } from "ahooks"
 import {
   ArrowDownWideNarrowIcon,
+  ArrowLeftToLine,
+  ArrowRightToLine,
   ArrowUpNarrowWideIcon,
   Settings2,
-  Trash2,
+  Trash2
 } from "lucide-react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useLayer } from "react-laag"
 
-import { FieldType } from "@/lib/fields/const"
-import { IView } from "@/lib/store/IView"
-import { cn } from "@/lib/utils"
-import { useTableFields } from "@/hooks/use-table"
+import { CommonMenuItem } from "@/components/common-menu-item"
+import { useCurrentView, useViewOperation } from "@/components/table/hooks"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -23,8 +23,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { CommonMenuItem } from "@/components/common-menu-item"
-import { useCurrentView, useViewOperation } from "@/components/table/hooks"
+import { useTableFields } from "@/hooks/use-table"
+import { FieldType } from "@/lib/fields/const"
+import { IGridViewProperties, IView } from "@/lib/store/IView"
+import { cn } from "@/lib/utils"
 
 import { useColumns } from "../hooks/use-col"
 import { useTableAppStore } from "../store"
@@ -52,12 +54,12 @@ export const FieldEditorDropdown = (props: IFieldEditorDropdownProps) => {
   const ref2 = useRef<HTMLDivElement>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [currentColIndex, setCurrentColIndex] = useState<number>()
-  const { currentView } = useCurrentView({
+  const { currentView } = useCurrentView<IGridViewProperties>({
     space: databaseName,
     tableName: tableName,
     viewId: props.view?.id,
   })
-  const { addSort } = useViewOperation()
+  const { addSort, freezeColumn } = useViewOperation()
   const inputRef = useRef<HTMLInputElement>(null)
   const { fields } = useTableFields(tableName)
   const { showColumns } = useColumns(fields, props.view)
@@ -129,6 +131,28 @@ export const FieldEditorDropdown = (props: IFieldEditorDropdownProps) => {
     }
     setMenu(undefined)
   }
+
+  const showResetFreezeColumn = useMemo(() => {
+    return (
+      (currentView?.properties?.freezeColumns ?? 0) ===
+      (currentColIndex ?? 0) + 1
+    )
+  }, [currentView?.properties?.freezeColumns, currentColIndex])
+
+  const handleFreezeColumn = () => {
+    const colIndex = showColumns.findIndex(
+      (col) => col.table_column_name === currentUiColumn?.table_column_name
+    )
+    if (colIndex !== -1) {
+      if (showResetFreezeColumn) {
+        freezeColumn(currentView!.id, 0)
+      } else {
+        freezeColumn(currentView!.id, colIndex + 1)
+      }
+    }
+    setMenu(undefined)
+  }
+
   useClickAway(
     () => {
       setMenu(undefined)
@@ -175,6 +199,16 @@ export const FieldEditorDropdown = (props: IFieldEditorDropdownProps) => {
               <CommonMenuItem className="pl-4" onClick={addDESCSort}>
                 <ArrowDownWideNarrowIcon className="mr-2 h-4 w-4" />
                 {t("table.sortDescending")}
+              </CommonMenuItem>
+              <CommonMenuItem className="pl-4" onClick={handleFreezeColumn}>
+                {showResetFreezeColumn ? (
+                  <ArrowLeftToLine className="mr-2 h-4 w-4" />
+                ) : (
+                  <ArrowRightToLine className="mr-2 h-4 w-4" />
+                )}
+                {showResetFreezeColumn
+                  ? t("table.resetFreezeColumn")
+                  : t("table.freezeToHere")}
               </CommonMenuItem>
               {currentUiColumn?.type !== "title" && (
                 <DialogTrigger
