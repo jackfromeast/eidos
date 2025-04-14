@@ -37,14 +37,15 @@ import { useAsyncData } from "./hooks/use-async-data"
 import { useColumns } from "./hooks/use-col"
 import { useDataSource } from "./hooks/use-data-source"
 import { useDrop } from "./hooks/use-drop"
+import { ROW_NUMBER_COL_WIDTH, useFreezeLine } from "./hooks/use-freeze-line"
 import { useGridSearch } from "./hooks/use-grid-search"
 import { useHighlightRow } from "./hooks/use-highlight-row"
 import { useHover } from "./hooks/use-hover"
 import { AITools } from "./plugins/ai-tools"
+import { FormulaEditor } from "./plugins/formula-editor"
 import { useFormulaEditor } from "./plugins/use-formula-editor"
 import { useTableAppStore } from "./store"
 import "./styles.css"
-import { FormulaEditor } from "./plugins/formula-editor"
 import { darkTheme, lightTheme } from "./theme"
 
 interface IGridProps {
@@ -74,7 +75,7 @@ export default function GridView(props: IGridProps) {
   const r = containerRef.current?.querySelector(".dvn-scroll-inner")
   const hasScroll = r && r?.scrollWidth > r?.clientWidth
 
-  const { currentView } = useCurrentView({
+  const { currentView } = useCurrentView<IGridViewProperties>({
     space: databaseName,
     tableName,
     viewId: props.view?.id,
@@ -231,13 +232,25 @@ export default function GridView(props: IGridProps) {
     }
   }, [selection])
 
-  const isSm = size?.width ?? 0 < 768
-  const freezeColumns = isSm ? 0 : 1
+  // Use the new hook
+  const {
+    freezeHandleRef,
+    freezeHandleLeft,
+    freezeColumns,
+    handleMouseDown,
+    isDragging,
+    previewLinePosition,
+  } = useFreezeLine({
+    currentView,
+    size,
+    columns, // Pass the columns array from useColumns
+  })
 
+  // Re-introduce the config calculation using freezeColumns from the hook
   const config = useMemo(() => {
     let conf = {
       ...defaultConfig,
-      freezeColumns,
+      freezeColumns: freezeColumns, // Use freezeColumns state from the hook
     }
     const sw = getScrollbarWidth()
     if (!hasScroll) {
@@ -260,9 +273,6 @@ export default function GridView(props: IGridProps) {
   useEffect(() => {
     clearSelection()
   }, [tableName, databaseName, clearSelection])
-  // data handle
-  // TODO: refactor
-
   const { menu, setMenu } = useTableAppStore()
 
   const onHeaderClicked = React.useCallback(
@@ -350,8 +360,26 @@ export default function GridView(props: IGridProps) {
       ref={containerRef}
     >
       <div
-        className={cn("flex h-full w-full overflow-hidden rounded-md border-t")}
+        className={cn(
+          "relative flex h-full w-full overflow-hidden rounded-md border-t"
+        )}
       >
+        {/* Static Freeze Column Line - Uses values from hook */}
+        {columns && columns.length > 0 && freezeHandleLeft > 0 && (
+          <div
+            ref={freezeHandleRef}
+            className="absolute top-0 bottom-0 z-10 w-[2px] cursor-col-resize hover:bg-blue-500 dark:hover:bg-blue-500 pointer-events-auto"
+            style={{ left: `${freezeHandleLeft}px` }}
+            onMouseDown={handleMouseDown}
+          />
+        )}
+        {/* Drag Preview Line */}
+        {isDragging && previewLinePosition !== null && (
+          <div
+            className="absolute top-0 bottom-0 z-10 w-[2px] bg-blue-500/70 dark:bg-blue-400/70 pointer-events-none"
+            style={{ left: `${previewLinePosition}px` }}
+          />
+        )}
         <GridContextMenu
           handleDelRows={handleDelRows}
           getRowByIndex={getRowByIndex}
@@ -361,8 +389,7 @@ export default function GridView(props: IGridProps) {
           {Boolean(uiColumns.length) && (
             <DataEditor
               {...config}
-              // showSearch={false}
-              // searchValue={searchQuery}
+              rowMarkerWidth={ROW_NUMBER_COL_WIDTH}
               searchResults={formattedSearchResults}
               getCellsForSelection={getCellsForSelection}
               onVisibleRegionChanged={onVisibleRegionChanged}
@@ -375,14 +402,12 @@ export default function GridView(props: IGridProps) {
               highlightRegions={highlightRegions}
               gridSelection={selection}
               onItemHovered={onItemHovered}
-              // getRowThemeOverride={getRowThemeOverride}
               onHeaderClicked={onHeaderClicked}
               onHeaderContextMenu={onHeaderClicked}
               onGridSelectionChange={setSelection}
               onColumnResize={onColumnResize}
               onColumnMoved={onColumnMoved}
               getCellContent={getCellContent}
-              // maxColumnAutoWidth={500}
               maxColumnWidth={2000}
               fillHandle={true}
               columns={columns ?? []}
@@ -402,14 +427,12 @@ export default function GridView(props: IGridProps) {
                 )
               }
               rightElementProps={{
-                // sticky: true,
                 fill: true,
               }}
               onCellEdited={onCellEdited}
               onCellsEdited={onCellsEdited}
               onCellActivated={onCellActivated}
               onRowAppended={isReadOnly ? undefined : handleAddRow}
-              // onSearchResultsChanged={onSearchResultsChanged}
             />
           )}
         </GridContextMenu>

@@ -23,4 +23,5 @@ export interface IView<T = any> {
 
 export interface IGridViewProperties {
   fieldWidthMap: Record<string, number>
+  freezeColumns?: number
 }
