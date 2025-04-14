@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-import { AIConfigForm } from "./ai-form"
+import { AITaskConfigForm } from "./ai-task-form"
 import { ProviderIcon } from "./provider/provider-icon"
 import { useAIConfigStore } from "./store"
 
@@ -126,7 +126,7 @@ export default function SettingsAIPage() {
           })}
         </div>
       </div>
-      <AIConfigForm />
+      <AITaskConfigForm />
     </div>
   )
 }

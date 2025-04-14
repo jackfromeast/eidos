@@ -6,6 +6,7 @@ import { useLocation } from "react-router-dom"
 
 import { AIFormValues, aiFormSchema } from "@/lib/ai/config"
 import { isDesktopMode } from "@/lib/env"
+import { Button } from "@/components/ui/button"
 import { toast } from "@/components/ui/use-toast"
 import { AIModelSelect } from "@/components/ai-chat/ai-chat-model-select"
 import {
@@ -23,7 +24,7 @@ import { LocalLLMManage } from "./local-llm-manage"
 import { ModelTestButton } from "./model-test-button"
 import { useAIConfigStore } from "./store"
 
-export function AIConfigForm() {
+export function AITaskConfigForm() {
   const { setAiConfig, aiConfig } = useAIConfigStore()
   const form = useForm<AIFormValues>({
     resolver: zodResolver(aiFormSchema),
@@ -32,6 +33,7 @@ export function AIConfigForm() {
   const { reset } = form
   const { t } = useTranslation()
   const location = useLocation()
+  const { isDirty } = form.formState
 
   useEffect(() => {
     reset(aiConfig)
@@ -75,13 +77,27 @@ export function AIConfigForm() {
             "model-preferences"
           )}`}
         >
-          <div className="space-y-2">
-            <h3 className="text-lg font-medium">
-              {t("settings.ai.modelPreferences")}
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              {t("settings.ai.modelPreferencesDescription")}
-            </p>
+          <div className="flex justify-between items-start">
+            <div className="space-y-2">
+              <h3 className="text-lg font-medium">
+                {t("settings.ai.modelPreferences")}
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                {t("settings.ai.modelPreferencesDescription")}
+              </p>
+            </div>
+            <Button
+              type="submit"
+              size="sm"
+              disabled={!isDirty}
+              className="transition-opacity duration-200"
+              style={{
+                opacity: isDirty ? 1 : 0,
+                pointerEvents: isDirty ? "auto" : "none",
+              }}
+            >
+              {t("common.update")}
+            </Button>
           </div>
           <FormField
             control={form.control}
