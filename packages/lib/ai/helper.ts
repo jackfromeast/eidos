@@ -17,7 +17,7 @@ import { createDeepInfra } from "@ai-sdk/deepinfra";
 import { createDeepSeek } from '@ai-sdk/deepseek';
 import { createFal } from "@ai-sdk/fal";
 import { createFireworks } from "@ai-sdk/fireworks";
-import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { createGoogleGenerativeAI, google } from '@ai-sdk/google';
 import { createGroq } from '@ai-sdk/groq';
 import { createLuma } from "@ai-sdk/luma";
 import { createMistral } from "@ai-sdk/mistral";
@@ -171,7 +171,8 @@ export const LLM_PROVIDER_INFO: Record<LLMProviderType, {
   },
 }
 
-export const ALL_PROVIDERS = Object.keys(LLM_PROVIDER_INFO) as LLMProviderType[]
+// order by name alphabetically
+export const ALL_PROVIDERS = Object.keys(LLM_PROVIDER_INFO).sort()
 
 export interface AvailableModel {
   id: string
@@ -186,9 +187,28 @@ export async function fetchAvailableModels(
   if (!apiKey) {
     return []
   }
-
   const providerInfo = LLM_PROVIDER_INFO[providerType]
   const _baseUrl = baseUrl || providerInfo.baseUrl
+
+  // Special handling for Google's API
+  if (providerType === 'google') {
+    try {
+      const endpoint = `${_baseUrl}/models?key=${apiKey}`
+      const response = await fetch(endpoint);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch Google models: ${response.statusText}`);
+      }
+      const data = await response.json();
+      return data.models.map((model: { name: string; displayName: string }) => ({
+        id: model.name.split('/').pop() || model.name,
+        label: model.name.split('/').pop() || model.displayName || model.name,
+      }));
+    } catch (error) {
+      console.error('Failed to fetch Google models:', error);
+      return [];
+    }
+  }
+
 
   const openai = new OpenAI({
     apiKey: apiKey,
