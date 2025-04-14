@@ -14,7 +14,7 @@ export class TableFullTextSearch {
 
         const columns = tableInfo
             .map((col: any) => col.name)
-            .filter((name: any) => name.toLowerCase() !== 'rowid')
+            .filter((name: any) => name.toLowerCase() !== 'rowid' && !name.endsWith('__vec') && !name.endsWith('__vec_meta'))
             .join(', ');
 
         const ftsTableName = `fts_${tableName}`;

@@ -11,6 +11,22 @@ export interface SearchResult {
     rowIndex: number
 }
 
+// Define a type for semantic search results (adjust as needed)
+export interface SemanticSearchResultData extends Record<string, any> {
+    _id: string // Or some unique identifier for the result item
+    title: string
+    _distance?: number
+}
+
+export interface SemanticSearchResult {
+    meta: {
+        page: number
+        pageSize: number
+        embeddingFieldId: string
+    }
+    results: SemanticSearchResultData[]
+}
+
 interface TableSearchState {
     searchQuery: string
     showSearch: boolean
@@ -21,6 +37,11 @@ interface TableSearchState {
     currentPage: number
     totalPages: number
     isLoadingMore: boolean
+    // Semantic Search State
+    isSemanticSearchActive: boolean
+    isSemanticSearching: boolean
+    semanticSearchResult: SemanticSearchResult
+    semanticSearchSelectedIndex: number
     setSearchQuery: (query: string) => void
     setShowSearch: (show: boolean) => void
     setSearchResults: (results: SearchResult[], startIndex: number) => void
@@ -31,6 +52,21 @@ interface TableSearchState {
     setCurrentPage: (page: number) => void
     clearSearchResults: () => void
     clearSearch: () => void
+    // Semantic Search Actions
+    setIsSemanticSearchActive: (active: boolean) => void
+    setIsSemanticSearching: (searching: boolean) => void
+    setSemanticSearchResult: (results: SemanticSearchResult) => void
+    setSemanticSearchSelectedIndex: (index: number | ((prev: number) => number)) => void
+}
+
+
+const emptySemanticSearchResult: SemanticSearchResult = {
+    meta: {
+        page: 1,
+        pageSize: 10,
+        embeddingFieldId: ''
+    },
+    results: []
 }
 
 export const useTableSearchStore = create<TableSearchState>((set) => ({
@@ -43,6 +79,11 @@ export const useTableSearchStore = create<TableSearchState>((set) => ({
     currentPage: 1,
     totalPages: 0,
     isLoadingMore: false,
+    // Semantic Search Initial State
+    isSemanticSearchActive: false,
+    isSemanticSearching: false,
+    semanticSearchResult: emptySemanticSearchResult,
+    semanticSearchSelectedIndex: -1,
     setSearchQuery: (query) => set({ searchQuery: query }),
     setShowSearch: (show) => set({ showSearch: show }),
     setSearchResults: (results, startIndex) => set((state) => {
@@ -64,7 +105,9 @@ export const useTableSearchStore = create<TableSearchState>((set) => ({
         currentSearchIndex: 0,
         totalMatches: 0,
         searchTime: 0,
-        currentPage: 1
+        currentPage: 1,
+        semanticSearchResult: emptySemanticSearchResult,
+        semanticSearchSelectedIndex: -1
     }),
     clearSearch: () => set({
         searchQuery: '',
@@ -73,6 +116,21 @@ export const useTableSearchStore = create<TableSearchState>((set) => ({
         currentSearchIndex: 0,
         totalMatches: 0,
         searchTime: 0,
-        currentPage: 1
-    })
+        currentPage: 1,
+        // Clear semantic search state as well
+        isSemanticSearchActive: false,
+        isSemanticSearching: false,
+        semanticSearchResult: emptySemanticSearchResult,
+        semanticSearchSelectedIndex: -1
+    }),
+    // Semantic Search Setters
+    setIsSemanticSearchActive: (active) => set({ isSemanticSearchActive: active }),
+    setIsSemanticSearching: (searching) => set({ isSemanticSearching: searching }),
+    setSemanticSearchResult: (result) => set({
+        semanticSearchResult: result,
+        semanticSearchSelectedIndex: -1
+    }),
+    setSemanticSearchSelectedIndex: (index) => set((state) => ({
+        semanticSearchSelectedIndex: typeof index === 'function' ? index(state.semanticSearchSelectedIndex) : index
+    })),
 })) 

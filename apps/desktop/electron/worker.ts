@@ -5,7 +5,7 @@ import { NodeServerDatabase } from "./sqlite-server";
 
 
 
-const { spaceDbPath, simplePathConfig } = workerData
+const { spaceDbPath, simplePathConfig, vecPathConfig, graftPathConfig } = workerData
 class DataSpaceManager {
     private static instance: DataSpaceManager;
     private dataSpace: DataSpace | null = null;
@@ -39,7 +39,10 @@ class DataSpaceManager {
                 readonly: true,
             }
         }, {
-            simple: simplePathConfig
+            simple: simplePathConfig,
+            vec: vecPathConfig,
+            graft: graftPathConfig,
+            enableSync: false,
         });
         this.dataSpace = new DataSpace({
             db: serverDb,
@@ -71,6 +74,7 @@ function getOrSetDataSpace(spaceName: string): Promise<DataSpace> {
 
 
 let dataSpace = getDataSpace()
+
 
 
 if (parentPort) {

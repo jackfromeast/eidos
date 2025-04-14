@@ -4,12 +4,20 @@ import { ChevronDownIcon, ChevronUpIcon, SearchIcon } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
 import { IView } from "@/lib/store/IView"
-import { cn } from "@/lib/utils"
+import { cn, shortenId } from "@/lib/utils"
+import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
+import { useCurrentSubPage } from "@/hooks/use-current-sub-page"
+import { useSqlite } from "@/hooks/use-sqlite"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
 import { useTableSearch } from "./hooks/use-table-search"
-import { useTableSearchStore } from "./hooks/use-table-search-store"
+import {
+  SemanticSearchResultData,
+  useTableSearchStore,
+} from "./hooks/use-table-search-store"
+import { useTableSemanticSearch } from "./hooks/use-table-semantic-search"
+import { SemanticSearchResultsList } from "./semantic-search-results-list"
 
 const Spinner = () => (
   <svg
@@ -46,10 +54,21 @@ export const ViewSearch = (props: { view: IView }) => {
     searchTime,
     totalMatches,
     isLoadingMore,
+    isSemanticSearchActive,
+    isSemanticSearching,
+    semanticSearchResult,
+    setIsSemanticSearchActive,
+    setIsSemanticSearching,
+    setSemanticSearchResult,
+    semanticSearchSelectedIndex,
+    setSemanticSearchSelectedIndex,
+    clearSearch,
   } = useTableSearchStore()
 
   const { isSearching } = useTableSearch(props.view?.id)
   const searchInputRef = useRef<HTMLInputElement>(null)
+  const resultsListRef = useRef<HTMLUListElement>(null)
+  const { search: semanticSearch } = useTableSemanticSearch()
 
   useEffect(() => {
     if (showSearch) {
@@ -65,9 +84,10 @@ export const ViewSearch = (props: { view: IView }) => {
         searchQuery === ""
       ) {
         setShowSearch(false)
+        setIsSemanticSearchActive(false)
       }
     },
-    [searchQuery, setShowSearch]
+    [searchQuery, setShowSearch, setIsSemanticSearchActive]
   )
 
   useEffect(() => {
@@ -79,8 +99,7 @@ export const ViewSearch = (props: { view: IView }) => {
 
   useKeyPress("esc", () => {
     if (showSearch) {
-      setShowSearch(false)
-      setSearchQuery("")
+      clearSearch()
     }
   })
 
@@ -112,6 +131,47 @@ export const ViewSearch = (props: { view: IView }) => {
     }
   })
 
+  const handleSemanticSearch = useCallback(async () => {
+    if (!searchQuery) return
+    console.log("Triggering semantic search for:", searchQuery)
+    setIsSemanticSearchActive(true)
+    setIsSemanticSearching(true)
+    setSemanticSearchSelectedIndex(-1)
+    const result = await semanticSearch({
+      query: searchQuery,
+    })
+    setSemanticSearchResult(result)
+    setIsSemanticSearching(false)
+  }, [
+    searchQuery,
+    setIsSemanticSearchActive,
+    setIsSemanticSearching,
+    setSemanticSearchResult,
+  ])
+
+  const { space, tableId } = useCurrentPathInfo()
+  const { getOrCreateTableSubDoc } = useSqlite(space)
+  const { setSubPage } = useCurrentSubPage()
+
+  const handleSemanticSearchResultClick = useCallback(
+    async (result: SemanticSearchResultData) => {
+      setIsSemanticSearchActive(false)
+      const shortId = shortenId(result._id)
+      await getOrCreateTableSubDoc({
+        docId: shortId,
+        title: result.title,
+        tableId: tableId!,
+      })
+      setSubPage(shortId)
+    },
+    [setIsSemanticSearchActive, setSearchQuery]
+  )
+
+  useKeyPress("alt.enter", (event) => {
+    event.preventDefault()
+    handleSemanticSearch()
+  })
+
   return (
     <div className="relative flex items-center">
       <div
@@ -125,7 +185,7 @@ export const ViewSearch = (props: { view: IView }) => {
           className={cn(
             "flex h-8 items-center rounded-md border bg-background",
             "overflow-hidden transition-all duration-200 ease-in-out",
-            showSearch ? "w-64" : "w-0"
+            showSearch ? "w-96" : "w-0"
           )}
         >
           <Input
@@ -134,9 +194,23 @@ export const ViewSearch = (props: { view: IView }) => {
             placeholder={t("common.search")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-8 w-64 border-0 pl-8 pr-24"
+            className="h-8 w-96 border-0 pl-8 pr-24"
           />
           <SearchIcon className="absolute left-2 h-4 w-4 text-muted-foreground" />
+
+          {isSemanticSearchActive && (
+            <div className="absolute top-full left-0 right-0 mt-1 max-h-[400px] w-full overflow-y-auto rounded-md border bg-popover shadow-lg z-20">
+              <SemanticSearchResultsList
+                isSearching={isSemanticSearching}
+                results={semanticSearchResult?.results}
+                meta={semanticSearchResult?.meta}
+                selectedIndex={semanticSearchSelectedIndex}
+                onResultClick={handleSemanticSearchResultClick}
+                onResultMouseEnter={setSemanticSearchSelectedIndex}
+                listRef={resultsListRef}
+              />
+            </div>
+          )}
 
           {searchQuery && (
             <div className="absolute right-2 flex items-center gap-1 bg-background">
@@ -170,9 +244,11 @@ export const ViewSearch = (props: { view: IView }) => {
                   </div>
                 </>
               ) : (
-                <div className="flex items-center text-xs text-muted-foreground whitespace-nowrap">
-                  {t("cmdk.notFound", { input: searchQuery })}
-                </div>
+                !isSemanticSearchActive && (
+                  <div className="flex items-center text-xs text-muted-foreground whitespace-nowrap">
+                    {`Not found`}
+                  </div>
+                )
               )}
             </div>
           )}

@@ -22,12 +22,22 @@ let forceQuit = false;
 
 export const PORT = 13127;
 
-
 const libPath = getResourcePath(`dist-simple/libsimple`);
 const dictPath = getResourcePath('dist-simple/dict');
+
 const simplePathConfig = {
     libPath,
     dictPath
+}
+
+const vecPath = getResourcePath(`dist-simple/vec`);
+const vecPathConfig = {
+    libPath: vecPath,
+}
+
+const graftPath = getResourcePath(`dist-simple/libgraft`);
+const graftPathConfig = {
+    libPath: graftPath,
 }
 
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true'
@@ -89,7 +99,9 @@ ipcMain.handle('sqlite-msg', async (event, payload) => {
 
 ipcMain.handle('sqlite-msg-read', async (event, payload) => {
     return WorkerManager.getInstance().executeTask(payload, {
-        simplePathConfig
+        simplePathConfig,
+        vecPathConfig,
+        graftPathConfig
     });
 });
 

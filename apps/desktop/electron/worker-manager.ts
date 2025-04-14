@@ -5,6 +5,8 @@ import { getSpaceDbPath } from './file-system/space';
 
 export interface WorkerConfig {
     simplePathConfig: any;
+    vecPathConfig: any;
+    graftPathConfig: any;
 }
 
 export class WorkerManager {
