@@ -74,6 +74,7 @@ export const LLMProviderForm = ({
       models: "",
     },
   })
+  const { isDirty } = form.formState
   const providerInfo = LLM_PROVIDER_INFO[form.watch("type")]
   const toast = useToast()
 
@@ -90,17 +91,37 @@ export const LLMProviderForm = ({
   const handleModelSelect = (modelId: string) => {
     if (selectedModelIds.includes(modelId)) return
     const newSelectedIds = [...selectedModelIds, modelId]
-    form.setValue("models", newSelectedIds.join(","), { shouldValidate: true })
+    form.setValue("models", newSelectedIds.join(","), {
+      shouldValidate: true,
+      shouldDirty: true,
+    })
   }
 
   const handleModelRemove = (modelId: string) => {
     const newSelectedIds = selectedModelIds.filter((id) => id !== modelId)
-    form.setValue("models", newSelectedIds.join(","), { shouldValidate: true })
+    form.setValue("models", newSelectedIds.join(","), {
+      shouldValidate: true,
+      shouldDirty: true,
+    })
   }
 
   function onSubmit(data: LLMProvider) {
     console.log("onSubmit", data)
-    onChange ? onChange(data) : onAdd?.(data)
+    if (onChange) {
+      onChange(data)
+      toast.toast({
+        title: t("common.success"),
+        description: t("settings.ai.providerUpdatedSuccess", {
+          name: data.name,
+        }),
+      })
+    } else if (onAdd) {
+      onAdd(data)
+      toast.toast({
+        title: t("common.success"),
+        description: t("settings.ai.providerAddedSuccess", { name: data.name }),
+      })
+    }
   }
 
   function handleDelete(providerName: string) {
@@ -160,10 +181,10 @@ export const LLMProviderForm = ({
 
   useEffect(() => {
     setAvailableModels([])
-    if (providerType === "openai" && baseUrl && apiKey) {
+    if (baseUrl && apiKey) {
       getModelList()
     }
-  }, [providerType, form])
+  }, [providerType, form, baseUrl, apiKey])
 
   const mode = onChange ? "Update" : "Add"
 
@@ -261,7 +282,7 @@ export const LLMProviderForm = ({
                             <TagsItem
                               key={model.id}
                               value={model.id}
-                              onSelect={handleModelSelect}
+                              onSelect={() => handleModelSelect(model.id)}
                             >
                               {model.label}
                             </TagsItem>
@@ -285,9 +306,11 @@ export const LLMProviderForm = ({
           )}
         />
         <div className="flex space-x-2">
-          <Button type="button" onClick={form.handleSubmit(onSubmit)}>
-            {mode === "Update" ? t("common.update") : t("common.add")}
-          </Button>
+          {(mode === "Add" || (mode === "Update" && isDirty)) && (
+            <Button type="button" onClick={form.handleSubmit(onSubmit)}>
+              {mode === "Update" ? t("common.update") : t("common.add")}
+            </Button>
+          )}
           {mode === "Update" && value && onDelete && (
             <Button
               type="button"
