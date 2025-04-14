@@ -570,5 +570,13 @@
     "views.types.calendar": "Calendar View",
     "views.types.gallery": "Gallery View",
     "views.types.grid": "Grid View",
-    "views.types.kanban": "Kanban View"
+    "views.types.kanban": "Kanban View",
+    "common.add": "Add",
+    "settings.ai.providerAddedSuccess": "Provider {{name}} added successfully",
+    "settings.ai.providerUpdatedSuccess": "Provider {{name}} updated successfully",
+    "settings.ai.deleteProviderTitle": "Delete Provider",
+    "settings.ai.deleteProviderDescription": "Are you sure you want to delete provider {{name}}? This action cannot be undone.",
+    "settings.ai.searchModels": "Search models...",
+    "settings.ai.noModelsFound": "No models found",
+    "settings.ai.fetchModelListSuccess": "Successfully fetched {{count}} models"
 }
