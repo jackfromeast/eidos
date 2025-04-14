@@ -28,6 +28,7 @@ import { createReplicate } from "@ai-sdk/replicate";
 import { createTogetherAI } from "@ai-sdk/togetherai";
 import { createXai } from '@ai-sdk/xai';
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+import { OpenAI } from "openai";
 
 export type Model = (typeof WEB_LLM_MODELS)[0]
 
@@ -172,8 +173,40 @@ export const LLM_PROVIDER_INFO: Record<LLMProviderType, {
 
 export const ALL_PROVIDERS = Object.keys(LLM_PROVIDER_INFO) as LLMProviderType[]
 
+export interface AvailableModel {
+  id: string
+  label: string
+}
 
+export async function fetchAvailableModels(
+  apiKey: string,
+  providerType: LLMProviderType,
+  baseUrl?: string
+): Promise<AvailableModel[]> {
+  if (!apiKey) {
+    return []
+  }
 
+  const providerInfo = LLM_PROVIDER_INFO[providerType]
+  const _baseUrl = baseUrl || providerInfo.baseUrl
+
+  const openai = new OpenAI({
+    apiKey: apiKey,
+    baseURL: _baseUrl,
+    dangerouslyAllowBrowser: true,
+  })
+
+  try {
+    const resp = await openai.models.list()
+    return resp.data.map((model) => ({
+      id: model.id,
+      label: model.id,
+    }))
+  } catch (error) {
+    console.error('Failed to fetch models:', error)
+    return []
+  }
+}
 
 interface ModelFileListRecord {
   name: string

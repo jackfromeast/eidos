@@ -1,13 +1,17 @@
 import { useEffect, useMemo, useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useDebounceFn } from "ahooks"
 import { Loader2 } from "lucide-react"
-import OpenAI from "openai"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 
 import { LLMProvider, llmProviderSchema } from "@/lib/ai/config"
-import { LLM_PROVIDER_INFO } from "@/lib/ai/helper"
+import {
+  AvailableModel,
+  LLM_PROVIDER_INFO,
+  fetchAvailableModels,
+} from "@/lib/ai/helper"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,7 +21,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -57,9 +60,7 @@ export const LLMProviderForm = ({
   onDelete,
 }: LLMProviderFormProps) => {
   const { t } = useTranslation()
-  const [availableModels, setAvailableModels] = useState<
-    { id: string; label: string }[]
-  >([])
+  const [availableModels, setAvailableModels] = useState<AvailableModel[]>([])
   const [isFetchingModels, setIsFetchingModels] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
@@ -129,69 +130,53 @@ export const LLMProviderForm = ({
     navigate("/settings/ai")
   }
 
-  async function getModelList(
-    e?: React.MouseEvent<HTMLButtonElement, MouseEvent>
-  ) {
-    e?.preventDefault()
-    const baseUrl = form.getValues("baseUrl")
-    const apiKey = form.getValues("apiKey")
-    const providerType = form.watch("type")
-    if (!apiKey) {
-      return
-    }
-
-    setIsFetchingModels(true)
-    setAvailableModels([])
-    const providerInfo = LLM_PROVIDER_INFO[providerType]
-    const _baseUrl = baseUrl || providerInfo.baseUrl
-
-    const openai = new OpenAI({
-      apiKey: apiKey,
-      baseURL: _baseUrl,
-      dangerouslyAllowBrowser: true,
-    })
-    try {
-      const resp = await openai.models.list()
-      const models = resp.data.map((model) => ({
-        id: model.id,
-        label: model.id,
-      }))
-      setAvailableModels(models)
-      // toast.toast({
-      //   title: t("common.success"),
-      //   description: t("settings.ai.fetchModelListSuccess", {
-      //     count: models.length,
-      //   }),
-      // })
-    } catch (error) {
-      console.error(error)
-      setAvailableModels([])
-      toast.toast({
-        title: t("common.error"),
-        description: t("settings.ai.fetchModelListError"),
-      })
-    } finally {
-      setIsFetchingModels(false)
-    }
-  }
-
   const baseUrl = form.watch("baseUrl")
   const apiKey = form.watch("apiKey")
   const providerType = form.watch("type")
 
+  const { run: fetchModels } = useDebounceFn(
+    async () => {
+      if (!apiKey) return
+
+      setIsFetchingModels(true)
+      setAvailableModels([])
+
+      try {
+        const models = await fetchAvailableModels(apiKey, providerType, baseUrl)
+        setAvailableModels(models)
+      } catch (error) {
+        console.error(error)
+        setAvailableModels([])
+        toast.toast({
+          title: t("common.error"),
+          description: t("settings.ai.fetchModelListError"),
+        })
+      } finally {
+        setIsFetchingModels(false)
+      }
+    },
+    { wait: 500 }
+  )
+
+  async function getModelList(
+    e?: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ) {
+    e?.preventDefault()
+    fetchModels()
+  }
+
   useEffect(() => {
-    setAvailableModels([])
-    if (baseUrl && apiKey) {
-      getModelList()
+    if (form.watch("type") !== "openai-compatible" && apiKey) {
+      fetchModels()
     }
-  }, [providerType, form, baseUrl, apiKey])
+  }, [providerType, apiKey, baseUrl, fetchModels])
 
   const mode = onChange ? "Update" : "Add"
 
   return (
     <Form {...form}>
       <form className="space-y-4">
-        {form.watch("type") === "openai" && (
+        {form.watch("type") === "openai-compatible" && (
           <FormField
             name="baseUrl"
             render={({ field }) => (
@@ -244,17 +229,19 @@ export const LLMProviderForm = ({
             <FormItem>
               <div className="flex items-center justify-between">
                 <FormLabel>{t("settings.ai.models")}</FormLabel>
-                <Button
-                  size="xs"
-                  variant="outline"
-                  onClick={getModelList}
-                  disabled={isFetchingModels || !form.watch("apiKey")}
-                >
-                  {isFetchingModels ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : null}
-                  {t("common.fetch")}
-                </Button>
+                {form.watch("type") === "openai-compatible" && (
+                  <Button
+                    size="xs"
+                    variant="outline"
+                    onClick={getModelList}
+                    disabled={isFetchingModels || !form.watch("apiKey")}
+                  >
+                    {isFetchingModels ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : null}
+                    {t("common.fetch")}
+                  </Button>
+                )}
               </div>
               <FormControl>
                 <Tags className="w-full">
@@ -307,13 +294,18 @@ export const LLMProviderForm = ({
         />
         <div className="flex space-x-2">
           {(mode === "Add" || (mode === "Update" && isDirty)) && (
-            <Button type="button" onClick={form.handleSubmit(onSubmit)}>
+            <Button
+              type="button"
+              size="sm"
+              onClick={form.handleSubmit(onSubmit)}
+            >
               {mode === "Update" ? t("common.update") : t("common.add")}
             </Button>
           )}
           {mode === "Update" && value && onDelete && (
             <Button
               type="button"
+              size="sm"
               variant="destructive"
               onClick={() => setIsDeleteDialogOpen(true)}
             >
