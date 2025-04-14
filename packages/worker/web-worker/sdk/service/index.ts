@@ -13,6 +13,15 @@ export class FieldsManager {
     this.table = table
   }
 
+
+
+  all() {
+    const fields = this.dataSpace.column.list({
+      table_name: this.table.rawTableName
+    })
+    return fields
+  }
+
   get lookup() {
     return new LookupFieldService(this.table)
   }

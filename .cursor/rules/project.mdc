@@ -16,8 +16,8 @@ alwaysApply: false
 ## Internationalization (i18n)
 - Use react-i18next as the i18n solution
 - Language files location:
-  - /locales/en.json (English)
-  - /locales/zh.json (Chinese)
+  - packages/locales/en.json (English)
+  - packages/locales/zh.json (Chinese)
 - Use flat mode for i18n keys:
   - Keys should be separated by dots
   - Avoid nested JSON objects

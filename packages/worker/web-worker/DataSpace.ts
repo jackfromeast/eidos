@@ -47,6 +47,7 @@ import { ViewTable } from "./meta-table/view"
 import { RowsManager } from "./sdk/rows"
 import { TableManager } from "./sdk/table"
 import { withSqlite3AllUDF } from "./udf"
+import { TableSemanticSearch } from "./data-pipeline/TableSemanticSearch"
 // import { QueueTable } from "./meta-table/queue"
 
 export type EidosTable =
@@ -98,13 +99,19 @@ export class DataSpace {
   // for auto migration
   hasMigrated = false
   tableFullTextSearch: TableFullTextSearch
+  tableSemanticSearch: TableSemanticSearch
   isUDFWithCtx = false
+  context: {
+    setInterval?: typeof setInterval
+    embedding?: (text: string) => Promise<Array<number>>
+  }
   constructor(config: {
     db: EidosDatabase
     activeUndoManager: boolean
     dbName: string
     context: {
       setInterval?: typeof setInterval
+      embedding?: (text: string) => Promise<Array<number>>
     }
     hasLoadExtension?: boolean
     createUDF?: (db: EidosDatabase) => void,
@@ -122,6 +129,7 @@ export class DataSpace {
       dataEventChannel, hasLoadExtension, callRenderer,
       cacheSize, isUDFWithCtx, enableFTS = false } = config
     this.db = db
+    this.context = context
 
     this.isUDFWithCtx = Boolean(isUDFWithCtx)
     this.hasLoadExtension = Boolean(hasLoadExtension)
@@ -206,8 +214,19 @@ export class DataSpace {
     this.activeUndoManager = activeUndoManager
 
     this.tableFullTextSearch = new TableFullTextSearch(this, enableFTS)
+    this.tableSemanticSearch = new TableSemanticSearch(this)
   }
 
+  public semanticSearch = async (params: {
+    tableName: string,
+    query: string,
+    viewId?: string,
+    fieldId?: string,
+    page: number,
+    pageSize: number
+  }) => {
+    return this.tableSemanticSearch.search(params)
+  }
 
   public updateEmbedding = async (tableId: string, fieldId: string, data: { recordId: string, value: string }[]) => {
     const tm = new TableManager(tableId, this)

@@ -1,13 +1,14 @@
 import { EidosDataEventChannelName, EidosMessageChannelName } from "@/lib/const";
 import { DataSpace, EidosDatabase } from "@/worker/web-worker/DataSpace";
 import { WebContents, ipcMain } from "electron";
-import { getEidosFileSystemManager } from './file-system/getEidosFileSystemManager';
-import { getSpaceDbPath } from "./file-system/space";
-import { win } from "./main";
-import { NodeServerDatabase } from "./sqlite-server";
-import { getResourcePath } from "./helper";
 import { EventEmitter } from 'events';
 import { getConfigManager } from "./config";
+import { embedding } from "./data-space-context";
+import { getEidosFileSystemManager } from './file-system/getEidosFileSystemManager';
+import { getSpaceDbPath } from "./file-system/space";
+import { getResourcePath } from "./helper";
+import { win } from "./main";
+import { NodeServerDatabase } from "./sqlite-server";
 
 
 // --- START: Helper function to apply Graft Config to Environment --- 
@@ -182,6 +183,7 @@ export class DataSpaceManager {
             dbName: 'draft',
             context: {
                 setInterval,
+                embedding
             },
             hasLoadExtension: true,
             dataEventChannel: new BroadcastChannel('draft-data-event-channel')
@@ -228,6 +230,7 @@ export class DataSpaceManager {
             dbName: spaceName,
             context: {
                 setInterval,
+                embedding
             },
             createUDF: initUDF,
             hasLoadExtension: true,
