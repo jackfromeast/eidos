@@ -15,6 +15,7 @@ import { useColumns } from "./use-col"
 import { useLookupContext } from "./use-lookup-context"
 import { useSqlite } from "@/hooks/use-sqlite"
 import { getTableIdByRawTableName } from "@/lib/utils"
+import { useTheme } from "next-themes"
 
 export const useDataSource = (tableName: string, databaseName: string) => {
   const { updateCell, updateFieldProperty } = useTableOperation(
@@ -31,6 +32,7 @@ export const useDataSource = (tableName: string, databaseName: string) => {
   const { contextMap } = useLookupContext(tableName, databaseName)
   const { showColumns } = useColumns(uiColumns, currentView)
 
+  const { theme } = useTheme()
 
   const findRowIndexInView = useCallback((rowId: string) => {
     if (!sqlite) {
@@ -82,6 +84,7 @@ export const useDataSource = (tableName: string, databaseName: string) => {
             return fieldInstance.getCellContent(cv as never, {
               userMap,
               row: rowData,
+              theme: theme,
             })
           } else {
             throw new Error(`field type ${field.type} not found`)
@@ -93,7 +96,7 @@ export const useDataSource = (tableName: string, databaseName: string) => {
         return errorCell
       }
     },
-    [getFieldContext, showColumns, userMap]
+    [getFieldContext, showColumns, userMap, theme]
   )
 
   const onEdited: RowEditedCallback<any> = React.useCallback(

@@ -23,7 +23,7 @@ export class TableSemanticSearch {
         if (!embedding) {
             throw new Error('Embedding function is not set');
         }
-        const embeddingResult = await embedding(query)
+
         const tm = new TableManager(getTableIdByRawTableName(tableName), this.dataspace)
 
         const fields = await tm.fields.all()
@@ -34,11 +34,12 @@ export class TableSemanticSearch {
             throw new Error('Multiple embedding fields found, please specify the fieldId');
         }
 
-        const _fieldId = fieldId || embeddingFields[0].table_column_name
-        console.log('fieldId', _fieldId)
+        const _fieldId = fieldId || embeddingFields[0]?.table_column_name
         if (!_fieldId) {
             throw new Error('No embedding field found');
         }
+        const embeddingResult = await embedding(query)
+
         if (!embeddingResult || embeddingResult.length === 0) {
             throw new Error('Failed to generate embedding for the query');
         }

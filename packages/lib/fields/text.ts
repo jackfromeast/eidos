@@ -11,6 +11,12 @@ export interface TextProperty {
   enableColorHint?: boolean | null
 }
 
+// Define an interface for the context object
+interface CellContext {
+  row: Record<string, any>;
+  theme?: 'dark' | 'light'; // Optional theme property
+}
+
 export class TextField extends BaseField<TextCell, TextProperty> {
   static type = FieldType.Text
 
@@ -22,9 +28,14 @@ export class TextField extends BaseField<TextCell, TextProperty> {
     return rawData
   }
 
-  getCellContent(rawData: string | null, context?: {
-    row: Record<string, any>
-  }): TextCell {
+  // Update the method signature to use CellContext
+  getCellContent(rawData: string | null, context?: CellContext): TextCell {
+    // Access the theme from context, default to 'light' if not provided
+    const theme = context?.theme ?? 'light';
+
+    // Define theme-based colors
+    const outdatedColor = theme === 'dark' ? '#664D03' : '#FFFBE6'; // Example dark/light yellow
+    const upToDateColor = theme === 'dark' ? '#1F4B2D' : '#E6FFEC'; // Example dark/light green
 
     if (!this.column.property?.enableEmbedding || !this.column.property?.enableColorHint) {
       return {
@@ -38,6 +49,7 @@ export class TextField extends BaseField<TextCell, TextProperty> {
     const vecMetaFieldId = `${fieldId}__vec_meta`
     const vecMeta = context?.row?.[vecMetaFieldId] ? JSON.parse(context.row[vecMetaFieldId]) as IVecMeta : null
     const isCellOutOfDate = vecMeta?.outOfDate
+
     if (isCellOutOfDate) {
       return {
         kind: GridCellKind.Text,
@@ -45,7 +57,8 @@ export class TextField extends BaseField<TextCell, TextProperty> {
         displayData: rawData ? rawData + "" : "",
         allowOverlay: true,
         themeOverride: {
-          bgCell: "#FFFBE6",
+          // Use the theme-based color
+          bgCell: outdatedColor,
         },
       }
     }
@@ -56,7 +69,8 @@ export class TextField extends BaseField<TextCell, TextProperty> {
         displayData: rawData ? rawData + "" : "",
         allowOverlay: true,
         themeOverride: {
-          bgCell: "#E6FFEC",
+          // Use the theme-based color
+          bgCell: upToDateColor,
         },
       }
     }
