@@ -106,6 +106,10 @@ export class NodeServerDatabase extends BaseServerDatabase {
         }
     }
 
+    get isWalMode() {
+        return !this.isSyncEnabled
+    }
+
     loadVecExtension(db: Database.Database) {
         if (this.options?.vec?.libPath) {
             db.loadExtension(this.options.vec.libPath);

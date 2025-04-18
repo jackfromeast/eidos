@@ -35,6 +35,10 @@ export interface ISqlite<T, D> {
 export abstract class BaseServerDatabase {
   filename?: string
 
+  get isWalMode() {
+    return true
+  }
+
   pages(): Promise<{ [key: string]: any; }> {
     return Promise.resolve({})
   }
