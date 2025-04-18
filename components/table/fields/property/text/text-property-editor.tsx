@@ -150,7 +150,10 @@ export const TextPropertyEditor = (props: IFieldPropertyEditorProps) => {
       <CollapsibleTrigger className="flex w-full items-center justify-between ">
         <div className="flex items-center gap-2 text-sm">
           <Sparkles className="h-4 w-4" />
-          <span>{t("table.propertyEditor.aiEnhancement")}</span>
+          <span>{t("table.propertyEditor.aiEnhancement")}</span>{" "}
+          <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-purple-100 text-purple-700">
+            {t("common.badge.alpha")}
+          </span>
         </div>
         {!open && <ChevronRight className="h-5 w-5" />}
         {open && <ChevronDown className="h-5 w-5" />}
@@ -158,9 +161,17 @@ export const TextPropertyEditor = (props: IFieldPropertyEditorProps) => {
 
       <CollapsibleContent className="flex flex-col gap-2 pb-0">
         {/* Embedding model information */}
+        {!embeddingModel && (
+          <p className="text-sm text-destructive">
+            {t("table.propertyEditor.noEmbeddingModelHint")}{" "}
+            <Link to="/settings/ai#model-preferences" className="underline">
+              {t("table.propertyEditor.configureNow")}
+            </Link>
+          </p>
+        )}
         {embeddingModel && (
           <p className="text-sm text-muted-foreground">
-            current embedding model:
+            {t("table.propertyEditor.currentEmbeddingModel")}:{" "}
             <Link to="/settings/ai#model-preferences" className="underline">
               {embeddingModel}
             </Link>{" "}
@@ -169,7 +180,12 @@ export const TextPropertyEditor = (props: IFieldPropertyEditorProps) => {
         {/* Enable embedding toggle */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1">
-            <Label className="text-sm" htmlFor="enable-embedding">
+            <Label
+              className={`text-sm ${
+                !embeddingModel ? "text-muted-foreground" : ""
+              }`}
+              htmlFor="enable-embedding"
+            >
               {t("table.propertyEditor.enableEmbedding")}
             </Label>
             <TooltipProvider>
@@ -188,6 +204,7 @@ export const TextPropertyEditor = (props: IFieldPropertyEditorProps) => {
             checked={enableEmbedding}
             onCheckedChange={handleEmbeddingToggle}
             aria-label={t("table.propertyEditor.enableEmbedding")}
+            disabled={!embeddingModel}
           />
         </div>
 
@@ -225,7 +242,7 @@ export const TextPropertyEditor = (props: IFieldPropertyEditorProps) => {
             variant="outline"
             className="w-full relative"
             onClick={handleProcess}
-            disabled={isProcessing}
+            disabled={isProcessing || !enableEmbedding || !embeddingModel}
           >
             <div
               className="absolute inset-0 bg-primary/10 origin-left transition-all duration-300"

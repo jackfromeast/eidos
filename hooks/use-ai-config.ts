@@ -87,7 +87,7 @@ export const useAiConfig = () => {
   }, [aiConfig])
 
   const embeddingModel = useMemo(() => {
-    return aiConfig.embeddingModel || findFirstAvailableModel()
+    return aiConfig.embeddingModel
   }, [aiConfig])
 
   return {
