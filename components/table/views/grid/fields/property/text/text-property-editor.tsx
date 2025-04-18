@@ -5,7 +5,7 @@ import { Link } from "react-router-dom"
 import { toast } from "sonner"
 
 import { IField } from "@/lib/store/interface"
-import { cn, getTableIdByRawTableName } from "@/lib/utils"
+import { getTableIdByRawTableName } from "@/lib/utils"
 import { useAiConfig } from "@/hooks/use-ai-config"
 import { Button } from "@/components/ui/button"
 import {
@@ -13,7 +13,6 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import {
@@ -23,7 +22,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { EmbeddingStatsProgress } from "@/components/embedding-stats-progress"
-import { TableContext, useCurrentView } from "@/components/table/hooks"
+import { TableContext } from "@/components/table/hooks"
 
 import { usePreview } from "./hooks"
 
@@ -49,9 +48,8 @@ export const TextPropertyEditor = (props: IFieldPropertyEditorProps) => {
     props.uiColumn.property?.enableColorHint ?? false
   )
   const { viewId, tableName } = useContext(TableContext)
-  const { process, queryEmbedding, getEmbeddingStats } = usePreview()
+  const { process, getEmbeddingStats } = usePreview()
   const { embeddingModel } = useAiConfig()
-  const [query, setQuery] = useState("")
   const [isProcessing, setIsProcessing] = useState(false)
   const [progress, setProgress] = useState({
     processed: 0,
@@ -95,6 +93,14 @@ export const TextPropertyEditor = (props: IFieldPropertyEditorProps) => {
     progress,
   ])
 
+  useEffect(() => {
+    setEnableEmbedding(props.uiColumn.property?.enableEmbedding ?? false)
+    setEnableColorHint(props.uiColumn.property?.enableColorHint ?? false)
+  }, [
+    props.uiColumn.property?.enableEmbedding,
+    props.uiColumn.property?.enableColorHint,
+  ])
+
   const handleEmbeddingToggle = (checked: boolean) => {
     if (!embeddingModel) {
       toast.error(t("table.propertyEditor.noEmbeddingModel"))
@@ -135,17 +141,6 @@ export const TextPropertyEditor = (props: IFieldPropertyEditorProps) => {
     }
   }
 
-  const isModelChanged = props.uiColumn.property?.model !== embeddingModel
-
-  const handleQueryEmbedding = async () => {
-    const result = await queryEmbedding(
-      getTableIdByRawTableName(tableName),
-      props.uiColumn.table_column_name,
-      query
-    )
-    console.log("result", result)
-  }
-
   return (
     <Collapsible
       open={open}
@@ -169,11 +164,6 @@ export const TextPropertyEditor = (props: IFieldPropertyEditorProps) => {
             <Link to="/settings/ai#model-preferences" className="underline">
               {embeddingModel}
             </Link>{" "}
-          </p>
-        )}
-        {isModelChanged && enableEmbedding && (
-          <p className="text-sm text-muted-foreground">
-            model changed, please save to apply
           </p>
         )}
         {/* Enable embedding toggle */}

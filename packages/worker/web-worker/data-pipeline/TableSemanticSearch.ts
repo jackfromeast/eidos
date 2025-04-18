@@ -55,14 +55,14 @@ export class TableSemanticSearch {
         const embeddingVectorString = JSON.stringify(embeddingResult)
         const offset = (page - 1) * pageSize;
 
-        const rawTableColumns = await this.dataspace.exec2('pragma table_info(' + tableName + ')') as any[]
-        // exclude columns that name ends with __vec
-        const columns = rawTableColumns.filter((column) => !column.name.endsWith('__vec'))
-        const columnNames = columns.map((column) => column.name).join(',')
-        console.log('columnNames', columnNames)
+        // const rawTableColumns = await this.dataspace.exec2('pragma table_info(' + tableName + ')') as any[]
+        // // exclude columns that name ends with __vec
+        // const columns = rawTableColumns.filter((column) => !column.name.endsWith('__vec'))
+        const columnNames = fields.map((column) => column.table_column_name).join(',')
         const distanceFunction = method === 'L2' ? 'vec_distance_L2' : 'vec_distance_cosine'
         const sql = `
 SELECT
+    _id,
     ${columnNames},
     ${distanceFunction}("${vectorColumnName}", ?) AS _distance
 FROM "${tm.rawTableName}"

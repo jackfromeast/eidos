@@ -2,7 +2,9 @@ import { RefObject, useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
 
 import { cn } from "@/lib/utils"
+import { AspectRatio } from "@/components/ui/aspect-ratio"
 
+import { useFileFields } from "./hooks"
 import {
   SemanticSearchResult,
   SemanticSearchResultData,
@@ -31,6 +33,10 @@ export const SemanticSearchResultsList = ({
   const keydownIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const keyHeldRef = useRef<string | null>(null)
 
+  const fileFields = useFileFields()
+
+  const coverField = fileFields[0]
+
   useEffect(() => {
     const resultsLength = results?.length ?? 0
 
@@ -49,10 +55,10 @@ export const SemanticSearchResultsList = ({
       if (event.key === "Enter") {
         // Check if results exist and an item is selected
         if (selectedIndex !== -1 && results && results[selectedIndex]) {
-          onResultClick(results[selectedIndex]);
+          onResultClick(results[selectedIndex])
         }
-        event.preventDefault(); // Prevent default form submission if applicable
-        return; // Stop further execution for Enter key
+        event.preventDefault() // Prevent default form submission if applicable
+        return // Stop further execution for Enter key
       }
 
       if (resultsLength === 0) return
@@ -99,7 +105,7 @@ export const SemanticSearchResultsList = ({
       window.removeEventListener("keyup", handleKeyUp)
       keyHeldRef.current = null // Reset ref on cleanup
     }
-  }, [results?.length, selectedIndex, onResultMouseEnter])
+  }, [results?.length, selectedIndex, onResultMouseEnter, onResultClick])
 
   useEffect(() => {
     if (selectedIndex !== -1 && listRef.current) {
@@ -130,26 +136,46 @@ export const SemanticSearchResultsList = ({
 
   return (
     <ul ref={listRef} className="divide-y divide-border">
-      {results.map((result, index) => (
-        <li
-          key={result._id}
-          className={cn(
-            "px-3 py-2 text-sm cursor-pointer",
-            index === selectedIndex ? "bg-accent" : "hover:bg-accent/50"
-          )}
-          onClick={() => onResultClick(result)}
-          onMouseEnter={() => onResultMouseEnter(index)}
-        >
-          {/* Assuming 'title' is a standard property or handled appropriately */}
-          {/* Adjust this line if 'title' isn't guaranteed */}
-          <span className="font-medium">
-            {(result as any).title || "Untitled"}
-          </span>{" "}
-          <span className="line-clamp-3 overflow-hidden text-muted-foreground">
-            {result[meta.embeddingFieldId]}
-          </span>
-        </li>
-      ))}
+      {results.map((result, index) => {
+        const coverUrl = coverField
+          ? result[coverField.table_column_name]
+          : null
+        return (
+          <li
+            key={result._id}
+            className={cn(
+              "flex items-center justify-between px-3 py-2 text-sm cursor-pointer",
+              index === selectedIndex ? "bg-accent" : "hover:bg-accent/50"
+            )}
+            onClick={() => onResultClick(result)}
+            onMouseEnter={() => onResultMouseEnter(index)}
+          >
+            <div className="flex-1 overflow-hidden mr-2">
+              {/* Assuming 'title' is a standard property or handled appropriately */}
+              {/* Adjust this line if 'title' isn't guaranteed */}
+              <span className="font-medium block truncate">
+                {(result as any).title ||
+                  result[meta.embeddingFieldId] ||
+                  "Untitled"}
+              </span>{" "}
+              <span className="line-clamp-2 overflow-hidden text-muted-foreground">
+                {result[meta.embeddingFieldId]}
+              </span>
+            </div>
+            {coverUrl && coverField && (
+              <div className="w-10 h-10 flex-shrink-0">
+                <AspectRatio ratio={1}>
+                  <img
+                    src={coverUrl}
+                    alt="Cover"
+                    className="w-full h-full object-cover rounded"
+                  />
+                </AspectRatio>
+              </div>
+            )}
+          </li>
+        )
+      })}
     </ul>
   )
 }
