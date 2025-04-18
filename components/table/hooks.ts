@@ -247,7 +247,6 @@ export const useFileFields = () => {
   return useMemo(() => {
     return fields.filter((field) => {
       const fieldInstance = getFieldInstance(field, getFieldContext(field))
-      console.log("fieldInstance", fieldInstance, fieldInstance.displayType)
       return fieldInstance?.displayType === FieldType.File
     })
   }, [fields, getFieldContext])
