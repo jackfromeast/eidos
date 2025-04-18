@@ -16,7 +16,7 @@
     "files": [
         "dist/**/*",
         "dist-electron/**/*",
-        "dist-simple/**/*",
+        "dist-sqlite-ext/**/*",
         "package.json",
         "!**/node_modules/**/*",
         "**/node_modules/better-sqlite3/**/*",
@@ -26,8 +26,8 @@
     ],
     "extraResources": [
         {
-            "from": "dist-simple",
-            "to": "dist-simple",
+            "from": "dist-sqlite-ext",
+            "to": "dist-sqlite-ext",
             "filter": [
                 "**/*"
             ]

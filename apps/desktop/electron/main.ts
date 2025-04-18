@@ -22,20 +22,20 @@ let forceQuit = false;
 
 export const PORT = 13127;
 
-const libPath = getResourcePath(`dist-simple/libsimple`);
-const dictPath = getResourcePath('dist-simple/dict');
+const libPath = getResourcePath(`dist-sqlite-ext/libsimple`);
+const dictPath = getResourcePath('dist-sqlite-ext/dict');
 
 const simplePathConfig = {
     libPath,
     dictPath
 }
 
-const vecPath = getResourcePath(`dist-simple/vec`);
+const vecPath = getResourcePath(`dist-sqlite-ext/libvec`);
 const vecPathConfig = {
     libPath: vecPath,
 }
 
-const graftPath = getResourcePath(`dist-simple/libgraft`);
+const graftPath = getResourcePath(`dist-sqlite-ext/libgraft`);
 const graftPathConfig = {
     libPath: graftPath,
 }

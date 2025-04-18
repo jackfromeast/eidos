@@ -126,7 +126,7 @@ export class NodeServerDatabase extends BaseServerDatabase {
         }
     }
 
-    enableSimpleExtension(db: Database.Database, options: {
+    loadSimpleExtension(db: Database.Database, options: {
         libPath: string;
         dictPath: string;
     }) {
@@ -243,7 +243,7 @@ export class NodeServerDatabase extends BaseServerDatabase {
         if (fs.existsSync(options.simple.dictPath)) {
             try {
                 console.log('Attempting to enable simple extension...');
-                this.enableSimpleExtension(this.db, options.simple);
+                this.loadSimpleExtension(this.db, options.simple);
                 console.log('Simple extension enabled successfully.');
             } catch (err) {
                 console.error('Failed to enable simple extension:', err);
