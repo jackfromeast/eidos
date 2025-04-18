@@ -849,14 +849,14 @@ export class DataSpace {
     name: string
     content: string
   }) {
-    const csvImport = new CsvImportAndExport()
+    const csvImport = new CsvImportAndExport({ useWal: this.db.isWalMode })
     console.log("importing csv file", file)
     const tableId = await csvImport.import(file, this)
     return tableId
   }
 
   public async exportCsv(tableId: string) {
-    const csvImport = new CsvImportAndExport()
+    const csvImport = new CsvImportAndExport({ useWal: this.db.isWalMode })
     return await csvImport.export(tableId, this)
   }
 

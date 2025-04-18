@@ -14,6 +14,11 @@ import type { Stringifier } from "csv-stringify"
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 export class CsvImportAndExport extends BaseImportAndExport {
+  useWal: boolean
+  constructor({ useWal = true }: { useWal?: boolean }) {
+    super()
+    this.useWal = useWal
+  }
 
   async guessColumnType(content: string): Promise<{
     [name: string]: "String" | "Number" | "Date"
@@ -238,7 +243,11 @@ CREATE TABLE ${rawTableName} (
       throw error
     } finally {
       // restore default config
-      await dataSpace.db.exec("PRAGMA journal_mode = WAL;")
+      if (this.useWal) {
+        await dataSpace.db.exec("PRAGMA journal_mode = WAL;")
+      } else {
+        await dataSpace.db.exec("PRAGMA journal_mode = OFF;")
+      }
       await dataSpace.db.exec("PRAGMA synchronous = 1;")
       await dataSpace.db.exec("PRAGMA locking_mode = NORMAL;")
     }
