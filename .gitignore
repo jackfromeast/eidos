@@ -1,7 +1,7 @@
 # electron
 dist-electron
 dist-app
-dist-simple
+dist-sqlite-ext
 
 # wrangler
 .wrangler/*

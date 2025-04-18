@@ -140,10 +140,10 @@ export class DataSpaceManager {
             return this.dataSpace;
         }
         console.log("init space", spaceName)
-        const libPath = getResourcePath(`dist-simple/libsimple`);
-        const dictPath = getResourcePath('dist-simple/dict');
-        const graftLibPath = getResourcePath('dist-simple/libgraft');
-        const vecLibPath = getResourcePath('dist-simple/vec');
+        const libPath = getResourcePath(`dist-sqlite-ext/libsimple`);
+        const dictPath = getResourcePath('dist-sqlite-ext/dict');
+        const graftLibPath = getResourcePath('dist-sqlite-ext/libgraft');
+        const vecLibPath = getResourcePath('dist-sqlite-ext/libvec');
 
         // --- START: Set Graft Environment Variables from Config ---
         applyGraftConfigToEnv(); // Call the helper function
