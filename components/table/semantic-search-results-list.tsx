@@ -129,7 +129,7 @@ export const SemanticSearchResultsList = ({
   if (!results || results.length === 0 || !meta) {
     return (
       <div className="p-2 text-center text-sm text-muted-foreground">
-        {t("common.noSemanticResultsFound")}
+        {t("common.noSemanticResultsFound", "No semantic results found")}
       </div>
     )
   }
