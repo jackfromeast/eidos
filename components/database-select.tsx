@@ -242,7 +242,7 @@ export function DatabaseSelect({ databases }: IDatabaseSelectorProps) {
               )}
             </div>
           </div>
-          <div className="space-y-4 py-2 pb-4">
+          {/* <div className="space-y-4 py-2 pb-4">
             <div className="flex items-center justify-between space-x-2">
               <Label htmlFor="enable-sync">{t('space.select.enableSync')}</Label>
               <Switch
@@ -264,9 +264,12 @@ export function DatabaseSelect({ databases }: IDatabaseSelectorProps) {
                   placeholder={t('space.select.volumeIdPlaceholder')}
                   className="mt-1"
                 />
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {t('space.select.volumeIdDescription')}
+                </p>
               </div>
             )}
-          </div>
+          </div> */}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => setShowNewTeamDialog(false)}>
