@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useRef } from "react"
 import { useKeyPress } from "ahooks"
-import { ChevronDownIcon, ChevronUpIcon, SearchIcon } from "lucide-react"
+import {
+  ChevronDownIcon,
+  ChevronUpIcon,
+  CornerDownLeft,
+  OptionIcon,
+  SearchIcon,
+} from "lucide-react"
 import { useTranslation } from "react-i18next"
 
 import { IView } from "@/lib/store/IView"
@@ -191,7 +197,7 @@ export const ViewSearch = (props: { view: IView }) => {
           <Input
             ref={searchInputRef}
             type="text"
-            placeholder={t("common.search")}
+            placeholder={`${t("common.search")} (alt/opt + ↩︎ for semantic)`}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="h-8 w-96 border-0 pl-8 pr-24"
