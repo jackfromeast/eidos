@@ -427,7 +427,7 @@ export class ColumnTable extends BaseTableImpl implements BaseTable<IField> {
         )};`
 
         sql += alterColumnType(tableName, tableColumnName, newColumnType)
-        this.dataSpace.syncExec2(sql, [], db)
+        db.exec(sql)
       }
 
       switch (newType) {
