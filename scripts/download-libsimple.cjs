@@ -24,16 +24,30 @@ async function extract(zipPath, distPath) {
       execSync(`powershell Expand-Archive "${zipPath}" -DestinationPath . -Force`, { stdio: 'inherit' });
       const libsimpleDir = fs.readdirSync('.').find(dir => dir.startsWith('libsimple'));
       if (libsimpleDir) {
-        execSync(`move "${libsimpleDir}" dist-sqlite-ext`, { stdio: 'inherit' });
-        execSync(`rename "dist-sqlite-ext\\simple.dll" "libsimple.dll"`, { stdio: 'inherit' });
+        execSync(`xcopy "${path.join('.', libsimpleDir, '*')}" "${distPath}\\" /E /I /H /Y /S`, { stdio: 'inherit' });
+        const sourceDll = path.join(distPath, 'simple.dll');
+        const targetDll = path.join(distPath, 'libsimple.dll');
+        if (fs.existsSync(sourceDll)) {
+          execSync(`rename "${sourceDll}" "${path.basename(targetDll)}"`, { stdio: 'inherit' });
+        } else {
+          console.warn(`Warning: Expected DLL not found at ${sourceDll}`);
+        }
+        execSync(`rmdir /S /Q "${libsimpleDir}"`, { stdio: 'inherit' });
+      } else {
+        throw new Error('Could not find extracted libsimple directory.');
       }
     } else {
       execSync(`unzip -t "${zipPath}"`, { stdio: 'inherit' });
       execSync(`unzip -o "${zipPath}"`, { stdio: 'inherit' });
       const libsimpleDir = fs.readdirSync('.').find(dir => dir.startsWith('libsimple'));
       if (libsimpleDir) {
-        execSync(`mv "${libsimpleDir}"/* dist-sqlite-ext/`, { stdio: 'inherit' });
+        if (!fs.existsSync(distPath)) {
+          fs.mkdirSync(distPath, { recursive: true });
+        }
+        execSync(`mv "${libsimpleDir}"/* "${distPath}/"`, { stdio: 'inherit' });
         execSync(`rm -rf "${libsimpleDir}"`, { stdio: 'inherit' });
+      } else {
+        throw new Error('Could not find extracted libsimple directory.');
       }
     }
   } catch (error) {
