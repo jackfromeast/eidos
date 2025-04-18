@@ -1,3 +1,5 @@
+import { AlertTriangle } from "lucide-react"
+
 import { cn } from "@/lib/utils"
 
 interface EmbeddingStatsProgressProps {
@@ -52,9 +54,9 @@ export function EmbeddingStatsProgress({
         </div>
 
         {/* Remaining count on the right */}
-        <div className="absolute right-0 top-1/2 -translate-y-1/2 -translate-x-2 text-xs text-muted-foreground dark:text-gray-300">
+        {/* <div className="absolute right-0 top-1/2 -translate-y-1/2 -translate-x-2 text-xs text-muted-foreground dark:text-gray-300">
           {(stats.total - stats.vectorized).toLocaleString()} not vectorized
-        </div>
+        </div> */}
       </div>
 
       {/* Categories */}
@@ -81,6 +83,18 @@ export function EmbeddingStatsProgress({
           </span>
         </div>
       </div>
+
+      {/* Warning for low up-to-date percentage */}
+      {upToDatePercentage < 80 && (
+        <div className="mt-4 flex items-center gap-2 rounded-md border border-yellow-300 bg-yellow-50 p-3 text-sm text-yellow-700 dark:border-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300">
+          <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+          <span>
+            A low percentage of up-to-date embeddings (
+            {upToDatePercentage.toFixed(1)}%) may affect search result quality.
+            Click process to update all embeddings.
+          </span>
+        </div>
+      )}
     </div>
   )
 }
