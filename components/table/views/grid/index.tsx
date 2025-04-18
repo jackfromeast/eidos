@@ -416,7 +416,10 @@ export default function GridView(props: IGridProps) {
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="flex w-full justify-start rounded-none"
+                    className={cn(
+                      "flex w-full justify-start rounded-none",
+                      `h-[${defaultConfig.headerHeight}px]`
+                    )}
                     onClick={() => {
                       setIsAddFieldEditorOpen(true)
                     }}
