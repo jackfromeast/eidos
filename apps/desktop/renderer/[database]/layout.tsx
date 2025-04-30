@@ -25,9 +25,10 @@ import { SideBar } from "@/components/sidebar"
 import { ScriptBreadcrumb } from "@/apps/web-app/[database]/scripts/components/extension-breadcrumb"
 
 import { useLayoutInit } from "../../../web-app/[database]/hook"
-import { useAppsStore, useSpaceAppStore } from "../../../web-app/[database]/store"
-
-const WebLLM = lazy(() => import("@/components/ai-chat/webllm"))
+import {
+  useAppsStore,
+  useSpaceAppStore,
+} from "../../../web-app/[database]/store"
 
 const AIChat = lazy(() => import("@/components/ai-chat/ai-chat-new"))
 
@@ -100,9 +101,6 @@ export function DesktopSpaceLayout() {
     <>
       <DocExtBlockLoader />
       <KeyboardShortCuts />
-      <Suspense fallback={<div></div>}>
-        <WebLLM />
-      </Suspense>
       <div className={cn("relative flex w-full overflow-hidden")}>
         {currentPreviewFile && (
           <iframe

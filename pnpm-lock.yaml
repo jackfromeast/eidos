@@ -182,9 +182,6 @@ importers:
       '@lobehub/icons':
         specifier: ^1.96.0
         version: 1.96.0(@babel/core@7.26.10)(@types/react@18.2.14)(acorn@8.14.1)(antd@5.24.7)(react-dom@18.2.0)(react@18.2.0)
-      '@mlc-ai/web-llm':
-        specifier: ^0.2.40
-        version: 0.2.40
       '@monaco-editor/react':
         specifier: ^4.6.0
         version: 4.6.0(monaco-editor@0.52.0)(react-dom@18.2.0)(react@18.2.0)
@@ -5509,12 +5506,6 @@ packages:
       - bufferutil
       - utf-8-validate
     dev: true
-
-  /@mlc-ai/web-llm@0.2.40:
-    resolution: {integrity: sha512-ibY1zRDe9IyxUicLsox7NZx7BYBJqT6E8jk0jSWOzit6HdaAEMqvL+B042Enq8egA+aJ2lERJhaccnWM+HdXyw==}
-    dependencies:
-      loglevel: 1.9.1
-    dev: false
 
   /@monaco-editor/loader@1.4.0(monaco-editor@0.52.0):
     resolution: {integrity: sha512-00ioBig0x642hytVspPl7DbQyaSWRaolYie/UFNjoTdvoKPzo6xrXLhTk9ixgIKcLH5b5vDOjVNiGyY+uDCUlg==}
@@ -15398,11 +15389,6 @@ packages:
       chalk: 4.1.2
       is-unicode-supported: 0.1.0
     dev: true
-
-  /loglevel@1.9.1:
-    resolution: {integrity: sha512-hP3I3kCrDIMuRwAwHltphhDM1r8i55H33GgqjXbrisuJhF4kRhW1dNuxsRklp4bXl8DSdLaNLuiL4A/LWRfxvg==}
-    engines: {node: '>= 0.6.0'}
-    dev: false
 
   /long@4.0.0:
     resolution: {integrity: sha512-XsP+KhQif4bjX1kbuSiySJFNAehNxgLb6hPRGJ9QsUr8ajHkuXGdrHmFUTUUXhDwVX2R5bY4JNZEwbUiMhV+MA==}

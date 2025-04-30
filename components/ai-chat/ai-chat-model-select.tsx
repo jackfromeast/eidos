@@ -22,9 +22,8 @@ import {
 import { useAIConfigStore } from "@/apps/web-app/settings/ai/store"
 
 import { ScrollArea } from "../ui/scroll-area"
-import { WEB_LLM_MODELS } from "./webllm/models"
 
-const allLocalModels = WEB_LLM_MODELS.map((item) => `${item.model_id}`)
+const allLocalModels: string[] = []
 
 const useModels = () => {
   const { aiConfig } = useAIConfigStore()
@@ -89,7 +88,10 @@ export function AIModelSelect({
           size={size}
           className={cn("grow justify-between ", className)}
         >
-          <p className="w-[200px] truncate" title={currentModel || "Select model..."}>
+          <p
+            className="w-[200px] truncate"
+            title={currentModel || "Select model..."}
+          >
             {value ? currentModel : "Select model..."}
           </p>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />

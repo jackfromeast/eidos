@@ -1,8 +1,6 @@
 import aiHandle, { pathname } from "../ai"
 import { backUpPullOnce, backUpPushOnce } from "../backup"
-import aiCompletionHandle, {
-  pathname as aiCompletionHandlePathname,
-} from "./ai_completion"
+
 import extFileHandle, { pathname as extFileHandlePathname } from "./ext-file"
 import { extHandle, pathname as extHandlePathname } from "./extensions"
 import fileHandle, { pathname as fileHandlePathname } from "./file"
@@ -27,10 +25,6 @@ export const routes = [
   {
     pathname: staticFileHandlePathname,
     handle: staticFileHandle,
-  },
-  {
-    pathname: aiCompletionHandlePathname,
-    handle: aiCompletionHandle,
   },
   {
     pathname: extHandlePathname,

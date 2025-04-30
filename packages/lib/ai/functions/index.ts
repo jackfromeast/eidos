@@ -1,13 +1,11 @@
-import { ChatCompletionTool } from "@mlc-ai/web-llm"
 import { z } from "zod"
 import { zodToJsonSchema } from "zod-to-json-schema"
 
 import createDoc from "./create-doc"
-import createQuickAction from "./quick-action"
+import createTable from "./create-table"
 import { startRecorder, stopRecorder } from "./recorder"
 import saveFile2EFS from "./save-file"
 import sqlQuery from "./sql-query"
-import createTable from "./create-table"
 
 export const allFunctions = [
   sqlQuery,
@@ -28,12 +26,6 @@ export const functions = allFunctions.map((f) => {
   }
 })
 
-export const tools = functions.map((f) => {
-  return {
-    type: "function",
-    function: f,
-  }
-}) as ChatCompletionTool[]
 
 type FunctionParamsSchemaMap = {
   [funName: string]: z.ZodSchema<any>

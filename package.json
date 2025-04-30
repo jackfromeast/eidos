@@ -97,7 +97,6 @@
     "@lezer/highlight": "^1.2.1",
     "@libsql/client": "^0.8.1",
     "@lobehub/icons": "^1.96.0",
-    "@mlc-ai/web-llm": "^0.2.40",
     "@monaco-editor/react": "^4.6.0",
     "@octokit/rest": "^20.0.2",
     "@openrouter/ai-sdk-provider": "^0.4.5",

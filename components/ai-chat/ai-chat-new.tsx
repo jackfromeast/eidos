@@ -41,12 +41,9 @@ import { useScrollToBottom } from "../remix-chat/components/use-scroll-to-bottom
 import { AIChatAttachments } from "./ai-chat-attachments"
 import { useAttachments } from "./hooks/use-attachments"
 import { useAIChatSettingsStore } from "./settings/ai-chat-settings-store"
-import { useLoadingStore, useReloadModel } from "./webllm/hooks"
-import { WEB_LLM_MODELS } from "./webllm/models"
 import { useSpeak } from "./webspeech/hooks"
 
 const promptKeys = Object.keys(sysPrompts).slice(0, 1)
-const localModels = WEB_LLM_MODELS.map((item) => `${item.model_id}`)
 
 export default function Chat() {
   const { t } = useTranslation()
@@ -64,7 +61,7 @@ export default function Chat() {
   const divRef = useRef<HTMLDivElement>(null)
   const { currentSysPrompt, setCurrentSysPrompt } = useAIChatStore()
   const { aiConfig } = useAIConfigStore()
-  const { progress } = useLoadingStore()
+  // const { progress } = useLoadingStore()
 
   const { handleToolsCall, handleRunCode } = useAIFunctions()
 
@@ -76,16 +73,13 @@ export default function Chat() {
     contextEmbeddings
   )
 
-  const { reload: reloadModel } = useReloadModel()
+  // const { reload: reloadModel } = useReloadModel()
   const { aiModel, setAIModel } = useAppStore()
   const { speak } = useSpeak()
 
   const disableInput = useMemo(
-    () =>
-      (progress && progress?.progress < 1) ||
-      !aiModel?.length ||
-      !systemPrompt?.length,
-    [progress, aiModel, systemPrompt]
+    () => !aiModel?.length || !systemPrompt?.length,
+    [aiModel, systemPrompt]
   )
 
   useEffect(() => {
@@ -96,14 +90,6 @@ export default function Chat() {
     }
   }, [currentSysPrompt, prompts, setAIModel, systemPrompt])
 
-  useEffect(() => {
-    const isLocal = localModels.includes(aiModel)
-    const localLLM = WEB_LLM_MODELS.find((item) => item.model_id === aiModel)
-    if (isLocal && localLLM) {
-      reloadModel(localLLM.model_id)
-    }
-  }, [reloadModel, aiModel])
-
   const { getConfigByModel } = useAiConfig()
   const config = useMemo(() => {
     try {
@@ -112,7 +98,7 @@ export default function Chat() {
       return {}
     }
   }, [aiModel, getConfigByModel])
-  
+
   const { messages, setMessages, reload, append, isLoading, stop } = useChat({
     onToolCall: async ({ toolCall }) => {
       const res = await handleToolsCall(toolCall.toolName, toolCall.args)

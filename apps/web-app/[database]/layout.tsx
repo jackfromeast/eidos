@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect } from "react"
+import { useEffect } from "react"
 import { Outlet, useNavigate } from "react-router-dom"
 
 import { DocExtBlockLoader } from "@/components/doc-ext-block-loader"
@@ -9,8 +9,6 @@ import { useWindowControlsOverlayVisible } from "@/hooks/use-window-controls-ove
 import { DatabaseLayoutBase } from "./base-layout"
 import { PWALayoutBase } from "./base-pwa-layout"
 import { useLayoutInit } from "./hook"
-
-const WebLLM = lazy(() => import("@/components/ai-chat/webllm"))
 
 export default function DatabaseLayout() {
   const windowControlsOverlayVisible = useWindowControlsOverlayVisible()
@@ -33,9 +31,6 @@ export default function DatabaseLayout() {
       <PWALayoutBase>
         <DocExtBlockLoader />
         <KeyboardShortCuts />
-        <Suspense fallback={<div></div>}>
-          <WebLLM />
-        </Suspense>
         <Outlet />
       </PWALayoutBase>
     )
@@ -44,9 +39,6 @@ export default function DatabaseLayout() {
     <DatabaseLayoutBase>
       <DocExtBlockLoader />
       <KeyboardShortCuts />
-      <Suspense fallback={<div></div>}>
-        <WebLLM />
-      </Suspense>
       <Outlet />
     </DatabaseLayoutBase>
   )

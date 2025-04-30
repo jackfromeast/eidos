@@ -1,4 +1,3 @@
-import { ChatCompletionChunk } from "@mlc-ai/web-llm"
 
 declare var self: ServiceWorkerGlobalScope
 

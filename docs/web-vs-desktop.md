@@ -11,12 +11,12 @@ The desktop version is built using Electron, primarily adapting the file system 
 | Feature                      | Desktop | Web |
 | ---------------------------- | ------- | --- |
 | CJK Full-text Search         | ✅      | ❌  |
-| WebLLM                       | ❌      | ✅  |
+| WebLLM                       | ❌      | ❌  |
 | Real-time Local Data Updates | ✅      | ❌  |
 | Built-in API Service         | ✅      | ❌  |
 
 - In the web version, data is stored in OPFS. If native file storage is selected, it periodically syncs to a local folder. Consequently, the SQLite data in the local folder may have some latency. The desktop client doesn't have this issue.
-- The desktop version has removed support for WebLLM. For offline LLM solutions, users can run local options like Ollama or LLM-Studio.
+- The desktop version has removed support for WebLLM(since v0.19.0 web app also removed WebLLM). For offline LLM solutions, users can run local options like Ollama or LLM-Studio.
 - The desktop version has built-in API services, while the web version does not.
 
 ## Limitations of the web version

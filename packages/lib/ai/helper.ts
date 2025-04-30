@@ -1,12 +1,4 @@
-import type { ModelRecord } from "@mlc-ai/web-llm";
 
-import {
-  WEB_LLM_MODELS,
-  modelLibURLPrefix,
-  modelVersion,
-} from "@/components/ai-chat/webllm/models";
-
-import { efsManager } from "../storage/eidos-file-system";
 
 import { createAmazonBedrock } from "@ai-sdk/amazon-bedrock";
 import { createAnthropic } from "@ai-sdk/anthropic";
@@ -20,14 +12,13 @@ import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { createGroq } from '@ai-sdk/groq';
 import { createMistral } from "@ai-sdk/mistral";
 import { createOpenAI } from "@ai-sdk/openai";
-import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { createPerplexity } from "@ai-sdk/perplexity";
 import { createTogetherAI } from "@ai-sdk/togetherai";
 import { createXai } from '@ai-sdk/xai';
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { OpenAI } from "openai";
 
-export type Model = (typeof WEB_LLM_MODELS)[0]
+// export type Model = (typeof WEB_LLM_MODELS)[0]
 
 
 
@@ -255,80 +246,6 @@ interface ModelFileList {
   }[]
 }
 
-export const getLocalModelList = (modelIds: string[], origin: string) => {
-  return modelIds.map((modelId) => {
-    const originalModel = WEB_LLM_MODELS.find(
-      (item) => item.model_id === modelId
-    )
-    const wasmFileName = originalModel?.model_lib.split("/").pop()
-
-    return {
-      ...originalModel,
-      model: new URL("/static/webllm/models/" + modelId + "/", origin).href,
-      model_lib: new URL("/static/webllm/wasm/" + wasmFileName, origin).href,
-    }
-  }) as ModelRecord[]
-}
-
-export const downloadWebLLM = async (
-  model: Model,
-  signal: AbortSignal,
-  cb?: (progress: number) => void
-) => {
-  const downloadModelFile = async (
-    modelsDir: string[],
-    name: string,
-    baseUrl: string = model.model + "/resolve/main/"
-  ) => {
-    const isFileExist = await efsManager.checkFileExists([...modelsDir, name])
-    if (isFileExist) {
-      return await efsManager.getFile([...modelsDir, name])
-    }
-    const fileResp = await fetch(baseUrl + name, { signal })
-    if (fileResp.ok) {
-      const file = new File([await fileResp.blob()], name)
-      await efsManager.addFile(modelsDir, file)
-      return file
-    }
-    throw new Error("Failed to download model file")
-  }
-
-  // download wasm lib
-  const wasmDir = ["static", "webllm", "wasm"]
-  const name = model.model_lib.split("/").pop()
-  downloadModelFile(wasmDir, name!, modelLibURLPrefix + modelVersion + "/")
-
-  cb?.(0.03)
-  // download model weights
-  await efsManager.addDir(["static", "webllm", "models"], model.model_id)
-  const modelsDir = [
-    "static",
-    "webllm",
-    "models",
-    model.model_id,
-    "resolve",
-    "main",
-  ]
-
-  const fileListJSONFile = await downloadModelFile(
-    modelsDir,
-    "ndarray-cache.json"
-  )
-  cb?.(0.04)
-  const fileList = JSON.parse(await fileListJSONFile.text()) as ModelFileList
-  const fileLists = ["mlc-chat-config.json", "tokenizer.json"]
-  for (const file of fileLists) {
-    await downloadModelFile(modelsDir, file)
-  }
-  cb?.(0.05)
-
-  let downloadedBytes = 0
-  for (const record of fileList.records) {
-    await downloadModelFile(modelsDir, record.dataPath)
-    downloadedBytes += record.nbytes
-    cb?.(downloadedBytes / fileList.metadata.ParamBytes)
-  }
-}
 
 export function getProvider(data: {
   apiKey?: string,

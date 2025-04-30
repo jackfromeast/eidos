@@ -91,17 +91,11 @@ Check [changelogs](./docs/changelogs/index.md) for more details.
 
 Eidos based on the following open-source projects:
 
-### web app
-
 - [sqlite-wasm](https://github.com/sqlite/sqlite-wasm) - Run SQLite in the browser
 - [shadcn-ui](https://github.com/shadcn-ui/ui) - UI components
 - [glide-data-grid](https://github.com/glideapps/glide-data-grid) - High performance table
 - [lexical](https://github.com/facebook/lexical) - Document editor
-- [web-llm](https://github.com/mlc-ai/web-llm) - Run LLM in the browser
 - [teable](https://github.com/teableio/teable) & [apitable](https://github.com/apitable/apitable) - Teach me how to build an Airtable-like table.
-
-### desktop app
-
 - [electron](https://github.com/electron/electron) - Build cross-platform desktop apps
 - [libsimple](https://github.com/wangfenjin/simple) - a sqlite extension for full-text search for CJK languages
 
