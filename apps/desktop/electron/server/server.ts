@@ -1,11 +1,11 @@
 import { handleFunctionCall } from '@/lib/rpc';
+import aiHandler, { pathname as aiPath } from '@/worker/service-worker/ai';
+import { serve } from '@hono/node-server';
+import { log } from 'electron-log';
 import { Hono } from 'hono';
 import { getOrSetDataSpace } from '../data-space';
-import { serveStatic } from '@hono/node-server/serve-static';
-import { serve } from '@hono/node-server';
 import { getFileFromPath, getSpaceFileFromPath } from '../file-system/space';
-import aiHandler, { pathname as aiPath } from '@/worker/service-worker/ai';
-import { log } from 'electron-log';
+import { serveStatic } from './server-static';
 
 const app = new Hono();
 
@@ -28,6 +28,7 @@ export function startServer({ dist, port }: { dist: string, port: number }) {
 
     // host static files
     app.use('/*', serveStatic({ root: dist }));
+    log('static files served from', dist)
 
     // handle api calls
     app.post('/rpc', async (c) => {
@@ -105,5 +106,7 @@ export function startServer({ dist, port }: { dist: string, port: number }) {
     serve({
         port,
         fetch: app.fetch,
+    }, (info) => {
+        log(`Server is running on ${info.address}:${info.port}`)
     })
 }

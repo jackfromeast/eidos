@@ -39,6 +39,7 @@ export function createWindow(url?: string) {
             };
             break;
         case "win32":
+        case "linux":
             baseWindowConfig = {
                 ...baseWindowConfig,
                 // backgroundMaterial: isWindows11 ? "mica" : undefined,

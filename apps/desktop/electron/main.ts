@@ -1,7 +1,7 @@
 import { MsgType } from '@/lib/const';
 import { handleFunctionCall } from '@/lib/rpc';
 import { BrowserWindow, Menu, Tray, app, dialog, ipcMain, nativeImage, shell } from 'electron';
-import { log } from 'electron-log';
+import electronLog from 'electron-log';
 import path from 'path';
 import { getConfigManager } from './config';
 import { closeDataSpace, getDataSpace, getOrSetDataSpace, reloadDataSpace } from './data-space';
@@ -13,6 +13,22 @@ import { startServer } from './server/server';
 import { AppUpdater } from './updater';
 import { createWindow } from './window-manager/createWindow';
 import { WorkerManager } from './worker-manager';
+
+process.on('uncaughtException', (error) => {
+    console.error('Unhandled Exception:', error); // Also log to console
+    electronLog.error('Unhandled Exception:', error);
+    // Consider showing an error dialog here in production
+    // dialog.showErrorBox('Unhandled Exception', error.message);
+    // app.quit(); // Ensure exit on error
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+    electronLog.error('Unhandled Rejection at:', promise, 'reason:', reason);
+    // Consider showing an error dialog here in production
+    // dialog.showErrorBox('Unhandled Rejection', `${reason}`);
+    // app.quit();
+});
 
 export let win: BrowserWindow | null
 let appUpdater: AppUpdater;
@@ -84,12 +100,12 @@ ipcMain.handle('sqlite-msg', async (event, payload) => {
     const { space, dbName } = payload.data
     const spaceId = space || dbName
     if (!dataSpace) {
-        log('not found data space')
+        electronLog.info('not found data space')
         const { space, dbName } = payload.data
         dataSpace = await getOrSetDataSpace(dbName || space)
-        log('switch to data space', dataSpace.dbName)
+        electronLog.info('switch to data space', dataSpace.dbName)
     } else if (spaceId !== dataSpace.dbName) {
-        log('switch to data space', dataSpace.dbName)
+        electronLog.info('switch to data space', dataSpace.dbName)
         dataSpace = await getOrSetDataSpace(dbName || space)
     }
     const res = await handleFunctionCall(payload.data, dataSpace)
@@ -162,16 +178,16 @@ ipcMain.handle('open-folder', (event, folder) => {
         shell.openPath(folder)
             .then((result) => {
                 if (result) {
-                    log(`Error opening folder: ${result}`);
+                    electronLog.error(`Error opening folder: ${result}`);
                 } else {
-                    log(`Folder opened successfully: ${folder}`);
+                    electronLog.info(`Folder opened successfully: ${folder}`);
                 }
             })
             .catch((error) => {
-                log(`Error opening folder: ${error}`);
+                electronLog.error(`Error opening folder: ${error}`);
             });
     } else {
-        log('No folder path provided');
+        electronLog.warn('No folder path provided');
     }
 });
 
@@ -213,7 +229,7 @@ function createTray() {
     }
     try {
         const iconPath = path.join(process.env.VITE_PUBLIC, 'logo.png');
-        log('Tray icon path:', iconPath);
+        electronLog.info('Tray icon path:', iconPath);
 
         const icon = nativeImage.createFromPath(iconPath);
         tray = new Tray(icon);
@@ -226,9 +242,9 @@ function createTray() {
         tray.setToolTip('Eidos');
         tray.setContextMenu(contextMenu);
 
-        log('Tray created successfully');
+        electronLog.info('Tray created successfully');
     } catch (error) {
-        log('Error creating tray:', error);
+        electronLog.error('Error creating tray:', error);
     }
 }
 
@@ -345,6 +361,7 @@ ipcMain.handle('fetch', async (event, url, options) => {
                 data = await res.text(); // Attempt to read as text
             } catch (parseError) {
                 console.error('Failed to parse response body:', parseError);
+                electronLog.error('Failed to parse response body:', parseError);
                 data = null; // Or indicate error in data field
             }
         }
@@ -359,6 +376,7 @@ ipcMain.handle('fetch', async (event, url, options) => {
         };
     } catch (error) {
         console.error('Fetch error in main process:', error);
+        electronLog.error('Fetch error in main process:', error);
         // Return a serializable error structure
         return {
             ok: false,
