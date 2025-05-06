@@ -44,6 +44,7 @@ export const ExtensionConfig = () => {
     name: script.name,
     description: script.description || "",
     enabled: script.enabled,
+    icon: script.icon || "",
   })
 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
@@ -52,7 +53,8 @@ export const ExtensionConfig = () => {
     return (
       formData.name !== script.name ||
       formData.description !== script.description ||
-      formData.enabled !== script.enabled
+      formData.enabled !== script.enabled ||
+      formData.icon !== script.icon
     )
   }
 
@@ -61,6 +63,7 @@ export const ExtensionConfig = () => {
       name: script.name,
       description: script.description || "",
       enabled: script.enabled,
+      icon: script.icon || "",
     })
   }
 
@@ -139,6 +142,81 @@ export const ExtensionConfig = () => {
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-2">
+              <label htmlFor="icon" className="text-sm font-medium">
+                {t("common.icon")}
+              </label>
+              <div className="col-span-3">
+                <label
+                  htmlFor="icon-file-input"
+                  className="cursor-pointer flex items-center justify-center w-16 h-16 border rounded hover:bg-accent"
+                >
+                  {formData.icon && formData.icon.startsWith("data:image/") ? (
+                    <img
+                      src={formData.icon}
+                      alt="Icon Preview"
+                      className="h-full w-full object-contain p-1"
+                    />
+                  ) : (
+                    <span className="text-xs text-muted-foreground p-1 text-center">
+                      {t("extension.config.selectIconPlaceholder")}
+                    </span>
+                  )}
+                </label>
+                <input
+                  id="icon-file-input"
+                  type="file"
+                  accept=".svg"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (file) {
+                      if (file.type === "image/svg+xml") {
+                        if (file.size > 512 * 1024) {
+                          // 512KB limit
+                          toast({
+                            title: "File Too Large",
+                            description:
+                              "Please select an icon file smaller than 512KB.",
+                            variant: "destructive",
+                          })
+                          if (e.target) {
+                            e.target.value = ""
+                          }
+                          return
+                        }
+                        const reader = new FileReader()
+                        reader.onloadend = () => {
+                          setFormData({
+                            ...formData,
+                            icon: `data:image/svg+xml,${encodeURIComponent(reader.result as string)}`,
+                          })
+                        }
+                        reader.onerror = () => {
+                          toast({
+                            title: "Failed to read file",
+                            description:
+                              "An error occurred while reading the file.",
+                            variant: "destructive",
+                          })
+                        }
+                        reader.readAsText(file) // Read as text for SVG
+                      } else {
+                        toast({
+                          title: "Invalid File Type",
+                          description: "Please select an SVG file.",
+                          variant: "destructive",
+                        })
+                        // Reset the input if the file is not an SVG
+                        if (e.target) {
+                          e.target.value = ""
+                        }
+                      }
+                    }
+                  }}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-2">
               <label htmlFor="name" className="text-sm font-medium">
                 {t("common.name")}
               </label>
@@ -164,6 +242,7 @@ export const ExtensionConfig = () => {
                 }
               />
             </div>
+
             <div className="grid grid-cols-4 items-center gap-2">
               <label htmlFor="enabled" className="text-sm font-medium">
                 Enabled

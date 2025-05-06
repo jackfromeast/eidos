@@ -43,7 +43,7 @@ import { BlockContextMenu } from "./block-context-menu"
 const DefaultAppInfoMap: Record<
   string,
   {
-    icon: LucideIcon
+    icon: LucideIcon | string
     title: string
     description: string
     shortcut?: string
@@ -99,8 +99,12 @@ export const RightPanelNav = () => {
           available: false,
         }
       }
+      const icon =
+        block.icon && block.icon.startsWith("data:image")
+          ? block.icon
+          : ToyBrickIcon
       return {
-        icon: ToyBrickIcon,
+        icon,
         title: block?.name,
         description: block?.description,
         shortcut: undefined,
@@ -139,7 +143,7 @@ export const RightPanelNav = () => {
       <div className="flex gap-2 overflow-hidden">
         {apps.slice(0, visibleCount).map((app, index) => {
           const appInfo = getAppInfo(app)
-          const { icon: Icon, title, description, shortcut } = appInfo ?? {}
+          const { icon: IconOrUri, title, description, shortcut } = appInfo ?? {}
           const isCurrentApp = index === currentAppIndex
           const isBlock = app.startsWith("block://")
           return (
@@ -160,7 +164,15 @@ export const RightPanelNav = () => {
                               "opacity-50": !appInfo?.available,
                             })}
                           >
-                            <Icon className="h-5 w-5" />
+                            {typeof IconOrUri === "string" ? (
+                              <img
+                                src={IconOrUri}
+                                alt={title}
+                                className="h-5 w-5"
+                              />
+                            ) : (
+                              IconOrUri && <IconOrUri className="h-5 w-5" />
+                            )}
                           </Button>
                         </ContextMenuTrigger>
                         <ContextMenuContent>
@@ -189,7 +201,15 @@ export const RightPanelNav = () => {
                             isCurrentApp,
                         })}
                       >
-                        <Icon className="h-5 w-5" />
+                        {typeof IconOrUri === "string" ? (
+                          <img
+                            src={IconOrUri}
+                            alt={title}
+                            className="h-5 w-5"
+                          />
+                        ) : (
+                          IconOrUri && <IconOrUri className="h-5 w-5" />
+                        )}
                       </Button>
                     )}
                   </div>
@@ -219,7 +239,7 @@ export const RightPanelNav = () => {
             <DropdownMenuContent>
               {apps.slice(visibleCount).map((app, index) => {
                 const appInfo = getAppInfo(app)
-                const { icon: Icon, title } = appInfo ?? {}
+                const { icon: IconOrUri, title } = appInfo ?? {}
                 const actualIndex = index + visibleCount
 
                 return (
@@ -228,7 +248,15 @@ export const RightPanelNav = () => {
                     onClick={() => handleAppChange(actualIndex)}
                   >
                     <div className="flex items-center gap-2">
-                      <Icon className="h-4 w-4" />
+                      {typeof IconOrUri === "string" ? (
+                        <img
+                          src={IconOrUri}
+                          alt={title}
+                          className="h-4 w-4"
+                        />
+                      ) : (
+                        IconOrUri && <IconOrUri className="h-4 w-4" />
+                      )}
                       <span>{title}</span>
                     </div>
                   </DropdownMenuItem>
@@ -264,7 +292,15 @@ export const RightPanelNav = () => {
                 }}
               >
                 <div className="flex items-center gap-2">
-                  <ToyBrickIcon className="h-5 w-5" />
+                  {block.icon && block.icon.startsWith("data:image") ? (
+                    <img
+                      src={block.icon}
+                      alt={block.name}
+                      className="h-5 w-5"
+                    />
+                  ) : (
+                    <ToyBrickIcon className="h-5 w-5" />
+                  )}
                   <span>{block.name}</span>
                 </div>
               </DropdownMenuItem>

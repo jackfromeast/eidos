@@ -1,10 +1,9 @@
 import { IScript } from "@/worker/web-worker/meta-table/script"
-import {
-  RotateCcwIcon
-} from "lucide-react"
+import { RotateCcwIcon } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { Link } from "react-router-dom"
 
+import { cn } from "@/lib/utils"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,7 +17,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
-import { cn } from "@/lib/utils"
+
 import { IconMap } from "../page"
 
 interface ScriptCardProps {
@@ -39,13 +38,22 @@ export const ScriptCard = ({
   onReload,
 }: ScriptCardProps) => {
   const { t } = useTranslation()
-  const Icon = IconMap[script.type]
+  const IconFromMap = IconMap[script.type]
+  const iconIsDataUri = script.icon && script.icon.startsWith("data:image")
 
   return (
     <div className="group relative overflow-hidden rounded-lg border bg-card text-card-foreground shadow transition-all hover:shadow-lg flex flex-col min-h-[160px]">
       <div className="flex flex-col space-y-1.5 p-4">
         <div className="flex items-start gap-3">
-          <Icon className="h-8 w-8 shrink-0 opacity-70 mt-1" />
+          {iconIsDataUri ? (
+            <img
+              src={script.icon}
+              alt={script.name}
+              className="h-8 w-8 shrink-0 opacity-70 mt-2 border rounded-md"
+            />
+          ) : (
+            <IconFromMap className="h-8 w-8 shrink-0 opacity-70 mt-1" />
+          )}
           <div>
             <h3 className="text-lg font-semibold tracking-tight">
               {script.name}{" "}

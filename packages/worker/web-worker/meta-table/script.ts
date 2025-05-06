@@ -30,6 +30,8 @@ export interface IScript {
   description: string
   version: string
   code: string
+  // icon is a data uri of an image
+  icon?: string
   // if the script is published to marketplace, it will have a marketplace_id
   marketplace_id?: string
   ts_code?: string
@@ -86,6 +88,7 @@ export class ScriptTable
         version TEXT,
         code TEXT,
         ts_code TEXT,
+        icon TEXT,
         marketplace_id TEXT,
         model TEXT,
         prompt_config TEXT,
