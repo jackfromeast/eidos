@@ -1,7 +1,7 @@
 import { toast } from "@/components/ui/use-toast"
 import { useAiConfig } from "@/hooks/use-ai-config"
 import { getProvider } from "@/lib/ai/helper"
-import { embedMany, generateText } from "ai"
+import { LanguageModelV1, embedMany, generateText } from "ai"
 import { useState } from "react"
 
 export enum TaskType {
@@ -69,7 +69,7 @@ export const useModelTest = () => {
                     const translationText = async (text: string, targetLanguage: string) => {
                         if (!model) return []
                         const res = await generateText({
-                            model: modelProvider(config.modelId),
+                            model: modelProvider(config.modelId) as LanguageModelV1,
                             prompt: `Translate the following text to ${targetLanguage}: ${text}`,
                         });
                         return res.text
@@ -96,7 +96,7 @@ export const useModelTest = () => {
 
                     try {
                         const code = await generateText({
-                            model: modelProvider(config.modelId),
+                            model: modelProvider(config.modelId) as LanguageModelV1,
                             prompt: `just write a function that takes a list of numbers and returns the sum of the numbers. don't include any other text.`,
                         })
                         console.log(code)

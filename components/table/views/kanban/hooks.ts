@@ -12,7 +12,7 @@ import { SelectProperty } from "@/lib/fields/select"
 import { transformSql } from "@/lib/sqlite/sql-parser"
 import { IView } from "@/lib/store/IView"
 import { getRawTableNameById } from "@/lib/utils"
-import { IField } from "lib/store/interface"
+import { IField } from "@/lib/store/interface"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { uuidv7 } from "@/lib/utils"
 

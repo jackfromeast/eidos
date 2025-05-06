@@ -8,25 +8,46 @@
     "target": "es6",
     "module": "esnext",
     "skipLibCheck": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable", "WebWorker"],
+    "lib": [
+      "ES2020",
+      "DOM",
+      "DOM.Iterable",
+      "WebWorker"
+    ],
     "downlevelIteration": true,
     "esModuleInterop": true,
     "moduleResolution": "node",
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
-      "@/locales/*": ["./packages/locales/*"],
-      "@/worker": ["./packages/worker"],
-      "@/lib/*": ["./packages/lib/*"],
-      "@/*": ["./*"],
+      "@/locales/*": [
+        "./packages/locales/*"
+      ],
+      "@/worker/*": [
+        "./packages/worker/*"
+      ],
+      "@/lib/*": [
+        "./packages/lib/*"
+      ],
+      "@/*": [
+        "./*"
+      ],
       // "@sqlite.org/sqlite-wasm": ["./types/sql.d.ts"],
-      "react": ["./node_modules/react/index.d.ts"],
-      "*?raw": ["./lib/types/vite-raw.d.ts"]
+      "react": [
+        "./node_modules/react/index.d.ts"
+      ],
+      "*?raw": [
+        "./packages/lib/types/vite-raw.d.ts"
+      ]
     }
   },
   "include": [
     "packages/lib/types/global.d.ts",
     "packages/worker/web-worker/sdk/index.ts"
   ],
-  "exclude": ["node_modules", "components/ui", "**/*.?raw.ts"]
+  "exclude": [
+    "node_modules",
+    "components/ui",
+    "**/*.?raw.ts"
+  ]
 }

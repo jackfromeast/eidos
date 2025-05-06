@@ -1,15 +1,15 @@
 /// <reference types="react" resolution-mode="require"/>
 /// <reference types="node" />
-declare module "lib/env" {
+declare module "packages/lib/env" {
     export const logger: Console;
-    export const EIDOS_VERSION = "0.16.0";
+    export const EIDOS_VERSION = "0.19.0";
     export const isDevMode: boolean;
     export const isSelfHosted: boolean;
     export const isInkServiceMode: boolean;
     export const isDesktopMode: boolean;
     export const isStagingMode: boolean;
 }
-declare module "lib/mime/mime" {
+declare module "packages/lib/mime/mime" {
     /**
      * source: https://github.com/jshttp/mime-types/blob/master/index.js
      * refactored to typescript via copilot
@@ -59,14 +59,14 @@ declare module "lib/mime/mime" {
     export const getFileType: (url: string) => boolean | string | "image" | "audio" | "video";
     export const getFilePreviewImage: (url: string) => string;
 }
-declare module "lib/storage/indexeddb" {
+declare module "packages/lib/storage/indexeddb" {
     import { StateStorage } from "zustand/middleware";
     export const indexedDBStorage: StateStorage;
     export const getConfig: <T = Record<string, any>>(name: string) => Promise<T>;
     export const DATABASE_NAME = "eidos";
     export function getIndexedDBValue<T = any>(tableName: string, key: string): Promise<T>;
 }
-declare module "lib/storage/eidos-file-system" {
+declare module "packages/lib/storage/eidos-file-system" {
     export enum FileSystemType {
         OPFS = "opfs",
         NFS = "nfs"
@@ -134,7 +134,7 @@ declare module "lib/storage/eidos-file-system" {
     export const efsManager: EidosFileSystemManager;
     export const getExternalFolderManager: (name: string) => Promise<EidosFileSystemManager>;
 }
-declare module "lib/storage/zip-file" {
+declare module "packages/lib/storage/zip-file" {
     import JSZip from "jszip";
     export function zipDirectory(dirPaths: string[], zip?: JSZip): Promise<JSZip>;
     export const zipFile2Blob: (file: JSZip.JSZipObject) => Promise<File>;
@@ -142,7 +142,7 @@ declare module "lib/storage/zip-file" {
     export function unZipFileToDir(file: File, rootPaths: string[]): Promise<void>;
     export function importZipFileIntoDir(rootPaths: string[], zip: JSZip): Promise<void>;
 }
-declare module "lib/storage/space" {
+declare module "packages/lib/storage/space" {
     /**
      * when expose spaceFileSystem  from electron preload,
      * the method only works when it's a arrow function, i don't know why, so we need to use class to wrap it
@@ -164,15 +164,27 @@ declare module "lib/storage/space" {
          * @returns list of spaces
          */
         list: () => Promise<any[]>;
+        getSpaceInfo: (space: string) => Promise<{
+            isSyncEnabled: boolean;
+            graftId?: undefined;
+        } | {
+            isSyncEnabled: boolean;
+            graftId: string;
+        }>;
     }
 }
-declare module "lib/const" {
+declare module "packages/lib/const" {
     export enum MsgType {
         SetConfig = "SetConfig",
         CallFunction = "CallFunction",
         SwitchDatabase = "SwitchDatabase",
         CreateSpace = "CreateSpace",
         Syscall = "Syscall",
+        Status = "Status",
+        Pull = "Pull",
+        Push = "Push",
+        Reset = "Reset",
+        Pages = "Pages",
         Error = "Error",
         QueryResp = "QueryResp",
         Notify = "Notify",
@@ -229,12 +241,14 @@ declare module "lib/const" {
         DISCORD_INVITE: string;
         GITHUB_ISSUES: string;
         GEOLOCATION_API: string;
+        ACCOUNT_REGISTRATION: string;
     };
     export enum CustomEventType {
         UpdateColumn = "eidos-update-column"
     }
+    export const EIDOS_SPACE_BASE_URL: string;
 }
-declare module "lib/fields/const" {
+declare module "packages/lib/fields/const" {
     export enum FieldType {
         Number = "number",
         Text = "text",
@@ -365,7 +379,7 @@ declare module "lib/fields/const" {
     export const TEXT_BASED_COMPARE_OPERATORS: CompareOperator[];
     export function applyMixins(derivedCtor: any, constructors: any[]): void;
 }
-declare module "lib/sqlite/const" {
+declare module "packages/lib/sqlite/const" {
     /**
      * define constance what we will use in sqlite
      */
@@ -383,7 +397,7 @@ declare module "lib/sqlite/const" {
     export const MessageTableName = "eidos__messages";
     export const QueueTableName = "eidos__queue";
 }
-declare module "lib/store/ITreeNode" {
+declare module "packages/lib/store/ITreeNode" {
     export interface ITreeNode {
         id: string;
         name: string;
@@ -402,7 +416,7 @@ declare module "lib/store/ITreeNode" {
     }
 }
 declare module "components/table/view-filter-editor/interface" {
-    import { BinaryOperator, CompareOperator } from "lib/fields/const";
+    import { BinaryOperator, CompareOperator } from "packages/lib/fields/const";
     export interface IFilterValue {
         operator: CompareOperator;
         operands: [
@@ -416,12 +430,13 @@ declare module "components/table/view-filter-editor/interface" {
     }
     export type FilterValueType = IFilterValue | IGroupFilterValue;
 }
-declare module "lib/store/IView" {
+declare module "packages/lib/store/IView" {
     import { FilterValueType } from "components/table/view-filter-editor/interface";
     export enum ViewTypeEnum {
         Grid = "grid",
         Gallery = "gallery",
-        DocList = "doc_list"
+        DocList = "doc_list",
+        Kanban = "kanban"
     }
     export interface IView<T = any> {
         id: string;
@@ -438,12 +453,13 @@ declare module "lib/store/IView" {
     }
     export interface IGridViewProperties {
         fieldWidthMap: Record<string, number>;
+        freezeColumns?: number;
     }
 }
-declare module "lib/store/interface" {
-    import { FieldType } from "lib/fields/const";
-    import { ITreeNode } from "lib/store/ITreeNode";
-    import { IView } from "lib/store/IView";
+declare module "packages/lib/store/interface" {
+    import { FieldType } from "packages/lib/fields/const";
+    import { ITreeNode } from "packages/lib/store/ITreeNode";
+    import { IView } from "packages/lib/store/IView";
     export type IField<T = any> = {
         name: string;
         type: FieldType;
@@ -475,7 +491,7 @@ declare module "lib/store/interface" {
         };
     }
 }
-declare module "lib/sqlite/helper" {
+declare module "packages/lib/sqlite/helper" {
     export const getTransformedQuery: (query: string) => string;
     export function isReadOnlySql(sql: string): boolean;
     /**
@@ -513,7 +529,7 @@ declare module "lib/sqlite/helper" {
     export const queryData2JSON: (sqlResult: any[][], fields: string[]) => any[];
     export const stringify: (obj: any) => any;
 }
-declare module "lib/utils" {
+declare module "packages/lib/utils" {
     import { type ClassValue } from "clsx";
     import type { Message } from 'ai';
     export { uuidv7 } from "uuidv7";
@@ -579,8 +595,8 @@ declare module "lib/utils" {
     export const isFilesPath: (pathname: string) => boolean;
     export const fetcher: (url: string) => Promise<any>;
 }
-declare module "lib/sqlite/sql-formula-parser" {
-    import { IField } from "lib/store/interface";
+declare module "packages/lib/sqlite/sql-formula-parser" {
+    import { IField } from "packages/lib/store/interface";
     export const getTableNameFromSql: (sql: string) => string;
     /**
      * example:
@@ -626,8 +642,8 @@ declare module "lib/sqlite/sql-formula-parser" {
      */
     export const getFormulaFieldDeletionOrder: (columnNames: string[], fields: IField[]) => string[];
 }
-declare module "lib/sqlite/interface" {
-    import { MsgType } from "lib/const";
+declare module "packages/lib/sqlite/interface" {
+    import { MsgType } from "packages/lib/const";
     export type IQuery = {
         type: MsgType.CallFunction;
         data: {
@@ -657,6 +673,22 @@ declare module "lib/sqlite/interface" {
     }
     export abstract class BaseServerDatabase {
         filename?: string;
+        get isWalMode(): boolean;
+        pages(): Promise<{
+            [key: string]: any;
+        }>;
+        status(): Promise<{
+            [key: string]: any;
+        }>;
+        pull(): Promise<{
+            [key: string]: any;
+        }>;
+        push(): Promise<{
+            [key: string]: any;
+        }>;
+        reset(): Promise<{
+            [key: string]: any;
+        }>;
         abstract prepare(sql: string): {
             run: (bind?: any[]) => void;
         };
@@ -677,7 +709,7 @@ declare module "lib/sqlite/interface" {
         }): any;
     }
 }
-declare module "lib/sqlite/sql-merge-table-with-new-columns" {
+declare module "packages/lib/sqlite/sql-merge-table-with-new-columns" {
     /**
      * sqlite has some limitations on alter table, for example, we can't add a column with non-constant default value.
      * when we want to add new columns to a table
@@ -693,9 +725,9 @@ declare module "lib/sqlite/sql-merge-table-with-new-columns" {
         sql: string;
     };
 }
-declare module "worker/web-worker/sdk/index-manager" {
-    import { DataSpace } from "worker/web-worker/DataSpace";
-    import { TableManager } from "worker/web-worker/sdk/table";
+declare module "packages/worker/web-worker/sdk/index-manager" {
+    import { DataSpace } from "packages/worker/web-worker/DataSpace";
+    import { TableManager } from "packages/worker/web-worker/sdk/table";
     export class IndexManager {
         private table;
         dataSpace: DataSpace;
@@ -704,9 +736,9 @@ declare module "worker/web-worker/sdk/index-manager" {
         createIndex(column: string, onStart?: () => void, onEnd?: () => void): Promise<void>;
     }
 }
-declare module "lib/fields/base" {
-    import { IField } from "lib/store/interface";
-    import { CompareOperator, FieldType } from "lib/fields/const";
+declare module "packages/lib/fields/base" {
+    import { IField } from "packages/lib/store/interface";
+    import { CompareOperator, FieldType } from "packages/lib/fields/const";
     interface IBaseField<CD, P, R, RC, FC> {
         /**
          * column from eidos__columns table, guild how to render this field
@@ -775,13 +807,13 @@ declare module "lib/fields/base" {
          * @returns
          */
         static getDefaultFieldProperty(): {};
-        text2RawData(text: string | number): string | number | boolean | null;
+        text2RawData(text: string | number | string[] | Date): string | number | boolean | null;
     }
 }
-declare module "lib/fields/checkbox" {
+declare module "packages/lib/fields/checkbox" {
     import type { BooleanCell } from "@glideapps/glide-data-grid";
-    import { BaseField } from "lib/fields/base";
-    import { CompareOperator, FieldType } from "lib/fields/const";
+    import { BaseField } from "packages/lib/fields/base";
+    import { CompareOperator, FieldType } from "packages/lib/fields/const";
     type CheckboxProperty = {};
     type CheckboxCell = BooleanCell;
     export class CheckboxField extends BaseField<CheckboxCell, CheckboxProperty, number> {
@@ -808,10 +840,10 @@ declare module "components/table/views/grid/cells/user-profile-cell" {
     const renderer: CustomRenderer<UserProfileCell>;
     export default renderer;
 }
-declare module "lib/fields/created-by" {
+declare module "packages/lib/fields/created-by" {
     import type { UserProfileCell } from "components/table/views/grid/cells/user-profile-cell";
-    import { BaseField } from "lib/fields/base";
-    import { CompareOperator, FieldType } from "lib/fields/const";
+    import { BaseField } from "packages/lib/fields/base";
+    import { CompareOperator, FieldType } from "packages/lib/fields/const";
     type CreatedByProperty = {};
     export type UserFieldContext = {
         userMap?: {
@@ -831,10 +863,10 @@ declare module "lib/fields/created-by" {
         };
     }
 }
-declare module "lib/fields/created-time" {
+declare module "packages/lib/fields/created-time" {
     import { TextCell } from "@glideapps/glide-data-grid";
-    import { BaseField } from "lib/fields/base";
-    import { CompareOperator, FieldType } from "lib/fields/const";
+    import { BaseField } from "packages/lib/fields/base";
+    import { CompareOperator, FieldType } from "packages/lib/fields/const";
     type DateProperty = {};
     export class CreatedTimeField extends BaseField<TextCell, DateProperty, string> {
         static type: FieldType;
@@ -881,10 +913,10 @@ declare module "components/table/views/grid/cells/date-picker-cell" {
     const renderer: CustomRenderer<DatePickerCell>;
     export default renderer;
 }
-declare module "lib/fields/date" {
+declare module "packages/lib/fields/date" {
     import type { DatePickerCell } from "components/table/views/grid/cells/date-picker-cell";
-    import { BaseField } from "lib/fields/base";
-    import { CompareOperator, FieldType } from "lib/fields/const";
+    import { BaseField } from "packages/lib/fields/base";
+    import { CompareOperator, FieldType } from "packages/lib/fields/const";
     type DateProperty = {};
     type DateCell = DatePickerCell;
     export class DateField extends BaseField<DateCell, DateProperty, string> {
@@ -914,8 +946,8 @@ declare module "components/ui/separator" {
     const Separator: React.ForwardRefExoticComponent<Omit<SeparatorPrimitive.SeparatorProps & React.RefAttributes<HTMLDivElement>, "ref"> & React.RefAttributes<HTMLDivElement>>;
     export { Separator };
 }
-declare module "worker/web-worker/meta-table/base" {
-    import { DataSpace } from "worker/web-worker/DataSpace";
+declare module "packages/worker/web-worker/meta-table/base" {
+    import { DataSpace } from "packages/worker/web-worker/DataSpace";
     export interface MetaTable<T> {
         add(data: T): Promise<T>;
         get(id: string): Promise<T | null>;
@@ -956,9 +988,9 @@ declare module "worker/web-worker/meta-table/base" {
         }): Promise<T[]>;
     }
 }
-declare module "worker/web-worker/meta-table/file" {
-    import { FileSystemType } from "lib/storage/eidos-file-system";
-    import { BaseTable, BaseTableImpl } from "worker/web-worker/meta-table/base";
+declare module "packages/worker/web-worker/meta-table/file" {
+    import { FileSystemType } from "packages/lib/storage/eidos-file-system";
+    import { BaseTable, BaseTableImpl } from "packages/worker/web-worker/meta-table/base";
     export interface IFile {
         id: string;
         name: string;
@@ -1011,11 +1043,11 @@ declare module "worker/web-worker/meta-table/file" {
         }>;
     }
 }
-declare module "lib/store/runtime-store" {
+declare module "packages/lib/store/runtime-store" {
     /**
      * state store for runtime, for cross component communication
      */
-    import { IFile } from "worker/web-worker/meta-table/file";
+    import { IFile } from "packages/worker/web-worker/meta-table/file";
     interface AppRuntimeState {
         isCmdkOpen: boolean;
         setCmdkOpen: (isCmdkOpen: boolean) => void;
@@ -1179,7 +1211,7 @@ declare module "components/doc/blocks/mermaid/component" {
     export const Mermaid: React.FC<MermaidProps>;
 }
 declare module "components/doc/blocks/mermaid/node" {
-    import { TextMatchTransformer } from "@lexical/markdown";
+    import { MultilineElementTransformer } from "@lexical/markdown";
     import { DecoratorBlockNode, SerializedDecoratorBlockNode } from "@lexical/react/LexicalDecoratorBlockNode";
     import { EditorConfig, ElementFormatType, LexicalEditor, LexicalNode, NodeKey, Spread } from "lexical";
     export type SerializedMermaidNode = Spread<{
@@ -1200,7 +1232,7 @@ declare module "components/doc/blocks/mermaid/node" {
     }
     export function $createMermaidNode(text: string): MermaidNode;
     export function $isMermaidNode(node: LexicalNode | null | undefined): node is MermaidNode;
-    export const MERMAID_NODE_TRANSFORMER: TextMatchTransformer;
+    export const MERMAID_NODE_TRANSFORMER: MultilineElementTransformer;
 }
 declare module "components/doc/utils/getSelectedNode" {
     import { ElementNode, RangeSelection, TextNode, LexicalNode } from "lexical";
@@ -1376,9 +1408,9 @@ declare module "components/ui/tooltip" {
     const TooltipContent: React.ForwardRefExoticComponent<Omit<TooltipPrimitive.TooltipContentProps & React.RefAttributes<HTMLDivElement>, "ref"> & React.RefAttributes<HTMLDivElement>>;
     export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider };
 }
-declare module "worker/web-worker/meta-table/script" {
+declare module "packages/worker/web-worker/meta-table/script" {
     import { JsonSchema7ObjectType } from "zod-to-json-schema";
-    import { BaseTable, BaseTableImpl } from "worker/web-worker/meta-table/base";
+    import { BaseTable, BaseTableImpl } from "packages/worker/web-worker/meta-table/base";
     export type ScriptStatus = "all" | "enabled" | "disabled";
     export interface ICommand {
         name: string;
@@ -1398,6 +1430,7 @@ declare module "worker/web-worker/meta-table/script" {
         description: string;
         version: string;
         code: string;
+        marketplace_id?: string;
         ts_code?: string;
         enabled?: boolean;
         model?: string;
@@ -1446,7 +1479,7 @@ declare module "worker/web-worker/meta-table/script" {
     }
 }
 declare module "hooks/use-mblock" {
-    import { IScript } from "worker/web-worker/meta-table/script";
+    import { IScript } from "packages/worker/web-worker/meta-table/script";
     export const useMblock: (id?: string) => IScript;
 }
 declare module "components/ui/index" {
@@ -1502,7 +1535,7 @@ declare module "components/ui/index" {
         tooltip: string;
     };
 }
-declare module "lib/v3/cache" {
+declare module "packages/lib/v3/cache" {
     function generateCacheKey(code: string): string;
     function hasCache(key: string): boolean;
     function getCache(key: string): any;
@@ -1510,11 +1543,11 @@ declare module "lib/v3/cache" {
     function clearExpiredCache(): void;
     export { generateCacheKey, hasCache, getCache, setCache, clearExpiredCache };
 }
-declare module "lib/v3/esbuild" {
+declare module "packages/lib/v3/esbuild" {
     export const initializeCompiler: () => Promise<void>;
     export const transform: (input: string | Uint8Array, options?: import("esbuild-wasm").SameShape<import("esbuild-wasm").TransformOptions, import("esbuild-wasm").TransformOptions>) => Promise<import("esbuild-wasm").TransformResult<import("esbuild-wasm").TransformOptions>>;
 }
-declare module "lib/v3/compiler" {
+declare module "packages/lib/v3/compiler" {
     interface CompileOptions {
         uiLibCode?: string;
     }
@@ -1533,11 +1566,21 @@ declare module "lib/v3/compiler" {
         uiLibs: any[];
     };
 }
-declare module "lib/python/worker" {
+declare module "packages/lib/python/worker" {
     export const getPythonWorker: () => Worker;
 }
 declare module "components/script-container/helper" {
-    import { DataSpace } from "worker/web-worker/DataSpace";
+    import { DataSpace } from "packages/worker/web-worker/DataSpace";
+    export type IScriptInput = Record<string, any>;
+    export interface IScriptContext {
+        tables: any;
+        env: Record<string, any>;
+        currentNodeId?: string | null;
+        currentRowId?: string | null;
+        currentViewId?: string | null;
+        currentViewQuery?: string | null;
+        callFromTableAction?: boolean;
+    }
     export const makeSdkInjectScript: ({ bindings, space, }: {
         bindings?: Record<string, {
             type: "table";
@@ -1562,8 +1605,16 @@ declare module "components/script-container/helper" {
         bindings?: Record<string, any>;
         dependencies?: string[];
     }
+    export const callJavaScript: (props: {
+        input: IScriptInput;
+        context: IScriptContext;
+        code: string;
+        command: string;
+        id: string;
+        bindings?: Record<string, any>;
+    }, scriptContainerRef: any) => Promise<any>;
     export const callPythonScript: (props: IPythonScriptCallProps) => Promise<any>;
-    export const callScriptById: (id: string, input: Record<string, any>, sqlite: DataSpace) => Promise<any>;
+    export const callScriptById: (id: string, input: Record<string, any>, sqlite: DataSpace, scriptContainerRef: any) => Promise<any>;
 }
 declare module "components/block-renderer/tailwind-config" {
     import type { Config } from "tailwindcss";
@@ -1592,10 +1643,11 @@ declare module "components/block-renderer/block-app" {
     import { type BlockRendererRef } from "components/block-renderer/block-renderer";
     export const BlockApp: import("react").ForwardRefExoticComponent<{
         url: string;
+        height?: number;
     } & import("react").RefAttributes<BlockRendererRef>>;
 }
 declare module "apps/web-app/[database]/scripts/hooks/use-all-mblocks" {
-    import { IScript } from "worker/web-worker/meta-table/script";
+    import { IScript } from "packages/worker/web-worker/meta-table/script";
     interface MblocksState {
         mblocks: IScript[];
         setMblocks: (mblocks: IScript[]) => void;
@@ -1608,7 +1660,7 @@ declare module "apps/web-app/[database]/scripts/hooks/use-all-mblocks" {
 }
 declare module "components/doc/hooks/editor-instance-context" {
     import { ReactNode } from "react";
-    import { IScript } from "worker/web-worker/meta-table/script";
+    import { IScript } from "packages/worker/web-worker/meta-table/script";
     interface EditorInstanceContextType {
         mblocks: IScript[];
         isSelecting: boolean;
@@ -1668,6 +1720,7 @@ declare module "components/doc/blocks/custom/node" {
             height: number;
             type: string;
             version: number;
+            $?: Record<string, unknown>;
             format: ElementFormatType;
         };
         decorate(_editor: LexicalEditor, config: EditorConfig): JSX.Element;
@@ -2293,16 +2346,7 @@ declare module "hooks/use-extension-navigate" {
     export const useExtensionNavigateById: () => (id: string) => void;
 }
 declare module "components/script-container/hook" {
-    type IScriptInput = Record<string, any>;
-    interface IScriptContext {
-        tables: any;
-        env: Record<string, any>;
-        currentNodeId?: string | null;
-        currentRowId?: string | null;
-        currentViewId?: string | null;
-        currentViewQuery?: string | null;
-        callFromTableAction?: boolean;
-    }
+    import { IScriptContext, IScriptInput } from "components/script-container/helper";
     export const useScriptFunction: () => {
         callFunction: (props: {
             input: IScriptInput;
@@ -2334,7 +2378,7 @@ declare module "hooks/use-script-data" {
     };
 }
 declare module "apps/web-app/[database]/scripts/hooks/use-all-scripts" {
-    import { IScript } from "worker/web-worker/meta-table/script";
+    import { IScript } from "packages/worker/web-worker/meta-table/script";
     export const useAllScripts: () => IScript[];
 }
 declare module "components/script-selector" {
@@ -2352,15 +2396,15 @@ declare module "components/chart/config-form/script-data-source" {
     }
     export function ScriptDataSource({ config, onConfigChange, onDataChange, }: ScriptDataSourceProps): import("react/jsx-runtime").JSX.Element;
 }
-declare module "lib/types/aggregate-item" {
+declare module "packages/lib/types/aggregate-item" {
     export interface AggregateItem {
         column: string;
         function: "sum" | "avg" | "count" | "min" | "max" | "count_distinct";
         alias?: string;
     }
 }
-declare module "lib/sqlite/sql-aggregate-parser" {
-    import { AggregateItem } from "lib/types/aggregate-item";
+declare module "packages/lib/sqlite/sql-aggregate-parser" {
+    import { AggregateItem } from "packages/lib/types/aggregate-item";
     export const transformAggregateItems2SqlString: (sql: string, aggregateItems: AggregateItem[], groupByColumns?: string[], selectedFields?: string[]) => string;
 }
 declare module "hooks/use-debounce" {
@@ -2379,7 +2423,7 @@ declare module "hooks/use-table-fields" {
     };
 }
 declare module "hooks/use-view" {
-    import { IView } from "lib/store/IView";
+    import { IView } from "packages/lib/store/IView";
     export const useView: ({ viewId }: {
         viewId?: string;
     }) => IView<any>;
@@ -2400,7 +2444,7 @@ declare module "components/multi-select" {
 }
 declare module "components/query-builder/query-builder" {
     import React from "react";
-    import { AggregateItem } from "lib/types/aggregate-item";
+    import { AggregateItem } from "packages/lib/types/aggregate-item";
     import { TableField } from "hooks/use-table-fields";
     export type QueryTransformType = "aggregate" | "filter" | "sort";
     export interface AggregateTransformConfig {
@@ -2440,7 +2484,7 @@ declare module "components/sql-query-display/index" {
     export const SQLQueryDisplay: React.FC<SQLQueryDisplayProps>;
 }
 declare module "hooks/use-nodes" {
-    import { ITreeNode } from "lib/store/ITreeNode";
+    import { ITreeNode } from "packages/lib/store/ITreeNode";
     export const useAllNodes: (opts?: {
         isDeleted?: boolean;
         parent_id?: string;
@@ -2465,7 +2509,7 @@ declare module "components/table-selector" {
     }) => import("react/jsx-runtime").JSX.Element;
 }
 declare module "hooks/use-all-views" {
-    import { IView } from "lib/store/IView";
+    import { IView } from "packages/lib/store/IView";
     export const useAllViews: ({ tableId }: {
         tableId: string;
     }) => IView<any>[];
@@ -2685,8 +2729,8 @@ declare module "components/doc/blocks/sql/index" {
     const _default_9: DocBlock;
     export default _default_9;
 }
-declare module "worker/web-worker/meta-table/embedding" {
-    import { BaseTable, BaseTableImpl } from "worker/web-worker/meta-table/base";
+declare module "packages/worker/web-worker/meta-table/embedding" {
+    import { BaseTable, BaseTableImpl } from "packages/worker/web-worker/meta-table/base";
     export interface IEmbedding {
         id: string;
         embedding: string;
@@ -2704,18 +2748,18 @@ declare module "worker/web-worker/meta-table/embedding" {
         del(id: string): Promise<boolean>;
     }
 }
-declare module "lib/embedding/worker" {
+declare module "packages/lib/embedding/worker" {
     export const getEmbeddingWorker: () => Worker;
     export const embeddingTexts: (texts: string[]) => Promise<unknown>;
 }
-declare module "lib/ai/llm_vendors/base" {
+declare module "packages/lib/ai/llm_vendors/base" {
     export abstract class LLMBaseVendor {
         abstract name: string;
         abstract embedding(text: string[], model: string): Promise<number[][]>;
     }
 }
-declare module "lib/ai/llm_vendors/bge" {
-    import { LLMBaseVendor } from "lib/ai/llm_vendors/base";
+declare module "packages/lib/ai/llm_vendors/bge" {
+    import { LLMBaseVendor } from "packages/lib/ai/llm_vendors/base";
     export class BGEM3 implements LLMBaseVendor {
         name: string;
         _embedding?: (text: string[]) => Promise<number[][]>;
@@ -2723,10 +2767,31 @@ declare module "lib/ai/llm_vendors/bge" {
         embedding(text: string[], model: string): Promise<number[][]>;
     }
 }
-declare module "apps/web-app/settings/ai/store" {
+declare module "packages/lib/ai/helper" {
+    export type LLMProviderType = "openai" | "google" | "deepseek" | "groq" | "xai" | "openrouter" | "anthropic" | "azure" | "amazon-bedrock" | "deepinfra" | "mistral" | "togetherai" | "cohere" | "fireworks" | "cerebras" | "perplexity" | "ollama" | "openai-compatible";
+    export const ALL_PROVIDERS_RAW: string[];
+    export const LLM_PROVIDER_INFO: Record<LLMProviderType, {
+        name: string;
+        baseUrl: string;
+        urlForGettingApiKey?: string;
+    }>;
+    export const ALL_PROVIDERS: LLMProviderType[];
+    export interface AvailableModel {
+        id: string;
+        label: string;
+    }
+    export function fetchAvailableModels(apiKey: string, providerType: LLMProviderType, baseUrl?: string): Promise<AvailableModel[]>;
+    export function getProvider(data: {
+        apiKey?: string;
+        baseUrl?: string;
+        type?: LLMProviderType;
+    }): import("@ai-sdk/openai").OpenAIProvider | import("@ai-sdk/google").GoogleGenerativeAIProvider | import("@ai-sdk/deepseek").DeepSeekProvider | import("@ai-sdk/groq").GroqProvider | import("@ai-sdk/xai").XaiProvider | import("@ai-sdk/anthropic").AnthropicProvider | import("@ai-sdk/azure").AzureOpenAIProvider | import("@ai-sdk/amazon-bedrock").AmazonBedrockProvider | import("@ai-sdk/mistral").MistralProvider | import("@ai-sdk/cohere").CohereProvider | import("@ai-sdk/perplexity").PerplexityProvider | import("@openrouter/ai-sdk-provider").OpenRouterProvider | import("@ai-sdk/deepinfra").DeepInfraProvider | import("@ai-sdk/cerebras").CerebrasProvider;
+}
+declare module "packages/lib/ai/config" {
     import { z } from "zod";
+    import { LLMProviderType } from "packages/lib/ai/helper";
     export const llmProviderSchema: z.ZodObject<{
-        type: z.ZodDefault<z.ZodEnum<["openai", "google", "deepseek", "groq"]>>;
+        type: z.ZodDefault<z.ZodEnum<[LLMProviderType, ...LLMProviderType[]]>>;
         name: z.ZodString;
         apiKey: z.ZodOptional<z.ZodString>;
         baseUrl: z.ZodUnion<[z.ZodOptional<z.ZodString>, z.ZodLiteral<"">]>;
@@ -2734,14 +2799,14 @@ declare module "apps/web-app/settings/ai/store" {
         enabled: z.ZodOptional<z.ZodBoolean>;
     }, "strip", z.ZodTypeAny, {
         name?: string;
-        type?: "openai" | "google" | "deepseek" | "groq";
+        type?: LLMProviderType;
         enabled?: boolean;
         apiKey?: string;
         baseUrl?: string;
         models?: string;
     }, {
         name?: string;
-        type?: "openai" | "google" | "deepseek" | "groq";
+        type?: LLMProviderType;
         enabled?: boolean;
         apiKey?: string;
         baseUrl?: string;
@@ -2751,7 +2816,7 @@ declare module "apps/web-app/settings/ai/store" {
     export const aiFormSchema: z.ZodObject<{
         localModels: z.ZodDefault<z.ZodArray<z.ZodString, "many">>;
         llmProviders: z.ZodDefault<z.ZodArray<z.ZodObject<{
-            type: z.ZodDefault<z.ZodEnum<["openai", "google", "deepseek", "groq"]>>;
+            type: z.ZodDefault<z.ZodEnum<[LLMProviderType, ...LLMProviderType[]]>>;
             name: z.ZodString;
             apiKey: z.ZodOptional<z.ZodString>;
             baseUrl: z.ZodUnion<[z.ZodOptional<z.ZodString>, z.ZodLiteral<"">]>;
@@ -2759,14 +2824,14 @@ declare module "apps/web-app/settings/ai/store" {
             enabled: z.ZodOptional<z.ZodBoolean>;
         }, "strip", z.ZodTypeAny, {
             name?: string;
-            type?: "openai" | "google" | "deepseek" | "groq";
+            type?: LLMProviderType;
             enabled?: boolean;
             apiKey?: string;
             baseUrl?: string;
             models?: string;
         }, {
             name?: string;
-            type?: "openai" | "google" | "deepseek" | "groq";
+            type?: LLMProviderType;
             enabled?: boolean;
             apiKey?: string;
             baseUrl?: string;
@@ -2780,7 +2845,7 @@ declare module "apps/web-app/settings/ai/store" {
         localModels?: string[];
         llmProviders?: {
             name?: string;
-            type?: "openai" | "google" | "deepseek" | "groq";
+            type?: LLMProviderType;
             enabled?: boolean;
             apiKey?: string;
             baseUrl?: string;
@@ -2794,7 +2859,7 @@ declare module "apps/web-app/settings/ai/store" {
         localModels?: string[];
         llmProviders?: {
             name?: string;
-            type?: "openai" | "google" | "deepseek" | "groq";
+            type?: LLMProviderType;
             enabled?: boolean;
             apiKey?: string;
             baseUrl?: string;
@@ -2806,9 +2871,15 @@ declare module "apps/web-app/settings/ai/store" {
         codingModel?: string;
     }>;
     export type AIFormValues = z.infer<typeof aiFormSchema>;
+}
+declare module "apps/web-app/settings/ai/store" {
+    import { AIFormValues, LLMProvider } from "packages/lib/ai/config";
     interface ConfigState {
         aiConfig: AIFormValues;
         setAiConfig: (aiConfig: AIFormValues) => void;
+        addLLMProvider: (provider: LLMProvider) => void;
+        updateLLMProvider: (provider: LLMProvider) => void;
+        removeLLMProvider: (name: string) => void;
     }
     export const useAIConfigStore: import("zustand").UseBoundStore<Omit<import("zustand").StoreApi<ConfigState>, "persist"> & {
         persist: {
@@ -2821,56 +2892,6 @@ declare module "apps/web-app/settings/ai/store" {
             getOptions: () => Partial<import("zustand/middleware").PersistOptions<ConfigState, unknown>>;
         };
     }>;
-}
-declare module "components/ai-chat/webllm/models" {
-    export const modelVersion = "v0_2_39";
-    export const modelLibURLPrefix = "https://raw.githubusercontent.com/mlc-ai/binary-mlc-llm-libs/main/web-llm-models/";
-    export const WEB_LLM_MODELS: ({
-        model: string;
-        model_id: string;
-        model_lib: string;
-        vram_required_MB: number;
-        low_resource_required: boolean;
-        required_features?: undefined;
-        buffer_size_required_bytes?: undefined;
-    } | {
-        model: string;
-        model_id: string;
-        model_lib: string;
-        vram_required_MB: number;
-        low_resource_required: boolean;
-        required_features: string[];
-        buffer_size_required_bytes?: undefined;
-    } | {
-        model: string;
-        model_id: string;
-        model_lib: string;
-        vram_required_MB: number;
-        low_resource_required: boolean;
-        buffer_size_required_bytes: number;
-        required_features: string[];
-    } | {
-        model: string;
-        model_id: string;
-        model_lib: string;
-        vram_required_MB: number;
-        low_resource_required: boolean;
-        buffer_size_required_bytes: number;
-        required_features?: undefined;
-    })[];
-}
-declare module "lib/ai/helper" {
-    import type { ModelRecord } from "@mlc-ai/web-llm";
-    import { WEB_LLM_MODELS } from "components/ai-chat/webllm/models";
-    import { LLMProvider } from "apps/web-app/settings/ai/store";
-    export type Model = (typeof WEB_LLM_MODELS)[0];
-    export const getLocalModelList: (modelIds: string[], origin: string) => ModelRecord[];
-    export const downloadWebLLM: (model: Model, signal: AbortSignal, cb?: (progress: number) => void) => Promise<void>;
-    export function getProvider(data: {
-        apiKey?: string;
-        baseUrl?: string;
-        type?: LLMProvider['type'];
-    }): import("@ai-sdk/deepseek").DeepSeekProvider | import("@ai-sdk/groq").GroqProvider | import("@ai-sdk/openai").OpenAIProvider | import("@ai-sdk/google").GoogleGenerativeAIProvider | import("@ai-sdk/openai-compatible").OpenAICompatibleProvider<string, string, string>;
 }
 declare module "apps/web-app/settings/ai/hooks" {
     export enum TaskType {
@@ -2887,23 +2908,21 @@ declare module "apps/web-app/settings/ai/hooks" {
 }
 declare module "hooks/use-ai-config" {
     import { TaskType } from "apps/web-app/settings/ai/hooks";
+    import { LanguageModelV1 } from "ai";
     export const useAiConfig: () => {
         getConfigByModel: (model: string) => {
             baseUrl: string;
             apiKey: string;
             modelId: string;
-            type?: undefined;
-        } | {
-            baseUrl: string;
-            apiKey: string;
-            modelId: string;
-            type: "openai" | "google" | "deepseek" | "groq";
+            type: import("@/lib/ai/helper").LLMProviderType;
         };
+        getLLModel: (model: string) => LanguageModelV1;
         hasAvailableModels: boolean;
         findFirstAvailableModel: () => string;
         findAvailableModel: (task: TaskType) => string;
         codingModel: string;
         textModel: string;
+        embeddingModel: string;
     };
 }
 declare module "hooks/use-embedding" {
@@ -2913,7 +2932,7 @@ declare module "hooks/use-embedding" {
         embeddingTexts: (text: string[]) => Promise<number[][] | undefined>;
     };
 }
-declare module "lib/ai/doc_loader/base" {
+declare module "packages/lib/ai/doc_loader/base" {
     export abstract class BaseLoader {
         abstract load(docId: string): Promise<{
             content: string;
@@ -2921,9 +2940,9 @@ declare module "lib/ai/doc_loader/base" {
         }[]>;
     }
 }
-declare module "lib/ai/doc_loader/doc" {
-    import { DataSpace } from "worker/web-worker/DataSpace";
-    import { BaseLoader } from "lib/ai/doc_loader/base";
+declare module "packages/lib/ai/doc_loader/doc" {
+    import { DataSpace } from "packages/worker/web-worker/DataSpace";
+    import { BaseLoader } from "packages/lib/ai/doc_loader/base";
     export class DocLoader implements BaseLoader {
         private dataSpace;
         constructor(dataSpace: DataSpace);
@@ -2933,16 +2952,16 @@ declare module "lib/ai/doc_loader/doc" {
         }[]>;
     }
 }
-declare module "lib/ai/vec_search" {
+declare module "packages/lib/ai/vec_search" {
     export const getHnswIndex: (model: string, filename: string) => Promise<{
         vectorHnswIndex: import("hnswlib-wasm/dist/hnswlib-wasm").HierarchicalNSW;
         exists: boolean;
     }>;
 }
 declare module "hooks/use-hnsw" {
-    import { DataSpace } from "worker/web-worker/DataSpace";
-    import { IEmbedding } from "worker/web-worker/meta-table/embedding";
-    import { LLMBaseVendor } from "lib/ai/llm_vendors/base";
+    import { DataSpace } from "packages/worker/web-worker/DataSpace";
+    import { IEmbedding } from "packages/worker/web-worker/meta-table/embedding";
+    import { LLMBaseVendor } from "packages/lib/ai/llm_vendors/base";
     export class EmbeddingManager {
         dataSpace: DataSpace;
         spaceName: string;
@@ -2976,7 +2995,7 @@ declare module "hooks/use-hnsw" {
     };
 }
 declare module "components/cmdk/hooks" {
-    import { ITreeNode } from "lib/store/ITreeNode";
+    import { ITreeNode } from "packages/lib/store/ITreeNode";
     export type ISearchNodes = ITreeNode & {
         result?: string;
         mode: "node" | "fts";
@@ -3032,7 +3051,7 @@ declare module "components/doc/blocks/sync/node" {
 }
 declare module "components/doc/blocks/mention/plugin/MentionTypeaheadOption" {
     import { MenuOption } from "@lexical/react/LexicalTypeaheadMenuPlugin";
-    import { ITreeNode } from "lib/store/ITreeNode";
+    import { ITreeNode } from "packages/lib/store/ITreeNode";
     export class MentionTypeaheadOption extends MenuOption {
         name: string;
         id: string;
@@ -3123,7 +3142,7 @@ declare module "components/ui/context-menu" {
     export { ContextMenu, ContextMenuTrigger, ContextMenuContent, ContextMenuItem, ContextMenuCheckboxItem, ContextMenuRadioItem, ContextMenuLabel, ContextMenuSeparator, ContextMenuShortcut, ContextMenuGroup, ContextMenuPortal, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuRadioGroup, };
 }
 declare module "components/node-name" {
-    import { ITreeNode } from "lib/store/ITreeNode";
+    import { ITreeNode } from "packages/lib/store/ITreeNode";
     export const NodeName: ({ node }: {
         node: ITreeNode;
     }) => import("react/jsx-runtime").JSX.Element;
@@ -3186,16 +3205,16 @@ declare module "components/ui/scroll-area" {
     export { ScrollArea, ScrollBar };
 }
 declare module "components/node-menu/move-into" {
-    import { ITreeNode } from "lib/store/ITreeNode";
+    import { ITreeNode } from "packages/lib/store/ITreeNode";
     export const NodeMoveInto: ({ node }: {
         node: ITreeNode;
     }) => import("react/jsx-runtime").JSX.Element;
 }
-declare module "lib/web/file" {
+declare module "packages/lib/web/file" {
     export const downloadFile: (file: Blob, name: string) => void;
 }
 declare module "components/node-menu/node-export" {
-    import { ITreeNode } from "lib/store/ITreeNode";
+    import { ITreeNode } from "packages/lib/store/ITreeNode";
     export const NodeExportContextMenu: ({ node }: {
         node: ITreeNode;
     }) => import("react/jsx-runtime").JSX.Element;
@@ -3204,7 +3223,7 @@ declare module "components/node-menu/node-export" {
     }) => import("react/jsx-runtime").JSX.Element;
 }
 declare module "components/sidebar/tree/store" {
-    import { ITreeNode } from "lib/store/ITreeNode";
+    import { ITreeNode } from "packages/lib/store/ITreeNode";
     export interface IHoverTarget extends ITreeNode {
         index: number;
         direction: "up" | "down";
@@ -3271,14 +3290,14 @@ declare module "components/sidebar/tree/store" {
     }>;
 }
 declare module "components/sidebar/tree/hooks" {
-    import { ITreeNode } from "lib/store/ITreeNode";
+    import { ITreeNode } from "packages/lib/store/ITreeNode";
     export const useTreeOperations: () => {
         handlePaste: (node?: ITreeNode) => void;
         handleCut: (targetId: string) => void;
     };
 }
 declare module "components/sidebar/tree/node-menu" {
-    import { ITreeNode } from "lib/store/ITreeNode";
+    import { ITreeNode } from "packages/lib/store/ITreeNode";
     interface INodeItemProps {
         databaseName: string;
         node: ITreeNode;
@@ -3289,7 +3308,7 @@ declare module "components/sidebar/tree/node-menu" {
 }
 declare module "components/sidebar/tree/card" {
     import { type FC } from "react";
-    import { ITreeNode } from "lib/store/ITreeNode";
+    import { ITreeNode } from "packages/lib/store/ITreeNode";
     import { IHoverTarget } from "components/sidebar/tree/store";
     export const ItemTypes: {
         CARD: string;
@@ -3314,7 +3333,7 @@ declare module "components/sidebar/tree/card" {
     export const Card: FC<CardProps>;
 }
 declare module "components/sidebar/tree/node-tree" {
-    import { ITreeNode } from "lib/store/ITreeNode";
+    import { ITreeNode } from "packages/lib/store/ITreeNode";
     export interface ContainerState {
         cards: ITreeNode[];
     }
@@ -3324,7 +3343,7 @@ declare module "components/sidebar/tree/node-tree" {
     }) => import("react/jsx-runtime").JSX.Element;
 }
 declare module "components/sidebar/item-tree" {
-    import { ITreeNode } from "lib/store/ITreeNode";
+    import { ITreeNode } from "packages/lib/store/ITreeNode";
     export const CurrentItemTree: ({ allNodes, Icon, title, disableAdd, }: {
         allNodes: ITreeNode[];
         title: string;
@@ -3352,7 +3371,7 @@ declare module "components/doc/blocks/mention/plugin/helper" {
     export function getPossibleQueryMatch(text: string): MenuTextMatch | null;
 }
 declare module "components/doc/blocks/mention/plugin/useMentionLookupService" {
-    import { ITreeNode } from "lib/store/ITreeNode";
+    import { ITreeNode } from "packages/lib/store/ITreeNode";
     export function useMentionLookupService(mentionString: string | null, enabledCreate: boolean, currentDocId?: string): ITreeNode[];
 }
 declare module "components/doc/blocks/mention/plugin/index" {
@@ -3369,7 +3388,7 @@ declare module "components/ai-chat/ai-input-editor/plugins/auto-editable" {
         editable: boolean;
     }) => any;
 }
-declare module "lib/ai/functions/create-doc" {
+declare module "packages/lib/ai/functions/create-doc" {
     import { z } from "zod";
     const createDoc: {
         name: string;
@@ -3387,137 +3406,9 @@ declare module "lib/ai/functions/create-doc" {
     };
     export default createDoc;
 }
-declare module "lib/ai/functions/quick-action" {
+declare module "packages/lib/ai/functions/create-table" {
     import { z } from "zod";
-    const createQuickAction: {
-        name: string;
-        description: string;
-        schema: z.ZodObject<{
-            name: z.ZodString;
-            params: z.ZodArray<z.ZodObject<{
-                name: z.ZodString;
-                type: z.ZodString;
-            }, "strip", z.ZodTypeAny, {
-                name?: string;
-                type?: string;
-            }, {
-                name?: string;
-                type?: string;
-            }>, "many">;
-            nodes: z.ZodArray<z.ZodObject<{
-                name: z.ZodString;
-                params: z.ZodArray<z.ZodObject<{
-                    name: z.ZodString;
-                    value: z.ZodAny;
-                }, "strip", z.ZodTypeAny, {
-                    name?: string;
-                    value?: any;
-                }, {
-                    name?: string;
-                    value?: any;
-                }>, "many">;
-            }, "strip", z.ZodTypeAny, {
-                name?: string;
-                params?: {
-                    name?: string;
-                    value?: any;
-                }[];
-            }, {
-                name?: string;
-                params?: {
-                    name?: string;
-                    value?: any;
-                }[];
-            }>, "many">;
-        }, "strip", z.ZodTypeAny, {
-            name?: string;
-            params?: {
-                name?: string;
-                type?: string;
-            }[];
-            nodes?: {
-                name?: string;
-                params?: {
-                    name?: string;
-                    value?: any;
-                }[];
-            }[];
-        }, {
-            name?: string;
-            params?: {
-                name?: string;
-                type?: string;
-            }[];
-            nodes?: {
-                name?: string;
-                params?: {
-                    name?: string;
-                    value?: any;
-                }[];
-            }[];
-        }>;
-    };
-    export default createQuickAction;
-}
-declare module "lib/ai/functions/recorder" {
-    import { z } from "zod";
-    const startRecorder: {
-        name: string;
-        description: string;
-        schema: z.ZodObject<{}, "strip", z.ZodTypeAny, {}, {}>;
-    };
-    const stopRecorder: {
-        name: string;
-        description: string;
-        schema: z.ZodObject<{
-            id: z.ZodString;
-        }, "strip", z.ZodTypeAny, {
-            id?: string;
-        }, {
-            id?: string;
-        }>;
-    };
-    export { startRecorder, stopRecorder };
-}
-declare module "lib/ai/functions/save-file" {
-    import { z } from "zod";
-    const saveFile2EFS: {
-        name: string;
-        description: string;
-        schema: z.ZodObject<{
-            url: z.ZodString;
-            subPath: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
-            filename: z.ZodOptional<z.ZodString>;
-        }, "strip", z.ZodTypeAny, {
-            url?: string;
-            subPath?: string[];
-            filename?: string;
-        }, {
-            url?: string;
-            subPath?: string[];
-            filename?: string;
-        }>;
-    };
-    export default saveFile2EFS;
-}
-declare module "lib/ai/functions/sql-query" {
-    import { z } from "zod";
-    const sqlQuery: {
-        name: string;
-        description: string;
-        schema: z.ZodObject<{
-            sql: z.ZodString;
-        }, "strip", z.ZodTypeAny, {
-            sql?: string;
-        }, {
-            sql?: string;
-        }>;
-    };
-    export default sqlQuery;
-}
-declare module "lib/ai/functions/create-table" {
-    import { z } from "zod";
-    import { FieldType } from "lib/fields/const";
+    import { FieldType } from "packages/lib/fields/const";
     const createTable: {
         name: string;
         description: string;
@@ -3549,8 +3440,63 @@ declare module "lib/ai/functions/create-table" {
     };
     export default createTable;
 }
-declare module "lib/ai/functions/index" {
-    import { ChatCompletionTool } from "@mlc-ai/web-llm";
+declare module "packages/lib/ai/functions/recorder" {
+    import { z } from "zod";
+    const startRecorder: {
+        name: string;
+        description: string;
+        schema: z.ZodObject<{}, "strip", z.ZodTypeAny, {}, {}>;
+    };
+    const stopRecorder: {
+        name: string;
+        description: string;
+        schema: z.ZodObject<{
+            id: z.ZodString;
+        }, "strip", z.ZodTypeAny, {
+            id?: string;
+        }, {
+            id?: string;
+        }>;
+    };
+    export { startRecorder, stopRecorder };
+}
+declare module "packages/lib/ai/functions/save-file" {
+    import { z } from "zod";
+    const saveFile2EFS: {
+        name: string;
+        description: string;
+        schema: z.ZodObject<{
+            url: z.ZodString;
+            subPath: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
+            filename: z.ZodOptional<z.ZodString>;
+        }, "strip", z.ZodTypeAny, {
+            url?: string;
+            filename?: string;
+            subPath?: string[];
+        }, {
+            url?: string;
+            filename?: string;
+            subPath?: string[];
+        }>;
+    };
+    export default saveFile2EFS;
+}
+declare module "packages/lib/ai/functions/sql-query" {
+    import { z } from "zod";
+    const sqlQuery: {
+        name: string;
+        description: string;
+        schema: z.ZodObject<{
+            sql: z.ZodString;
+        }, "strip", z.ZodTypeAny, {
+            sql?: string;
+        }, {
+            sql?: string;
+        }>;
+    };
+    export default sqlQuery;
+}
+declare module "packages/lib/ai/functions/index" {
     import { z } from "zod";
     export const allFunctions: {
         name: string;
@@ -3562,15 +3508,14 @@ declare module "lib/ai/functions/index" {
         description: string;
         parameters: import("zod-to-json-schema").JsonSchema7Type;
     }[];
-    export const tools: ChatCompletionTool[];
     type FunctionParamsSchemaMap = {
         [funName: string]: z.ZodSchema<any>;
     };
     export const functionParamsSchemaMap: FunctionParamsSchemaMap;
 }
-declare module "lib/ai/openai" {
+declare module "packages/lib/ai/openai" {
     import OpenAI from "openai";
-    import { IField } from "lib/store/interface";
+    import { IField } from "packages/lib/store/interface";
     export const getOpenAI: (token: string) => OpenAI;
     export const getPrompt: (baseSysPrompt: string, context: {
         uiColumns?: IField[];
@@ -3581,7 +3526,7 @@ declare module "lib/ai/openai" {
     type IGetFunctionCallHandler = (handleFunctionCall: any) => any;
     export const getFunctionCallHandler: IGetFunctionCallHandler;
 }
-declare module "lib/markdown" {
+declare module "packages/lib/markdown" {
     export const getAllCodeBlocks: (markdown: string) => {
         code: string;
         lang: string;
@@ -3597,9 +3542,9 @@ declare module "lib/markdown" {
         lang: string;
     }[];
 }
-declare module "lib/sqlite/channel/http" {
-    import { MsgType } from "lib/const";
-    import { ISqlite } from "lib/sqlite/interface";
+declare module "packages/lib/sqlite/channel/http" {
+    import { MsgType } from "packages/lib/const";
+    import { ISqlite } from "packages/lib/sqlite/interface";
     interface IHttpSendData {
         type: MsgType.CallFunction;
         data: {
@@ -3619,8 +3564,8 @@ declare module "lib/sqlite/channel/http" {
         onCallBack(thisCallId: string, timeout?: number, interval?: number): Promise<unknown>;
     }
 }
-declare module "lib/sqlite/channel/local" {
-    import { MsgType } from "lib/const";
+declare module "packages/lib/sqlite/channel/local" {
+    import { MsgType } from "packages/lib/const";
     import type { IpcRenderer } from 'electron';
     export interface ISqlite<T, D> {
         connector: T;
@@ -3655,12 +3600,12 @@ declare module "lib/sqlite/channel/local" {
         onCallBack(thisCallId: string): Promise<unknown>;
     }
 }
-declare module "lib/sqlite/worker" {
+declare module "packages/lib/sqlite/worker" {
     export const getWorker: () => Worker;
 }
-declare module "lib/collaboration/interface" {
-    import { MsgType } from "lib/const";
-    import { IQueryResp } from "lib/sqlite/interface";
+declare module "packages/lib/collaboration/interface" {
+    import { MsgType } from "packages/lib/const";
+    import { IQueryResp } from "packages/lib/sqlite/interface";
     export interface ICollaborator {
         id: string;
         name: string;
@@ -3720,7 +3665,7 @@ declare module "lib/collaboration/interface" {
     }
     export type IMsg = IMsgJoin | IMsgLeave | IMsgMoveCursor | IMsgQuery | IMsgForward;
 }
-declare module "lib/sqlite/channel/webrtc" {
+declare module "packages/lib/sqlite/channel/webrtc" {
     import { DataConnection } from "peerjs";
     export interface ISqlite<T, D> {
         connector: T;
@@ -3735,11 +3680,11 @@ declare module "lib/sqlite/channel/webrtc" {
         onCallBack(thisCallId: string): Promise<unknown>;
     }
 }
-declare module "lib/sqlite/channel/index" {
-    import { DataSpace } from "worker/web-worker/DataSpace";
+declare module "packages/lib/sqlite/channel/index" {
+    import { DataSpace } from "packages/worker/web-worker/DataSpace";
     import { DataConnection } from "peerjs";
-    import { ILocalSendData } from "lib/sqlite/channel/local";
-    import { ISqlite } from "lib/sqlite/interface";
+    import { ILocalSendData } from "packages/lib/sqlite/channel/local";
+    import { ISqlite } from "packages/lib/sqlite/interface";
     type IConfig = {
         isShareMode?: boolean;
         connection?: DataConnection;
@@ -3752,7 +3697,7 @@ declare module "components/doc/nodes" {
     export const getAllNodes: () => any[];
 }
 declare module "hooks/use-doc-editor" {
-    import type { DataSpace } from "worker/web-worker/DataSpace";
+    import type { DataSpace } from "packages/worker/web-worker/DataSpace";
     import type { Email } from "postal-mime";
     import "@/lib/prism-config";
     import { LexicalEditor } from "lexical";
@@ -3807,13 +3752,13 @@ declare module "apps/web-app/[database]/store" {
     }>;
     export const useSpaceAppStore: import("zustand").UseBoundStore<import("zustand").StoreApi<ISpaceAppState>>;
 }
-declare module "components/table/views/grid/fields/header-icons" {
+declare module "components/table/fields/header-icons" {
     import { SpriteMap } from "@glideapps/glide-data-grid";
     export const makeHeaderIcons: (size: number) => SpriteMap;
     export const headerIcons: SpriteMap;
 }
-declare module "components/table/field-selector" {
-    import { IField } from "lib/store/interface";
+declare module "components/table/fields/field-selector" {
+    import { IField } from "packages/lib/store/interface";
     interface IFieldSelectorProps {
         fields: IField[];
         value?: string;
@@ -3822,7 +3767,7 @@ declare module "components/table/field-selector" {
     export const FieldSelector: ({ fields, value, onChange, }: IFieldSelectorProps) => import("react/jsx-runtime").JSX.Element;
 }
 declare module "components/table/helper" {
-    import { IField } from "lib/store/interface";
+    import { IField } from "packages/lib/store/interface";
     export const getShowColumns: (uiColumns: IField[], options: {
         orderMap?: Record<string, number>;
         hiddenFields?: string[];
@@ -3837,7 +3782,7 @@ declare module "components/table/helper" {
 }
 declare module "components/table/views/grid/cells/helper" {
     import { BaseDrawArgs, BaseGridCell, Theme } from "@glideapps/glide-data-grid";
-    import { LinkCellData } from "lib/fields/link";
+    import { LinkCellData } from "packages/lib/fields/link";
     interface CornerRadius {
         tl: number;
         tr: number;
@@ -3854,7 +3799,7 @@ declare module "components/table/views/grid/cells/helper" {
     export function drawImage(args: BaseDrawArgs, data: readonly string[], rounding?: number, contentAlign?: BaseGridCell["contentAlign"]): void;
 }
 declare module "components/table/views/grid/cells/link/link-cell-editor" {
-    import { LinkCellData } from "lib/fields/link";
+    import { LinkCellData } from "packages/lib/fields/link";
     interface IGridProps {
         tableName: string;
         databaseName: string;
@@ -3865,7 +3810,7 @@ declare module "components/table/views/grid/cells/link/link-cell-editor" {
 }
 declare module "components/table/views/grid/cells/link/link-cell" {
     import { CustomCell, CustomRenderer } from "@glideapps/glide-data-grid";
-    import { LinkCellData } from "lib/fields/link";
+    import { LinkCellData } from "packages/lib/fields/link";
     interface LinkCellProps {
         readonly kind: "link-cell";
         readonly value: LinkCellData[];
@@ -3875,10 +3820,10 @@ declare module "components/table/views/grid/cells/link/link-cell" {
     export const linkCellRenderer: CustomRenderer<LinkCell>;
     export default linkCellRenderer;
 }
-declare module "lib/fields/link" {
+declare module "packages/lib/fields/link" {
     import { LinkCell } from "components/table/views/grid/cells/link/link-cell";
-    import { BaseField } from "lib/fields/base";
-    import { FieldType } from "lib/fields/const";
+    import { BaseField } from "packages/lib/fields/base";
+    import { FieldType } from "packages/lib/fields/const";
     export type ILinkProperty = {
         linkTableName: string;
         linkColumnName: string;
@@ -3900,11 +3845,11 @@ declare module "lib/fields/link" {
         };
     }
 }
-declare module "lib/fields/lookup" {
-    import { IField } from "lib/store/interface";
-    import { BaseField } from "lib/fields/base";
-    import { FieldType } from "lib/fields/const";
-    import { ILinkProperty } from "lib/fields/link";
+declare module "packages/lib/fields/lookup" {
+    import { IField } from "packages/lib/store/interface";
+    import { BaseField } from "packages/lib/fields/base";
+    import { FieldType } from "packages/lib/fields/const";
+    import { ILinkProperty } from "packages/lib/fields/link";
     export type ILookupProperty = {
         linkFieldId: string;
         lookupTargetFieldId: string;
@@ -3952,14 +3897,14 @@ declare module "lib/fields/lookup" {
     }
 }
 declare module "components/table/views/grid/hooks/use-lookup-context" {
-    import { ILookupContext } from "lib/fields/lookup";
+    import { ILookupContext } from "packages/lib/fields/lookup";
     export const useLookupContext: (tableName: string, databaseName: string) => {
         contextMap: Record<string, ILookupContext>;
     };
 }
 declare module "components/table/hooks" {
-    import { IView } from "lib/store/IView";
-    import { IField } from "lib/store/interface";
+    import { IView, ViewTypeEnum } from "packages/lib/store/IView";
+    import { IField } from "packages/lib/store/interface";
     interface TableContextType {
         tableName: string;
         space: string;
@@ -3978,18 +3923,19 @@ declare module "components/table/hooks" {
         code: string;
     }[];
     export const useViewOperation: () => {
-        addView: () => Promise<IView<any>>;
+        addView: (type?: ViewTypeEnum) => Promise<IView<any>>;
         delView: (viewId: string) => Promise<void>;
         updateView: (id: string, view: Partial<IView>) => Promise<void>;
         addSort: (view: IView, column: string, direction: "ASC" | "DESC") => void;
         moveViewPosition: (dragId: string, targetId: string, direction: "up" | "down") => Promise<void>;
+        freezeColumn: (viewId: string, colIndex: number) => Promise<void>;
     };
-    export const useCurrentView: ({ space, tableName, viewId, }: {
+    export const useCurrentView: <T = any>({ space, tableName, viewId, }: {
         space: string;
         tableName: string;
         viewId?: string;
     }) => {
-        currentView: IView<any>;
+        currentView: IView<T>;
         setCurrentViewId: import("react").Dispatch<import("react").SetStateAction<string>>;
         defaultViewId: string;
     };
@@ -3999,7 +3945,7 @@ declare module "components/table/hooks" {
 }
 declare module "components/table/hooks/use-view-query" {
     import { SelectFromStatement } from "pgsql-ast-parser";
-    import { IView } from "lib/store/IView";
+    import { IView } from "packages/lib/store/IView";
     export const useViewQuery: (view?: IView) => {
         sql: string;
         parsedSql: SelectFromStatement;
@@ -4015,9 +3961,9 @@ declare module "components/table/view-sort-editor" {
     }
     export function ViewSortEditor(props: IViewEditorProps): import("react/jsx-runtime").JSX.Element;
 }
-declare module "lib/sqlite/sql-sort-parser" {
+declare module "packages/lib/sqlite/sql-sort-parser" {
     import { OrderByItem } from "components/table/view-sort-editor";
-    import { IField } from "lib/store/interface";
+    import { IField } from "packages/lib/store/interface";
     export const getSortColumns: (query: string) => string[];
     /**
      * before call this function, the query sql must be transformed by transformQueryWithFormulaFields2Sql.
@@ -4043,11 +3989,11 @@ declare module "components/table/hooks/use-table-count" {
     };
 }
 declare module "components/table/hooks/use-auto-index" {
-    import { IView } from "lib/store/IView";
+    import { IView } from "packages/lib/store/IView";
     export const useAutoIndex: (view: IView) => void;
 }
 declare module "components/table/hooks/use-view-count" {
-    import { IView } from "lib/store/IView";
+    import { IView } from "packages/lib/store/IView";
     interface ViewState {
         counts: Record<string, number>;
         increaseCount: (query: string) => void;
@@ -4072,10 +4018,10 @@ declare module "components/table/hooks/use-view-loading" {
     }
     export const useViewLoadingStore: import("zustand").UseBoundStore<import("zustand").StoreApi<ViewLoadingState>>;
 }
-declare module "lib/sqlite/sql-filter-parser" {
+declare module "packages/lib/sqlite/sql-filter-parser" {
     import { ExprBinary } from "pgsql-ast-parser";
     import { FilterValueType } from "components/table/view-filter-editor/interface";
-    import { BinaryOperator, CompareOperator } from "lib/fields/const";
+    import { BinaryOperator, CompareOperator } from "packages/lib/fields/const";
     export const isLogicOperator: (op: string) => op is BinaryOperator;
     export const reverseOpMap: Record<BinaryOperator | CompareOperator, string>;
     export const expr2FilterValue: (expr: ExprBinary) => FilterValueType;
@@ -4084,9 +4030,10 @@ declare module "lib/sqlite/sql-filter-parser" {
     export const transformFilterItems2SqlString: (sql: string, filterItems: FilterValueType | null) => string;
     export const getFilterColumns: (query: string) => string[];
 }
-declare module "lib/sqlite/sql-view-query" {
+declare module "packages/lib/sqlite/sql-view-query" {
     export const isFieldsInQuery: (query: string, fields: string[]) => boolean;
     export const rewriteQueryWithRowId: (query: string) => string;
+    export const rewriteQueryWithOffsetAndLimit: (query: string, offset?: number, limit?: number) => string;
 }
 declare module "hooks/use-current-sub-page" {
     export const useCurrentSubPage: () => {
@@ -4101,7 +4048,7 @@ declare module "hooks/use-view-sort" {
     };
 }
 declare module "components/table/hooks/use-table-row-event" {
-    import { EidosDataEventChannelMsg } from "lib/const";
+    import { EidosDataEventChannelMsg } from "packages/lib/const";
     type Row = EidosDataEventChannelMsg["payload"]["_new"];
     interface UseTableDataEventProps {
         tableName: string;
@@ -4113,7 +4060,7 @@ declare module "components/table/hooks/use-table-row-event" {
 }
 declare module "components/table/views/grid/store" {
     import { GridSelection, Rectangle } from "@glideapps/glide-data-grid";
-    import { IField } from "lib/store/interface";
+    import { IField } from "packages/lib/store/interface";
     interface IMenu {
         col: number;
         bounds: Rectangle;
@@ -4142,12 +4089,12 @@ declare module "components/table/views/grid/store" {
     export const useTableAppStore: import("zustand").UseBoundStore<import("zustand").StoreApi<ITableAppState>>;
 }
 declare module "hooks/use-fs" {
-    import { EidosFileSystemManager } from "lib/storage/eidos-file-system";
+    import { EidosFileSystemManager } from "packages/lib/storage/eidos-file-system";
     export const useEidosFileSystemManager: () => {
         efsManager: EidosFileSystemManager;
     };
 }
-declare module "worker/service-worker/backup/provider/base" {
+declare module "packages/worker/service-worker/backup/provider/base" {
     export abstract class BaseBackupServer {
         pull(directoryPath: string): Promise<void>;
         private getOPFSManager;
@@ -4167,9 +4114,9 @@ declare module "worker/service-worker/backup/provider/base" {
         abstract getLastModifiedTime(file: string): Promise<Date | null>;
     }
 }
-declare module "worker/service-worker/backup/provider/github" {
+declare module "packages/worker/service-worker/backup/provider/github" {
     import { Octokit } from "@octokit/rest";
-    import { BaseBackupServer } from "worker/service-worker/backup/provider/base";
+    import { BaseBackupServer } from "packages/worker/service-worker/backup/provider/base";
     export class GithubBackupServer extends BaseBackupServer {
         private token;
         private owner;
@@ -4185,7 +4132,7 @@ declare module "worker/service-worker/backup/provider/github" {
         uploadFile(path: string, file: File): Promise<void>;
     }
 }
-declare module "worker/service-worker/backup/index" {
+declare module "packages/worker/service-worker/backup/index" {
     export const getConfigFromOpfs: () => Promise<{
         spaceList?: string;
         Github__repo?: string;
@@ -4271,7 +4218,7 @@ declare module "apps/web-app/settings/backup/page" {
     export function BackupServerForm(): import("react/jsx-runtime").JSX.Element;
     export const BackupSettings: () => import("react/jsx-runtime").JSX.Element;
 }
-declare module "lib/web/crypto" {
+declare module "packages/lib/web/crypto" {
     export const getKeyPair: () => Promise<CryptoKeyPair>;
     export const PUBLIC_KEY: {
         crv: string;
@@ -4323,7 +4270,34 @@ declare module "components/ui/avatar" {
     const AvatarFallback: React.ForwardRefExoticComponent<Omit<AvatarPrimitive.AvatarFallbackProps & React.RefAttributes<HTMLSpanElement>, "ref"> & React.RefAttributes<HTMLSpanElement>>;
     export { Avatar, AvatarImage, AvatarFallback };
 }
-declare module "apps/web-app/settings/profile-form" {
+declare module "packages/lib/auth-client" {
+    import { createAuthClient } from "better-auth/react";
+    export const authClient: ReturnType<typeof createAuthClient>;
+}
+declare module "components/ui/alert" {
+    import * as React from "react";
+    import { type VariantProps } from "class-variance-authority";
+    const Alert: React.ForwardRefExoticComponent<React.HTMLAttributes<HTMLDivElement> & VariantProps<(props?: {
+        variant?: "default" | "destructive";
+    } & import("class-variance-authority/dist/types").ClassProp) => string> & React.RefAttributes<HTMLDivElement>>;
+    const AlertTitle: React.ForwardRefExoticComponent<React.HTMLAttributes<HTMLHeadingElement> & React.RefAttributes<HTMLParagraphElement>>;
+    const AlertDescription: React.ForwardRefExoticComponent<React.HTMLAttributes<HTMLParagraphElement> & React.RefAttributes<HTMLParagraphElement>>;
+    export { Alert, AlertTitle, AlertDescription };
+}
+declare module "components/login-dialog" {
+    interface LoginDialogProps {
+        open: boolean;
+        onOpenChange: (open: boolean) => void;
+        onSuccess?: () => void;
+    }
+    export function LoginDialog({ open, onOpenChange, onSuccess }: LoginDialogProps): import("react/jsx-runtime").JSX.Element;
+}
+declare module "apps/web-app/settings/general/account-section" {
+    interface AccountSectionProps {
+    }
+    export function AccountSection({}: AccountSectionProps): import("react/jsx-runtime").JSX.Element;
+}
+declare module "apps/web-app/settings/general/profile-form" {
     import * as z from "zod";
     const profileFormSchema: z.ZodObject<{
         username: z.ZodString;
@@ -4343,7 +4317,7 @@ declare module "apps/web-app/settings/profile-form" {
 }
 declare module "apps/web-app/settings/store" {
     import { BackupServerFormValues } from "apps/web-app/settings/backup/page";
-    import { ProfileFormValues } from "apps/web-app/settings/profile-form";
+    import { ProfileFormValues } from "apps/web-app/settings/general/profile-form";
     interface ConfigState {
         profile: ProfileFormValues;
         setProfile: (profile: ProfileFormValues) => void;
@@ -4372,7 +4346,7 @@ declare module "hooks/use-user-map" {
         };
     };
 }
-declare module "components/table/views/grid/fields/colums" {
+declare module "components/table/fields/colums" {
     import { GridCellKind, GridColumnIcon } from "@glideapps/glide-data-grid";
     export const defaultAllColumnsHandle: ({
         title: string;
@@ -4399,8 +4373,8 @@ declare module "components/table/views/grid/fields/colums" {
 }
 declare module "components/table/views/grid/helper" {
     import { DataEditorProps, GridCellKind } from "@glideapps/glide-data-grid";
-    import { IField } from "lib/store/interface";
-    import { defaultAllColumnsHandle } from "components/table/views/grid/fields/colums";
+    import { IField } from "packages/lib/store/interface";
+    import { defaultAllColumnsHandle } from "components/table/fields/colums";
     export const defaultConfig: Partial<DataEditorProps>;
     export function getColumnsHandleMap(): {
         [kind: string]: Omit<(typeof defaultAllColumnsHandle)[0], "getContent"> & {
@@ -4445,8 +4419,8 @@ declare module "components/table/views/grid/helper" {
 }
 declare module "components/table/views/grid/hooks/use-col" {
     import { GridColumn } from "@glideapps/glide-data-grid";
-    import { IGridViewProperties, IView } from "lib/store/IView";
-    import { IField } from "lib/store/interface";
+    import { IGridViewProperties, IView } from "packages/lib/store/IView";
+    import { IField } from "packages/lib/store/interface";
     export const useColumns: (uiColumns: IField[], view?: IView<IGridViewProperties>) => {
         onColumnResize: (col: GridColumn, _newSize: number, colIndex: number, newSizeWithGrow: number) => void;
         onColumnMoved: (sourceIndex: number, targetIndex: number) => Promise<void>;
@@ -4465,7 +4439,7 @@ declare module "components/table/views/grid/hooks/use-data-source" {
 declare module "components/table/views/grid/hooks/use-data-mutation" {
     import { MutableRefObject } from "react";
     import { DataEditorRef, EditableGridCell, Item, Rectangle } from "@glideapps/glide-data-grid";
-    import { IView } from "lib/store/IView";
+    import { IView } from "packages/lib/store/IView";
     interface IUseDataMutationProps {
         gridRef: MutableRefObject<DataEditorRef | null>;
         visiblePagesRef: MutableRefObject<Rectangle>;
@@ -4490,7 +4464,7 @@ declare module "components/table/views/grid/hooks/use-data-mutation" {
 declare module "components/table/views/grid/hooks/use-async-data" {
     import { DataEditorProps, DataEditorRef, EditableGridCell, GridCell, Item } from "@glideapps/glide-data-grid";
     import { MutableRefObject } from "react";
-    import { IView } from "lib/store/IView";
+    import { IView } from "packages/lib/store/IView";
     export type RowRange = readonly [number, number];
     type RowCallback<T> = (range: RowRange, qs?: string) => Promise<readonly T[]>;
     type RowToCell<T> = (row: T, col: number) => GridCell;
@@ -4520,8 +4494,8 @@ declare module "hooks/use-sql-worker" {
 }
 declare module "hooks/use-table" {
     import { RowRange } from "components/table/views/grid/hooks/use-async-data";
-    import { FieldType } from "lib/fields/const";
-    import { IField } from "lib/store/interface";
+    import { FieldType } from "packages/lib/fields/const";
+    import { IField } from "packages/lib/store/interface";
     export const useTableFields: (tableIdOrName: string | undefined) => {
         fields: IField<any>[];
         fieldMap: {
@@ -4539,7 +4513,9 @@ declare module "hooks/use-table" {
         changeFieldType: (field: IField, newType: FieldType) => Promise<void>;
         updateFieldProperty: (field: IField, property: any) => Promise<void>;
         deleteField: (tableColumnName: string) => Promise<void>;
-        addRow: (_uuid?: string) => Promise<Record<string, any>>;
+        addRow: (_uuid?: string, data?: Record<string, any>, options?: {
+            useFieldId?: boolean;
+        }) => Promise<Record<string, any>>;
         deleteRowsByRange: (range: {
             startIndex: number;
             endIndex: number;
@@ -4553,7 +4529,7 @@ declare module "hooks/use-table" {
     };
 }
 declare module "hooks/use-ui-columns" {
-    import { IField } from "lib/store/interface";
+    import { IField } from "packages/lib/store/interface";
     export const useCurrentUiColumns: () => {
         uiColumns: IField<any>[];
         uiColumnMap: Map<string, IField>;
@@ -4572,7 +4548,7 @@ declare module "hooks/use-ui-columns" {
     };
 }
 declare module "apps/web-app/[database]/scripts/hooks/use-all-table-fields" {
-    import { IField } from "lib/store/interface";
+    import { IField } from "packages/lib/store/interface";
     interface TableState {
         uiColumnsMap: Record<string, IField[]>;
         setUiColumns: (tableId: string, uiColumns: IField[]) => void;
@@ -4583,9 +4559,9 @@ declare module "apps/web-app/[database]/scripts/hooks/use-all-table-fields" {
     };
 }
 declare module "components/ai-chat/hooks" {
-    import { IEmbedding } from "worker/web-worker/meta-table/embedding";
-    import { ICommand, IScript } from "worker/web-worker/meta-table/script";
-    import { ITreeNode } from "lib/store/ITreeNode";
+    import { IEmbedding } from "packages/worker/web-worker/meta-table/embedding";
+    import { ICommand, IScript } from "packages/worker/web-worker/meta-table/script";
+    import { ITreeNode } from "packages/lib/store/ITreeNode";
     export const sysPrompts: {
         base: string;
         eidosBaseHelper: string;
@@ -4611,10 +4587,10 @@ declare module "components/ai-chat/ai-input-editor/plugins/switch-prompt" {
     export function SwitchPromptPlugin(): JSX.Element | null;
 }
 declare module "components/ai-chat/ai-input-editor/index" {
-    import { IEmbedding } from "worker/web-worker/meta-table/embedding";
+    import { IEmbedding } from "packages/worker/web-worker/meta-table/embedding";
     import { Attachment, ChatRequestOptions, CreateMessage } from "ai";
     import { Message } from "ai/react";
-    import { ITreeNode } from "lib/store/ITreeNode";
+    import { ITreeNode } from "packages/lib/store/ITreeNode";
     interface InputEditorProps {
         disabled?: boolean;
         enableRAG?: boolean;
@@ -4631,7 +4607,7 @@ declare module "components/ai-chat/ai-input-editor/index" {
     export const AIInputEditor: ({ disabled, append, enableRAG, appendHiddenMessage, isLoading, setContextNodes, setContextEmbeddings, attachments, setAttachments, uploadQueue, }: InputEditorProps) => import("react/jsx-runtime").JSX.Element;
 }
 declare module "components/doc/hooks/use-ext-blocks" {
-    import { IScript } from "worker/web-worker/meta-table/script";
+    import { IScript } from "packages/worker/web-worker/meta-table/script";
     import { DocBlock } from "components/doc/blocks/interface";
     export type ExtBlock = DocBlock;
     export const useExtBlocks: () => DocBlock[];
@@ -4689,9 +4665,12 @@ declare module "components/ui/alert-dialog" {
     const AlertDialogCancel: React.ForwardRefExoticComponent<Omit<AlertDialogPrimitive.AlertDialogCancelProps & React.RefAttributes<HTMLButtonElement>, "ref"> & React.RefAttributes<HTMLButtonElement>>;
     export { AlertDialog, AlertDialogPortal, AlertDialogOverlay, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogFooter, AlertDialogTitle, AlertDialogDescription, AlertDialogAction, AlertDialogCancel, };
 }
+declare module "components/thinking" {
+    export const Thinking: () => import("react/jsx-runtime").JSX.Element;
+}
 declare module "apps/web-app/[database]/scripts/helper" {
     import z from "zod";
-    import { IScript } from "worker/web-worker/meta-table/script";
+    import { IScript } from "packages/worker/web-worker/meta-table/script";
     export const getDescriptionFromCode: (code: string) => string;
     export const PromptEnableCheck: z.ZodObject<{
         model: z.ZodEffects<z.ZodString, string, string>;
@@ -4723,7 +4702,7 @@ declare module "apps/web-app/[database]/scripts/helper" {
     }[];
 }
 declare module "apps/web-app/[database]/scripts/hooks/use-script" {
-    import { IScript } from "worker/web-worker/meta-table/script";
+    import { IScript } from "packages/worker/web-worker/meta-table/script";
     export const useScript: () => {
         addScript: (script: IScript) => Promise<void>;
         deleteScript: (id: string) => Promise<void>;
@@ -4737,35 +4716,6 @@ declare module "apps/web-app/[database]/scripts/hooks/use-script" {
 }
 declare module "components/doc/hooks/use-all-doc-blocks" {
     export const useAllDocBlocks: () => import("@/components/doc/blocks/interface").DocBlock[];
-}
-declare module "components/doc/utils/invariant" {
-    /**
-     * Copyright (c) Meta Platforms, Inc. and affiliates.
-     *
-     * This source code is licensed under the MIT license found in the
-     * LICENSE file in the root directory of this source tree.
-     *
-     */
-    export default function invariant(cond?: boolean, message?: string, ...args: string[]): asserts cond;
-}
-declare module "components/doc/utils/helper" {
-    import { EditorState, Klass, LexicalNode, NodeMap } from "lexical";
-    import { ExtBlock } from "components/doc/hooks/use-ext-blocks";
-    /**
-     * some extension blocks want to transform the code with specific language to their own node
-     * we cant use $convertFromMarkdownString to transform the code block, cause there are some bugs in lexical
-     * https://github.com/facebook/lexical/issues/2564
-     * we need to transform the code block manually, after the markdown string is converted to nodes.
-     * we can replace the code block with the node created by the extension block
-     *
-     * if a ext block define `markdownLanguage`, it will be used to match the code block with the same language
-     * @param extBlocks
-     */
-    export const $transformExtCodeBlock: (extBlocks: ExtBlock[]) => void;
-    export type TypeToNodeMap = Map<string, NodeMap>;
-    export function getCachedTypeToNodeMap(editorState: EditorState): TypeToNodeMap;
-    export function getNodesOfType<T extends LexicalNode>(klass: Klass<T>, editorState: EditorState): Array<T>;
-    export const getFirstImageUrl: (editorState: EditorState) => string;
 }
 declare module "components/doc/plugins/AIToolsPlugin/ai-action-list" {
     export enum AIActionEnum {
@@ -4897,9 +4847,6 @@ declare module "components/doc/plugins/AIToolsPlugin/prompt-list" {
         onGenerateChart: () => void;
     }
     export function PromptList({ onPromptSelect, onMakeItReal, onGenerateChart, }: PromptListProps): import("react/jsx-runtime").JSX.Element;
-}
-declare module "components/thinking" {
-    export const Thinking: () => import("react/jsx-runtime").JSX.Element;
 }
 declare module "components/doc/plugins/AIToolsPlugin/ai-tools" {
     export function AITools({ cancelAIAction, content, }: {
@@ -5222,6 +5169,16 @@ declare module "components/doc/plugins/SelectionPlugin/use-mouse-selection" {
 declare module "components/doc/plugins/SelectionPlugin/index" {
     export const SelectionPlugin: () => import("react").ReactPortal;
 }
+declare module "components/doc/utils/invariant" {
+    /**
+     * Copyright (c) Meta Platforms, Inc. and affiliates.
+     *
+     * This source code is licensed under the MIT license found in the
+     * LICENSE file in the root directory of this source tree.
+     *
+     */
+    export default function invariant(cond?: boolean, message?: string, ...args: string[]): asserts cond;
+}
 declare module "components/doc/plugins/TableActionMenuPlugin/helper" {
     /**
      * Copyright (c) Meta Platforms, Inc. and affiliates.
@@ -5382,7 +5339,7 @@ declare module "components/doc/blocks/sync/index" {
     const _default_12: DocBlock;
     export default _default_12;
 }
-declare module "lib/sqlite/sql-alter-column-type" {
+declare module "packages/lib/sqlite/sql-alter-column-type" {
     /**
      * 1. add new column with new type
      * 2. copy data from old column to new column
@@ -5395,11 +5352,11 @@ declare module "lib/sqlite/sql-alter-column-type" {
      */
     export const alterColumnType: (tableName: string, columnName: string, newType: "TEXT" | "REAL" | "INT") => string;
 }
-declare module "worker/web-worker/meta-table/column" {
-    import { FieldType } from "lib/fields/const";
-    import { IField } from "lib/store/interface";
-    import { BaseServerDatabase } from "lib/sqlite/interface";
-    import { BaseTable, BaseTableImpl } from "worker/web-worker/meta-table/base";
+declare module "packages/worker/web-worker/meta-table/column" {
+    import { FieldType } from "packages/lib/fields/const";
+    import { IField } from "packages/lib/store/interface";
+    import { BaseServerDatabase } from "packages/lib/sqlite/interface";
+    import { BaseTable, BaseTableImpl } from "packages/worker/web-worker/meta-table/base";
     /**
      * define
      * 1. column: a real column in table
@@ -5444,8 +5401,8 @@ declare module "worker/web-worker/meta-table/column" {
         changeType(tableName: string, tableColumnName: string, newType: FieldType): Promise<void>;
     }
 }
-declare module "lib/fields/helper" {
-    import { FieldType } from "lib/fields/const";
+declare module "packages/lib/fields/helper" {
+    import { FieldType } from "packages/lib/fields/const";
     export const isComputedField: (columnType: FieldType) => boolean;
     export const isAutoGeneratedField: (columnType: FieldType) => boolean;
 }
@@ -5480,7 +5437,7 @@ declare module "hooks/use-emoji" {
     };
 }
 declare module "components/table/cell-editor/common" {
-    import { SelectOption } from "lib/fields/select";
+    import { SelectOption } from "packages/lib/fields/select";
     export const EmptyValue: () => import("react/jsx-runtime").JSX.Element;
     export const SelectOptionItem: ({ option, theme, }: {
         option: SelectOption;
@@ -5489,7 +5446,7 @@ declare module "components/table/cell-editor/common" {
 }
 declare module "components/table/views/grid/cells/select-cell" {
     import { CustomCell, CustomRenderer, ProvideEditorCallback } from "@glideapps/glide-data-grid";
-    import { SelectOption } from "lib/fields/select";
+    import { SelectOption } from "packages/lib/fields/select";
     interface SelectCellProps {
         readonly kind: "select-cell";
         readonly value: string | null;
@@ -5503,7 +5460,7 @@ declare module "components/table/views/grid/cells/select-cell" {
 }
 declare module "components/table/views/grid/cells/multi-select-cell" {
     import { CustomCell, CustomRenderer, ProvideEditorCallback } from "@glideapps/glide-data-grid";
-    import { SelectOption } from "lib/fields/select";
+    import { SelectOption } from "packages/lib/fields/select";
     interface MultiSelectCellProps {
         readonly kind: "multi-select-cell";
         readonly values: readonly string[] | null;
@@ -5515,11 +5472,11 @@ declare module "components/table/views/grid/cells/multi-select-cell" {
     const renderer: CustomRenderer<MultiSelectCell>;
     export default renderer;
 }
-declare module "lib/fields/multi-select" {
+declare module "packages/lib/fields/multi-select" {
     import { MultiSelectCell } from "components/table/views/grid/cells/multi-select-cell";
-    import { BaseField } from "lib/fields/base";
-    import { CompareOperator, FieldType } from "lib/fields/const";
-    import { SelectProperty } from "lib/fields/select";
+    import { BaseField } from "packages/lib/fields/base";
+    import { CompareOperator, FieldType } from "packages/lib/fields/const";
+    import { SelectProperty } from "packages/lib/fields/select";
     type MultiSelectProperty = SelectProperty;
     export class MultiSelectField extends BaseField<MultiSelectCell, MultiSelectProperty, string> {
         static type: FieldType;
@@ -5553,10 +5510,10 @@ declare module "lib/fields/multi-select" {
         };
     }
 }
-declare module "lib/fields/select" {
+declare module "packages/lib/fields/select" {
     import type { SelectCell } from "components/table/views/grid/cells/select-cell";
-    import { BaseField } from "lib/fields/base";
-    import { CompareOperator, FieldType } from "lib/fields/const";
+    import { BaseField } from "packages/lib/fields/base";
+    import { CompareOperator, FieldType } from "packages/lib/fields/const";
     import { MultiSelectCell } from "components/table/views/grid/cells/multi-select-cell";
     export type SelectOption = {
         id: string;
@@ -5589,7 +5546,7 @@ declare module "lib/fields/select" {
          * @param theme theme of the color. eg "light" | "dark"
          * @returns hex value of the color. eg "#cccccc"
          */
-        static getColorValue(colorName: string, theme?: "light" | "dark"): string;
+        static getColorValue(colorName: string, theme?: "light" | "dark", opacity?: number): string;
         get compareOperators(): CompareOperator[];
         get options(): SelectOption[];
         rawData2JSON(rawData: any): string;
@@ -5658,7 +5615,7 @@ declare module "components/table/cell-editor/file-editor" {
     export const FileEditor: ({ value, onChange, }: IFileEditorProps) => import("react/jsx-runtime").JSX.Element;
 }
 declare module "components/table/cell-editor/multi-select-editor" {
-    import { SelectOption } from "lib/fields/select";
+    import { SelectOption } from "packages/lib/fields/select";
     interface IMultiSelectEditorProps {
         value: string;
         onChange: (value: string) => void;
@@ -5676,7 +5633,7 @@ declare module "components/table/cell-editor/rating-editor" {
     export const RatingEditor: ({ value, onChange }: IRatingEditorProps) => import("react/jsx-runtime").JSX.Element;
 }
 declare module "components/table/cell-editor/select-editor" {
-    import { SelectOption } from "lib/fields/select";
+    import { SelectOption } from "packages/lib/fields/select";
     interface ISelectEditorProps {
         value: string;
         onChange: (value: string) => void;
@@ -5694,6 +5651,14 @@ declare module "components/table/cell-editor/text-base-editor" {
     }
     export const TextBaseEditor: ({ value, isEditing, onChange, type, }: ITextBaseEditorProps) => import("react/jsx-runtime").JSX.Element;
 }
+declare module "components/table/cell-editor/url-editor" {
+    interface IUrlEditorProps {
+        value: string | null;
+        onChange: (value: string | null) => void;
+        isEditing: boolean;
+    }
+    export const UrlEditor: ({ value, isEditing, onChange }: IUrlEditorProps) => import("react/jsx-runtime").JSX.Element;
+}
 declare module "components/table/cell-editor/user-profile-editor" {
     interface IUserProfileEditorProps {
         value: string;
@@ -5703,8 +5668,8 @@ declare module "components/table/cell-editor/user-profile-editor" {
     export const UserProfileEditor: ({ value }: IUserProfileEditorProps) => import("react/jsx-runtime").JSX.Element;
 }
 declare module "components/table/cell-editor/index" {
-    import { FieldType } from "lib/fields/const";
-    import { IField } from "lib/store/interface";
+    import { FieldType } from "packages/lib/fields/const";
+    import { IField } from "packages/lib/store/interface";
     export const CellEditorMap: Record<FieldType, React.FC<{
         isEditing: boolean;
         value: any;
@@ -5745,7 +5710,7 @@ declare module "components/doc-property/index" {
     export const DocProperty: (props: IDocPropertyProps) => import("react/jsx-runtime").JSX.Element;
 }
 declare module "components/folder/folder" {
-    import { ITreeNode } from "lib/store/ITreeNode";
+    import { ITreeNode } from "packages/lib/store/ITreeNode";
     export const FolderComponent: ({ folderId, setFolder: appendFolder, currentNode, index, folderList, setCurrentNode, setCurrentIndex, }: {
         folderList: (string | undefined)[];
         index: number;
@@ -5757,7 +5722,7 @@ declare module "components/folder/folder" {
     }) => import("react/jsx-runtime").JSX.Element;
 }
 declare module "components/folder/node-detail" {
-    import { ITreeNode } from "lib/store/ITreeNode";
+    import { ITreeNode } from "packages/lib/store/ITreeNode";
     export const NodeDetail: ({ currentNode, }: {
         currentNode: ITreeNode | null;
     }) => import("react/jsx-runtime").JSX.Element;
@@ -5775,13 +5740,13 @@ declare module "apps/web-app/[database]/[node]/hooks/use-generate-title" {
     };
 }
 declare module "apps/web-app/[database]/[node]/node-cover" {
-    import { ITreeNode } from "lib/store/ITreeNode";
+    import { ITreeNode } from "packages/lib/store/ITreeNode";
     export const NodeCover: (props: {
         node: ITreeNode;
     }) => import("react/jsx-runtime").JSX.Element;
 }
 declare module "apps/web-app/[database]/[node]/node-restore" {
-    import { ITreeNode } from "lib/store/ITreeNode";
+    import { ITreeNode } from "packages/lib/store/ITreeNode";
     export const NodeRestore: ({ node }: {
         node: ITreeNode | null;
     }) => import("react/jsx-runtime").JSX.Element;
@@ -5803,6 +5768,19 @@ declare module "components/table/hooks/use-table-search-store" {
         matches: SearchMatch[];
         rowIndex: number;
     }
+    export interface SemanticSearchResultData extends Record<string, any> {
+        _id: string;
+        title: string;
+        _distance?: number;
+    }
+    export interface SemanticSearchResult {
+        meta: {
+            page: number;
+            pageSize: number;
+            embeddingFieldId: string;
+        };
+        results: SemanticSearchResultData[];
+    }
     interface TableSearchState {
         searchQuery: string;
         showSearch: boolean;
@@ -5813,6 +5791,10 @@ declare module "components/table/hooks/use-table-search-store" {
         currentPage: number;
         totalPages: number;
         isLoadingMore: boolean;
+        isSemanticSearchActive: boolean;
+        isSemanticSearching: boolean;
+        semanticSearchResult: SemanticSearchResult;
+        semanticSearchSelectedIndex: number;
         setSearchQuery: (query: string) => void;
         setShowSearch: (show: boolean) => void;
         setSearchResults: (results: SearchResult[], startIndex: number) => void;
@@ -5823,6 +5805,10 @@ declare module "components/table/hooks/use-table-search-store" {
         setCurrentPage: (page: number) => void;
         clearSearchResults: () => void;
         clearSearch: () => void;
+        setIsSemanticSearchActive: (active: boolean) => void;
+        setIsSemanticSearching: (searching: boolean) => void;
+        setSemanticSearchResult: (results: SemanticSearchResult) => void;
+        setSemanticSearchSelectedIndex: (index: number | ((prev: number) => number)) => void;
     }
     export const useTableSearchStore: import("zustand").UseBoundStore<import("zustand").StoreApi<TableSearchState>>;
 }
@@ -5832,7 +5818,7 @@ declare module "components/common-menu-item" {
 declare module "components/table/view-field/view-field-item" {
     import { type FC } from "react";
     import "./index.css";
-    import { IField } from "lib/store/interface";
+    import { IField } from "packages/lib/store/interface";
     export const ItemTypes: {
         CARD: string;
     };
@@ -5848,8 +5834,8 @@ declare module "components/table/view-field/view-field-item" {
     export const FieldItemCard: FC<CardProps>;
 }
 declare module "components/table/view-field/view-field" {
-    import { IView } from "lib/store/IView";
-    import { IField } from "lib/store/interface";
+    import { IView } from "packages/lib/store/IView";
+    import { IField } from "packages/lib/store/interface";
     export interface ContainerState {
         cards: IField[];
     }
@@ -5858,8 +5844,8 @@ declare module "components/table/view-field/view-field" {
     }) => import("react/jsx-runtime").JSX.Element;
 }
 declare module "components/table/view-filter-editor/view-filter-group-editor" {
-    import { BinaryOperator } from "lib/fields/const";
-    import { IField } from "lib/store/interface";
+    import { BinaryOperator } from "packages/lib/fields/const";
+    import { IField } from "packages/lib/store/interface";
     import { IGroupFilterValue } from "components/table/view-filter-editor/interface";
     interface IViewFilterGroupEditorProps {
         value: IGroupFilterValue;
@@ -5874,9 +5860,9 @@ declare module "components/table/view-filter-editor/view-filter-group-editor" {
         onChange: (value: BinaryOperator) => void;
     }) => import("react/jsx-runtime").JSX.Element;
 }
-declare module "components/table/field-compare-selector" {
-    import { CompareOperator } from "lib/fields/const";
-    import { IField } from "lib/store/interface";
+declare module "components/table/fields/field-compare-selector" {
+    import { CompareOperator } from "packages/lib/fields/const";
+    import { IField } from "packages/lib/store/interface";
     interface IFieldCompareSelectorProps {
         field?: IField;
         value: CompareOperator;
@@ -5885,7 +5871,7 @@ declare module "components/table/field-compare-selector" {
     export const FieldCompareSelector: ({ field, value, onChange, }: IFieldCompareSelectorProps) => import("react/jsx-runtime").JSX.Element;
 }
 declare module "components/table/view-filter-editor/view-filter-item-editor" {
-    import { IField } from "lib/store/interface";
+    import { IField } from "packages/lib/store/interface";
     import { IFilterValue } from "components/table/view-filter-editor/interface";
     interface IViewFilterItemEditorProps {
         value?: IFilterValue;
@@ -5896,7 +5882,7 @@ declare module "components/table/view-filter-editor/view-filter-item-editor" {
     export const ViewFilterItemEditor: ({ value, onChange, onDelete, fields, }: IViewFilterItemEditorProps) => import("react/jsx-runtime").JSX.Element;
 }
 declare module "components/table/view-filter-editor/view-filter-editor" {
-    import { IField } from "lib/store/interface";
+    import { IField } from "packages/lib/store/interface";
     import "./filter.css";
     import { IFilterValue, IGroupFilterValue } from "components/table/view-filter-editor/interface";
     interface IViewFilterEditorProps {
@@ -5909,7 +5895,7 @@ declare module "components/table/view-filter-editor/view-filter-editor" {
     export const ViewFilterEditor: ({ value: _value, onChange, fields, handleClearFilter, depth, }: IViewFilterEditorProps) => import("react/jsx-runtime").JSX.Element;
 }
 declare module "components/table/view-filter" {
-    import { IView } from "lib/store/IView";
+    import { IView } from "packages/lib/store/IView";
     export const ViewFilter: (props: {
         view: IView;
     }) => import("react/jsx-runtime").JSX.Element;
@@ -5924,6 +5910,18 @@ declare module "components/ui/collapsible" {
 declare module "components/table/views/doc-list/properties" {
     export const DocListViewProperties: (props: any) => import("react/jsx-runtime").JSX.Element;
 }
+declare module "components/table/views/shared/cover-preview-field" {
+    import { useForm } from "react-hook-form";
+    interface CoverPreviewFieldProps {
+        form: ReturnType<typeof useForm>;
+        viewId: string;
+        tableId: string;
+        updateView: (viewId: string, data: any) => void;
+        viewProperties: any;
+        namespace?: "gallery" | "kanban";
+    }
+    export const CoverPreviewField: ({ form, viewId, tableId, updateView, viewProperties, namespace, }: CoverPreviewFieldProps) => import("react/jsx-runtime").JSX.Element;
+}
 declare module "components/table/views/gallery/properties" {
     export interface IGalleryViewProperties {
         hideEmptyFields?: boolean;
@@ -5937,9 +5935,18 @@ declare module "components/table/views/gallery/properties" {
 declare module "components/table/views/grid/properties" {
     export const GridViewProperties: (props: any) => import("react/jsx-runtime").JSX.Element;
 }
+declare module "components/table/views/kanban/properties" {
+    export interface IKanbanViewProperties {
+        groupByField?: string;
+        cardSize?: "small" | "medium" | "large";
+    }
+    export const KanbanViewProperties: ({ viewId }: {
+        viewId: string;
+    }) => import("react/jsx-runtime").JSX.Element;
+}
 declare module "components/table/view-editor/view-layout" {
     import React from "react";
-    import { ViewTypeEnum } from "lib/store/IView";
+    import { ViewTypeEnum } from "packages/lib/store/IView";
     export const ViewLayout: (props: {
         icon: React.FC;
         viewType: ViewTypeEnum;
@@ -5951,7 +5958,7 @@ declare module "components/table/view-editor/view-layout" {
     }) => import("react/jsx-runtime").JSX.Element;
 }
 declare module "components/table/view-editor/view-editor" {
-    import { IView } from "lib/store/IView";
+    import { IView } from "packages/lib/store/IView";
     interface IViewEditorProps {
         setEditDialogOpen: (open: boolean) => void;
         view: IView;
@@ -5959,7 +5966,7 @@ declare module "components/table/view-editor/view-editor" {
     export const ViewEditor: ({ setEditDialogOpen, view }: IViewEditorProps) => import("react/jsx-runtime").JSX.Element;
 }
 declare module "components/table/view-item" {
-    import { IView } from "lib/store/IView";
+    import { IView } from "packages/lib/store/IView";
     interface IViewItemProps {
         view: IView;
         isActive: boolean;
@@ -5968,14 +5975,15 @@ declare module "components/table/view-item" {
         disabledDelete?: boolean;
     }
     export const ViewIconMap: {
-        grid: import("lucide-react").LucideIcon;
-        gallery: import("lucide-react").LucideIcon;
-        doc_list: import("lucide-react").LucideIcon;
+        grid: import("react").ForwardRefExoticComponent<Omit<import("lucide-react").LucideProps, "ref"> & import("react").RefAttributes<SVGSVGElement>>;
+        gallery: import("react").ForwardRefExoticComponent<Omit<import("lucide-react").LucideProps, "ref"> & import("react").RefAttributes<SVGSVGElement>>;
+        doc_list: import("react").ForwardRefExoticComponent<Omit<import("lucide-react").LucideProps, "ref"> & import("react").RefAttributes<SVGSVGElement>>;
+        kanban: import("react").ForwardRefExoticComponent<Omit<import("lucide-react").LucideProps, "ref"> & import("react").RefAttributes<SVGSVGElement>>;
     };
     export const ViewItem: ({ view, isActive, jump2View, deleteView, disabledDelete, }: IViewItemProps) => import("react/jsx-runtime").JSX.Element;
 }
 declare module "hooks/use-readonly-sqlite" {
-    import { DataSpace } from "worker/web-worker/DataSpace";
+    import { DataSpace } from "packages/worker/web-worker/DataSpace";
     interface SqliteStore {
         readonlySqlite: DataSpace | undefined;
         setReadSqliteProxy: (proxy: DataSpace) => void;
@@ -5992,14 +6000,50 @@ declare module "components/table/hooks/use-table-search" {
         isSearching: boolean;
     };
 }
+declare module "components/table/hooks/use-table-semantic-search" {
+    export const useTableSemanticSearch: () => {
+        search: (params: {
+            query: string;
+            viewId?: string;
+            page?: number;
+            pageSize?: number;
+        }) => Promise<{
+            meta: {
+                embeddingFieldId: string;
+                page: number;
+                pageSize: number;
+            };
+            results: any;
+        }>;
+    };
+}
+declare module "components/ui/aspect-ratio" {
+    import * as AspectRatioPrimitive from "@radix-ui/react-aspect-ratio";
+    const AspectRatio: import("react").ForwardRefExoticComponent<AspectRatioPrimitive.AspectRatioProps & import("react").RefAttributes<HTMLDivElement>>;
+    export { AspectRatio };
+}
+declare module "components/table/semantic-search-results-list" {
+    import { RefObject } from "react";
+    import { SemanticSearchResult, SemanticSearchResultData } from "components/table/hooks/use-table-search-store";
+    interface SemanticSearchResultsListProps {
+        isSearching: boolean;
+        results: SemanticSearchResultData[] | undefined;
+        meta: SemanticSearchResult["meta"] | undefined;
+        selectedIndex: number;
+        onResultClick: (result: SemanticSearchResultData) => void;
+        onResultMouseEnter: (index: number) => void;
+        listRef: RefObject<HTMLUListElement>;
+    }
+    export const SemanticSearchResultsList: ({ isSearching, results, meta, selectedIndex, onResultClick, onResultMouseEnter, listRef, }: SemanticSearchResultsListProps) => import("react/jsx-runtime").JSX.Element;
+}
 declare module "components/table/view-search" {
-    import { IView } from "lib/store/IView";
+    import { IView } from "packages/lib/store/IView";
     export const ViewSearch: (props: {
         view: IView;
     }) => import("react/jsx-runtime").JSX.Element;
 }
 declare module "components/table/view-sort" {
-    import { IView } from "lib/store/IView";
+    import { IView } from "packages/lib/store/IView";
     export const ViewSort: ({ view }: {
         view?: IView;
     }) => import("react/jsx-runtime").JSX.Element;
@@ -6012,7 +6056,7 @@ declare module "components/table/view-toolbar" {
         isReadOnly?: boolean;
     }) => import("react/jsx-runtime").JSX.Element;
 }
-declare module "lib/sqlite/sql-parser" {
+declare module "packages/lib/sqlite/sql-parser" {
     export const getColumnsFromQuery: (sql?: string) => import("pgsql-ast-parser").SelectedColumn[];
     export const replaceQueryTableName: (query: string, tableNameMap: Record<string, string>) => string;
     export const replaceWithFindIndexQuery: (query: string, rowId: string) => string;
@@ -6025,7 +6069,7 @@ declare module "lib/sqlite/sql-parser" {
     export const transformSql: (sql: string, rawTableName: string, columnNameMap: Map<string, string>) => string;
 }
 declare module "components/table/views/gallery/hooks" {
-    import { IView } from "lib/store/IView";
+    import { IView } from "packages/lib/store/IView";
     type RowData = Record<string, any> & {
         _id: string;
         title?: string;
@@ -6037,7 +6081,7 @@ declare module "components/table/views/gallery/hooks" {
     };
 }
 declare module "components/table/views/doc-list/index" {
-    import { IView } from "lib/store/IView";
+    import { IView } from "packages/lib/store/IView";
     interface IDocListViewProps {
         space: string;
         tableName: string;
@@ -6046,7 +6090,7 @@ declare module "components/table/views/doc-list/index" {
     export function DocListView(props: IDocListViewProps): import("react/jsx-runtime").JSX.Element;
 }
 declare module "hooks/use-all-extensions" {
-    import { IScript } from "worker/web-worker/meta-table/script";
+    import { IScript } from "packages/worker/web-worker/meta-table/script";
     export const useAllExtensions: (space: string) => IScript[];
 }
 declare module "components/table/views/grid/script-context-menu" {
@@ -6054,8 +6098,27 @@ declare module "components/table/views/grid/script-context-menu" {
         getRows: () => any[] | undefined;
     }) => import("react/jsx-runtime").JSX.Element;
 }
-declare module "components/table/views/gallery/gallery-card-cover" {
-    import { IField } from "lib/store/interface";
+declare module "components/doc/utils/helper" {
+    import { EditorState, Klass, LexicalNode, NodeMap } from "lexical";
+    import { ExtBlock } from "components/doc/hooks/use-ext-blocks";
+    /**
+     * some extension blocks want to transform the code with specific language to their own node
+     * we cant use $convertFromMarkdownString to transform the code block, cause there are some bugs in lexical
+     * https://github.com/facebook/lexical/issues/2564
+     * we need to transform the code block manually, after the markdown string is converted to nodes.
+     * we can replace the code block with the node created by the extension block
+     *
+     * if a ext block define `markdownLanguage`, it will be used to match the code block with the same language
+     * @param extBlocks
+     */
+    export const $transformExtCodeBlock: (extBlocks: ExtBlock[]) => void;
+    export type TypeToNodeMap = Map<string, NodeMap>;
+    export function getCachedTypeToNodeMap(editorState: EditorState): TypeToNodeMap;
+    export function getNodesOfType<T extends LexicalNode>(klass: Klass<T>, editorState: EditorState): Array<T>;
+    export const getFirstImageUrl: (editorState: EditorState) => string;
+}
+declare module "components/table/views/shared/card-cover" {
+    import { IField } from "packages/lib/store/interface";
     interface GalleryCardCoverProps {
         item: any;
         coverField?: IField;
@@ -6065,8 +6128,28 @@ declare module "components/table/views/gallery/gallery-card-cover" {
     }
     export const GalleryCardCover: ({ item, coverField, coverPreview, rawIdNameMap, fitContent, }: GalleryCardCoverProps) => import("react/jsx-runtime").JSX.Element;
 }
+declare module "components/table/views/shared/data-card" {
+    import { IField } from "packages/lib/store/interface";
+    import { IGalleryViewProperties } from "components/table/views/gallery/properties";
+    interface DataCardProps {
+        item: Record<string, any>;
+        coverField?: IField;
+        rawIdNameMap: Map<string, string>;
+        style?: React.CSSProperties;
+        hiddenFields?: string[];
+        properties?: IGalleryViewProperties;
+        showFields: IField[];
+        tableId: string;
+        space: string;
+        uiColumnMap: Map<string, IField>;
+        padding?: number;
+        cardClassName?: string;
+        hideCover?: boolean;
+    }
+    export const DataCard: ({ item, coverField, rawIdNameMap, style, hiddenFields, properties, showFields, tableId, space, uiColumnMap, padding, cardClassName, hideCover, }: DataCardProps) => import("react/jsx-runtime").JSX.Element;
+}
 declare module "components/table/views/gallery/gallery-card" {
-    import { IField } from "lib/store/interface";
+    import { IField } from "packages/lib/store/interface";
     import { IGalleryViewProperties } from "components/table/views/gallery/properties";
     interface ICardProps<T> {
         columnIndex: number;
@@ -6091,7 +6174,7 @@ declare module "components/table/views/gallery/gallery-card" {
     export const GalleryCard: ({ columnIndex, rowIndex, style, data, }: ICardProps<IGalleryCardProps>) => import("react/jsx-runtime").JSX.Element;
 }
 declare module "components/table/views/gallery/utils" {
-    import { IField } from "lib/store/interface";
+    import { IField } from "packages/lib/store/interface";
     export const getColumnWidthAndCount: (containerWith: number, isMobile?: boolean) => {
         cardWidth: number;
         columnCount: number;
@@ -6100,7 +6183,7 @@ declare module "components/table/views/gallery/utils" {
     export const shouldShowField: (value: any, field: IField) => boolean;
 }
 declare module "components/table/views/gallery/index" {
-    import { IView } from "lib/store/IView";
+    import { IView } from "packages/lib/store/IView";
     import { IGalleryViewProperties } from "components/table/views/gallery/properties";
     interface IGalleryViewProps {
         space: string;
@@ -6140,7 +6223,7 @@ declare module "components/table/views/grid/cells/index" {
     export const cellRenderMap: any;
 }
 declare module "components/table/views/grid/grid-context-menu" {
-    import { IField } from "lib/store/interface";
+    import { IField } from "packages/lib/store/interface";
     export function GridContextMenu({ children, handleDelRows, getRowByIndex, getFieldByIndex, openAItools, }: {
         getFieldByIndex: (index: number) => IField;
         handleDelRows: (ranges: {
@@ -6165,8 +6248,32 @@ declare module "components/table/views/grid/hooks/use-drop" {
         highlights: readonly import("@glideapps/glide-data-grid").Highlight[];
     };
 }
+declare module "components/table/views/grid/hooks/use-freeze-line" {
+    import { GridColumn } from "@glideapps/glide-data-grid";
+    import React from "react";
+    import { IGridViewProperties, IView } from "packages/lib/store/IView";
+    interface UseFreezeLineProps {
+        gridRef: React.RefObject<HTMLElement | null>;
+        currentView: IView<IGridViewProperties> | null | undefined;
+        columns: readonly GridColumn[] | undefined;
+    }
+    export const ROW_NUMBER_COL_WIDTH = 48;
+    export function useFreezeLine({ gridRef, currentView, columns, }: UseFreezeLineProps): {
+        freezeHandleRef: React.MutableRefObject<HTMLDivElement>;
+        freezeHandleLeft: number;
+        freezeColumns: number;
+        handleMouseDown: (event: React.MouseEvent) => void;
+        isDragging: boolean;
+        isHovering: boolean;
+        handleMouseEnter: () => void;
+        handleMouseLeave: () => void;
+        HOVER_TARGET_WIDTH: number;
+        previewFreezeColumns: number;
+        previewLinePosition: number;
+    };
+}
 declare module "components/table/views/grid/hooks/use-grid-search" {
-    import { IField } from "lib/store/interface";
+    import { IField } from "packages/lib/store/interface";
     import { Item } from "@glideapps/glide-data-grid";
     export const useGridSearch: (showColumns: IField[], getColumnIndexByColumnName: (fieldName: string) => number) => {
         formattedSearchResults: Item[];
@@ -6175,7 +6282,7 @@ declare module "components/table/views/grid/hooks/use-grid-search" {
 }
 declare module "components/table/views/grid/hooks/use-highlight-row" {
     import { DataEditorProps } from "@glideapps/glide-data-grid";
-    import { IField } from "lib/store/interface";
+    import { IField } from "packages/lib/store/interface";
     /**
      * Custom hook to subscribe to highlight row events from the worker.
      *
@@ -6200,7 +6307,7 @@ declare module "components/table/views/grid/hooks/use-hover" {
         getRowThemeOverride: any;
     };
 }
-declare module "lib/ai/generate" {
+declare module "packages/lib/ai/generate" {
     export const generateText: ({ prompt, modelId, systemPrompt, config, }: {
         prompt: string;
         systemPrompt?: string;
@@ -6213,7 +6320,7 @@ declare module "lib/ai/generate" {
 }
 declare module "components/table/views/grid/plugins/ai-tools" {
     import { DataEditorProps, GridSelection } from "@glideapps/glide-data-grid";
-    import { IField } from "lib/store/interface";
+    import { IField } from "packages/lib/store/interface";
     export const AITools: ({ close, fields, selection, getRowByIndex, getFieldByIndex, setAIHighlightRegions, }: {
         close: () => void;
         fields: IField[];
@@ -6222,6 +6329,53 @@ declare module "components/table/views/grid/plugins/ai-tools" {
         getFieldByIndex: (index: number) => IField;
         setAIHighlightRegions: (regions: DataEditorProps["highlightRegions"]) => void;
     }) => import("react/jsx-runtime").JSX.Element;
+}
+declare module "packages/lib/fields/formula" {
+    import type { TextCell } from "@glideapps/glide-data-grid";
+    import { BaseField } from "packages/lib/fields/base";
+    import { FieldType } from "packages/lib/fields/const";
+    export type FormulaProperty = {
+        formula: string;
+        displayType?: FieldType;
+    };
+    export class FormulaField extends BaseField<TextCell, FormulaProperty> {
+        static type: FieldType;
+        get compareOperators(): any[];
+        get displayType(): FieldType;
+        rawData2JSON(rawData: string): string;
+        getCellContent(rawData: string): TextCell;
+        cellData2RawData(cell: TextCell): {
+            rawData: string;
+        };
+    }
+}
+declare module "hooks/use-formula-update" {
+    import { IField } from "packages/lib/store/interface";
+    import { FormulaProperty } from "packages/lib/fields/formula";
+    import { FieldType } from "packages/lib/fields/const";
+    export function useFormulaUpdate(uiColumn: IField<FormulaProperty> | null, onPropertyChange: (property: FormulaProperty) => void): {
+        error: string;
+        rawFormula: string;
+        updateFormula: (input: string, displayType?: FieldType) => boolean;
+    };
+}
+declare module "hooks/use-formula-validation" {
+    import { IField } from "packages/lib/store/interface";
+    import { FormulaProperty } from "packages/lib/fields/formula";
+    export function useFormulaValidation(): (formula: string, currentField: IField<FormulaProperty> | null) => {
+        isValid: boolean;
+        error: string | null;
+        result: string | null;
+    };
+}
+declare module "hooks/use-preview-table-formula" {
+    export const usePreviewTableFormula: () => {
+        preview: ({ tableName, formula, rowId, }: {
+            tableName: string;
+            formula: string;
+            rowId: string | null;
+        }) => Promise<any>;
+    };
 }
 declare module "components/formula-editor/functions/json" {
     /**
@@ -6417,69 +6571,6 @@ declare module "components/formula-editor/codemirror-editor" {
     }
     export const CodeMirrorFormulaEditor: import("react").ForwardRefExoticComponent<CodeMirrorFormulaEditorProps & import("react").RefAttributes<CodeMirrorFormulaEditorRef>>;
 }
-declare module "lib/fields/formula" {
-    import type { TextCell } from "@glideapps/glide-data-grid";
-    import { BaseField } from "lib/fields/base";
-    import { FieldType } from "lib/fields/const";
-    export type FormulaProperty = {
-        formula: string;
-        displayType?: FieldType;
-    };
-    export class FormulaField extends BaseField<TextCell, FormulaProperty> {
-        static type: FieldType;
-        get compareOperators(): any[];
-        get displayType(): FieldType;
-        rawData2JSON(rawData: string): string;
-        getCellContent(rawData: string): TextCell;
-        cellData2RawData(cell: TextCell): {
-            rawData: string;
-        };
-    }
-}
-declare module "components/table/views/grid/plugins/use-formula-editor" {
-    import { CodeMirrorFormulaEditorRef } from "components/formula-editor/codemirror-editor";
-    import { FormulaProperty } from "lib/fields/formula";
-    import { IField } from "lib/store/interface";
-    import { DataEditorRef, GridSelection, Item } from "@glideapps/glide-data-grid";
-    export const useFormulaEditor: (showColumns: IField<any>[], glideDataGridRef: React.RefObject<DataEditorRef>, formulaEditorRef: React.RefObject<HTMLDivElement>, selection: GridSelection) => {
-        onCellActivated: (cell: Item) => void;
-        showEditor: boolean;
-        editorRef: import("react").MutableRefObject<CodeMirrorFormulaEditorRef>;
-        handleFocus: () => void;
-        closeEditor: () => void;
-        formulaField: IField<FormulaProperty>;
-        rowIndex: number;
-        refreshEditorPosition: () => void;
-    };
-}
-declare module "hooks/use-formula-update" {
-    import { IField } from "lib/store/interface";
-    import { FormulaProperty } from "lib/fields/formula";
-    import { FieldType } from "lib/fields/const";
-    export function useFormulaUpdate(uiColumn: IField<FormulaProperty> | null, onPropertyChange: (property: FormulaProperty) => void): {
-        error: string;
-        rawFormula: string;
-        updateFormula: (input: string, displayType?: FieldType) => boolean;
-    };
-}
-declare module "hooks/use-formula-validation" {
-    import { IField } from "lib/store/interface";
-    import { FormulaProperty } from "lib/fields/formula";
-    export function useFormulaValidation(): (formula: string, currentField: IField<FormulaProperty> | null) => {
-        isValid: boolean;
-        error: string | null;
-        result: string | null;
-    };
-}
-declare module "hooks/use-preview-table-formula" {
-    export const usePreviewTableFormula: () => {
-        preview: ({ tableName, formula, rowId, }: {
-            tableName: string;
-            formula: string;
-            rowId: string | null;
-        }) => Promise<any>;
-    };
-}
 declare module "components/table/views/grid/plugins/use-generate-formula" {
     export const generateFormula: (prompt: string, config: any, tableFields?: string[]) => Promise<{
         formula?: string;
@@ -6496,8 +6587,8 @@ declare module "components/table/views/grid/plugins/use-generate-formula" {
     };
 }
 declare module "components/table/views/grid/plugins/formula-editor" {
-    import { FormulaProperty } from "lib/fields/formula";
-    import { IField } from "lib/store/interface";
+    import { FormulaProperty } from "packages/lib/fields/formula";
+    import { IField } from "packages/lib/store/interface";
     import { CodeMirrorFormulaEditorRef } from "components/formula-editor/codemirror-editor";
     import { UiColumn } from "components/formula-editor/completions";
     export const FormulaEditor: ({ editorRef, closeEditor, formulaField, uiColumns, rowId, }: {
@@ -6508,9 +6599,25 @@ declare module "components/table/views/grid/plugins/formula-editor" {
         rowId: string | null;
     }) => import("react/jsx-runtime").JSX.Element;
 }
+declare module "components/table/views/grid/plugins/use-formula-editor" {
+    import { CodeMirrorFormulaEditorRef } from "components/formula-editor/codemirror-editor";
+    import { FormulaProperty } from "packages/lib/fields/formula";
+    import { IField } from "packages/lib/store/interface";
+    import { DataEditorRef, GridSelection, Item } from "@glideapps/glide-data-grid";
+    export const useFormulaEditor: (showColumns: IField<any>[], glideDataGridRef: React.RefObject<DataEditorRef>, formulaEditorRef: React.RefObject<HTMLDivElement>, selection: GridSelection) => {
+        onCellActivated: (cell: Item) => void;
+        showEditor: boolean;
+        editorRef: import("react").MutableRefObject<CodeMirrorFormulaEditorRef>;
+        handleFocus: () => void;
+        closeEditor: () => void;
+        formulaField: IField<FormulaProperty>;
+        rowIndex: number;
+        refreshEditorPosition: () => void;
+    };
+}
 declare module "components/table/views/grid/index" {
     import "@glideapps/glide-data-grid/dist/index.css";
-    import { IGridViewProperties, IView } from "lib/store/IView";
+    import { IGridViewProperties, IView } from "packages/lib/store/IView";
     import "./styles.css";
     interface IGridProps {
         tableName: string;
@@ -6522,8 +6629,8 @@ declare module "components/table/views/grid/index" {
     }
     export default function GridView(props: IGridProps): import("react/jsx-runtime").JSX.Element;
 }
-declare module "components/table/views/grid/fields/field-delete" {
-    import { IField } from "lib/store/interface";
+declare module "components/table/fields/field-delete" {
+    import { IField } from "packages/lib/store/interface";
     interface IFieldDeleteProps {
         field: IField;
         deleteField: (fieldId: string) => void;
@@ -6531,12 +6638,12 @@ declare module "components/table/views/grid/fields/field-delete" {
     }
     export const FieldDelete: ({ field, children, deleteField, }: IFieldDeleteProps) => import("react/jsx-runtime").JSX.Element;
 }
-declare module "components/table/views/grid/fields/helper" {
-    import { IField } from "lib/store/interface";
+declare module "components/table/fields/helper" {
+    import { IField } from "packages/lib/store/interface";
     export const checkNewFieldNameIsOk: (name: string, currentField: IField, columns: IField[]) => boolean;
 }
-declare module "components/table/views/grid/fields/field-name-edit" {
-    import { IField } from "lib/store/interface";
+declare module "components/table/fields/field-name-edit" {
+    import { IField } from "packages/lib/store/interface";
     interface IFieldNameEditProps {
         field: IField;
         tableName: string;
@@ -6545,23 +6652,23 @@ declare module "components/table/views/grid/fields/field-name-edit" {
     }
     export const FieldNameEdit: ({ field, tableName, databaseName, onEditEnd, }: IFieldNameEditProps) => import("react/jsx-runtime").JSX.Element;
 }
-declare module "components/table/field-icon" {
-    import { FieldType } from "lib/fields/const";
+declare module "components/table/fields/field-icon" {
+    import { FieldType } from "packages/lib/fields/const";
     export const FieldIcon: ({ type }: {
         type: FieldType;
     }) => import("react/jsx-runtime").JSX.Element;
 }
-declare module "components/table/views/grid/fields/field-type-select" {
-    import { FieldType } from "lib/fields/const";
+declare module "components/table/fields/field-type-select" {
+    import { FieldType } from "packages/lib/fields/const";
     interface IFieldTypeSelectProps {
         value: FieldType;
         onChange: (value: FieldType) => void;
     }
     export function FieldTypeSelect({ value, onChange }: IFieldTypeSelectProps): import("react/jsx-runtime").JSX.Element;
 }
-declare module "components/table/views/grid/fields/property/file/file-property-editor" {
-    import { FileProperty } from "lib/fields/file";
-    import { IField } from "lib/store/interface";
+declare module "components/table/fields/property/file/file-property-editor" {
+    import { FileProperty } from "packages/lib/fields/file";
+    import { IField } from "packages/lib/store/interface";
     interface IFieldPropertyEditorProps {
         uiColumn: IField<FileProperty>;
         onPropertyChange: (property: FileProperty) => void;
@@ -6570,9 +6677,23 @@ declare module "components/table/views/grid/fields/property/file/file-property-e
     }
     export const FilePropertyEditor: (props: IFieldPropertyEditorProps) => import("react/jsx-runtime").JSX.Element;
 }
-declare module "components/table/views/grid/fields/property/formula/formula-property-editor" {
-    import { FormulaProperty } from "lib/fields/formula";
-    import { IField } from "lib/store/interface";
+declare module "components/ui/toggle-group" {
+    import * as React from "react";
+    import * as ToggleGroupPrimitive from "@radix-ui/react-toggle-group";
+    import { type VariantProps } from "class-variance-authority";
+    const ToggleGroup: React.ForwardRefExoticComponent<((Omit<ToggleGroupPrimitive.ToggleGroupSingleProps & React.RefAttributes<HTMLDivElement>, "ref"> | Omit<ToggleGroupPrimitive.ToggleGroupMultipleProps & React.RefAttributes<HTMLDivElement>, "ref">) & VariantProps<(props?: {
+        variant?: "default" | "outline";
+        size?: "default" | "sm" | "lg";
+    } & import("class-variance-authority/dist/types").ClassProp) => string>) & React.RefAttributes<HTMLDivElement>>;
+    const ToggleGroupItem: React.ForwardRefExoticComponent<Omit<ToggleGroupPrimitive.ToggleGroupItemProps & React.RefAttributes<HTMLButtonElement>, "ref"> & VariantProps<(props?: {
+        variant?: "default" | "outline";
+        size?: "default" | "sm" | "lg";
+    } & import("class-variance-authority/dist/types").ClassProp) => string> & React.RefAttributes<HTMLButtonElement>>;
+    export { ToggleGroup, ToggleGroupItem };
+}
+declare module "components/table/fields/property/formula/formula-property-editor" {
+    import { FormulaProperty } from "packages/lib/fields/formula";
+    import { IField } from "packages/lib/store/interface";
     interface IFieldPropertyEditorProps {
         uiColumn: IField<FormulaProperty>;
         onPropertyChange: (property: FormulaProperty) => void;
@@ -6580,9 +6701,9 @@ declare module "components/table/views/grid/fields/property/formula/formula-prop
     }
     export const FormulaPropertyEditor: (props: IFieldPropertyEditorProps) => import("react/jsx-runtime").JSX.Element;
 }
-declare module "components/table/views/grid/fields/property/link/link-property-editor" {
-    import { ILinkProperty } from "lib/fields/link";
-    import { IField } from "lib/store/interface";
+declare module "components/table/fields/property/link/link-property-editor" {
+    import { ILinkProperty } from "packages/lib/fields/link";
+    import { IField } from "packages/lib/store/interface";
     interface IFieldPropertyEditorProps {
         uiColumn: IField<ILinkProperty>;
         onPropertyChange: (property: ILinkProperty) => void;
@@ -6591,9 +6712,9 @@ declare module "components/table/views/grid/fields/property/link/link-property-e
     }
     export const LinkPropertyEditor: (props: IFieldPropertyEditorProps) => import("react/jsx-runtime").JSX.Element;
 }
-declare module "components/table/views/grid/fields/property/lookup/lookup-property-editor" {
-    import { ILookupProperty } from "lib/fields/lookup";
-    import { IField } from "lib/store/interface";
+declare module "components/table/fields/property/lookup/lookup-property-editor" {
+    import { ILookupProperty } from "packages/lib/fields/lookup";
+    import { IField } from "packages/lib/store/interface";
     interface IFieldPropertyEditorProps {
         uiColumn: IField<ILookupProperty>;
         onPropertyChange: (property: any) => void;
@@ -6602,11 +6723,11 @@ declare module "components/table/views/grid/fields/property/lookup/lookup-proper
     }
     export const LookupPropertyEditor: (props: IFieldPropertyEditorProps) => import("react/jsx-runtime").JSX.Element;
 }
-declare module "lib/fields/number" {
+declare module "packages/lib/fields/number" {
     import type { NumberCell } from "@glideapps/glide-data-grid";
     import { RangeCell } from "components/table/views/grid/cells/range-cell";
-    import { BaseField } from "lib/fields/base";
-    import { FieldType } from "lib/fields/const";
+    import { BaseField } from "packages/lib/fields/base";
+    import { FieldType } from "packages/lib/fields/const";
     export type NumberProperty = {
         format: "number" | "percent" | "currency";
         showAs: "number" | "bar" | "ring";
@@ -6624,9 +6745,9 @@ declare module "lib/fields/number" {
         };
     }
 }
-declare module "components/table/views/grid/fields/property/number/number-property-editor" {
-    import { NumberProperty } from "lib/fields/number";
-    import { IField } from "lib/store/interface";
+declare module "components/table/fields/property/number/number-property-editor" {
+    import { NumberProperty } from "packages/lib/fields/number";
+    import { IField } from "packages/lib/store/interface";
     interface IFieldPropertyEditorProps {
         uiColumn: IField<NumberProperty>;
         onPropertyChange: (property: NumberProperty) => void;
@@ -6634,8 +6755,8 @@ declare module "components/table/views/grid/fields/property/number/number-proper
     }
     export const NumberPropertyEditor: (props: IFieldPropertyEditorProps) => import("react/jsx-runtime").JSX.Element;
 }
-declare module "components/table/views/grid/fields/property/select/select-option" {
-    import { SelectOption as ISelectOption } from "lib/fields/select";
+declare module "components/table/fields/property/select/select-option" {
+    import { SelectOption as ISelectOption } from "packages/lib/fields/select";
     interface ISelectOptionProps {
         option: ISelectOption;
         container: HTMLDivElement | null;
@@ -6646,8 +6767,8 @@ declare module "components/table/views/grid/fields/property/select/select-option
     }
     export const SelectOption: ({ option, container, ...props }: ISelectOptionProps) => import("react/jsx-runtime").JSX.Element;
 }
-declare module "components/table/views/grid/fields/property/select/select-property-editor" {
-    import { IField } from "lib/store/interface";
+declare module "components/table/fields/property/select/select-property-editor" {
+    import { IField } from "packages/lib/store/interface";
     interface IFieldPropertyEditorProps {
         uiColumn: IField;
         onPropertyChange: (property: any) => void;
@@ -6655,10 +6776,166 @@ declare module "components/table/views/grid/fields/property/select/select-proper
     }
     export const SelectPropertyEditor: (props: IFieldPropertyEditorProps) => import("react/jsx-runtime").JSX.Element;
 }
-declare module "components/table/views/grid/fields/field-property-editor" {
+declare module "packages/worker/web-worker/sdk/service/text" {
+    import { DataSpace } from "packages/worker/web-worker/DataSpace";
+    import { TableManager } from "packages/worker/web-worker/sdk/table";
+    import { IField } from "packages/lib/store/interface";
+    import { TextProperty } from "packages/lib/fields/text";
+    export interface IVecMeta {
+        updateAt: number;
+        outOfDate: boolean;
+    }
+    export class TextFieldService {
+        private table;
+        dataSpace: DataSpace;
+        constructor(table: TableManager);
+        queryEmbedding: (fieldId: string, query: string, limit?: number) => Promise<any>;
+        updateEmbedding: (fieldId: string, data: {
+            recordId: string;
+            value: string;
+        }[]) => Promise<void>;
+        resetEmbedding: (fieldId: string) => Promise<void>;
+        onPropertyChange: (oldField: IField<TextProperty>, property: TextProperty) => Promise<void>;
+        /**
+     * when user delete a link field, we also need to delete the paired link field and delete relation data
+     */
+        beforeDeleteColumn(tableName: string, columnName: string, db?: import("@/lib/sqlite/interface").BaseServerDatabase): Promise<void>;
+        /**
+         * Get statistics about the embedding status for a text field
+         * @param fieldId The field ID to get statistics for
+         * @returns Statistics about vectorization status
+         */
+        getEmbeddingStats(fieldId: string): Promise<{
+            total: number;
+            vectorized: number;
+            outdated: number;
+            upToDate: number;
+            vectorizedPercentage: number;
+            outdatedPercentage: number;
+            upToDatePercentage: number;
+        }>;
+    }
+}
+declare module "packages/lib/fields/text" {
+    import type { TextCell } from "@glideapps/glide-data-grid";
+    import { BaseField } from "packages/lib/fields/base";
+    import { FieldType } from "packages/lib/fields/const";
+    export interface TextProperty {
+        model?: string | null;
+        enableEmbedding?: boolean | null;
+        enableColorHint?: boolean | null;
+    }
+    interface CellContext {
+        row: Record<string, any>;
+        theme?: 'dark' | 'light';
+    }
+    export class TextField extends BaseField<TextCell, TextProperty> {
+        static type: FieldType;
+        get compareOperators(): import("@/lib/fields/const").CompareOperator[];
+        rawData2JSON(rawData: string): string;
+        getCellContent(rawData: string | null, context?: CellContext): TextCell;
+        cellData2RawData(cell: TextCell): {
+            rawData: string;
+        };
+    }
+}
+declare module "components/embedding-stats-progress" {
+    interface EmbeddingStatsProgressProps {
+        className?: string;
+        stats?: {
+            total: number;
+            vectorized: number;
+            outdated: number;
+            upToDate: number;
+            vectorizedPercentage: number;
+            outdatedPercentage: number;
+            upToDatePercentage: number;
+        };
+    }
+    export function EmbeddingStatsProgress({ className, stats, }: EmbeddingStatsProgressProps): import("react/jsx-runtime").JSX.Element;
+}
+declare module "hooks/use-toast" {
+    import * as React from "react";
+    import type { ToastActionElement, ToastProps } from "components/ui/toast";
+    type ToasterToast = ToastProps & {
+        id: string;
+        title?: React.ReactNode;
+        description?: React.ReactNode;
+        action?: ToastActionElement;
+    };
+    const actionTypes: {
+        readonly ADD_TOAST: "ADD_TOAST";
+        readonly UPDATE_TOAST: "UPDATE_TOAST";
+        readonly DISMISS_TOAST: "DISMISS_TOAST";
+        readonly REMOVE_TOAST: "REMOVE_TOAST";
+    };
+    type ActionType = typeof actionTypes;
+    type Action = {
+        type: ActionType["ADD_TOAST"];
+        toast: ToasterToast;
+    } | {
+        type: ActionType["UPDATE_TOAST"];
+        toast: Partial<ToasterToast>;
+    } | {
+        type: ActionType["DISMISS_TOAST"];
+        toastId?: ToasterToast["id"];
+    } | {
+        type: ActionType["REMOVE_TOAST"];
+        toastId?: ToasterToast["id"];
+    };
+    interface State {
+        toasts: ToasterToast[];
+    }
+    export const reducer: (state: State, action: Action) => State;
+    type Toast = Omit<ToasterToast, "id">;
+    function toast({ ...props }: Toast): {
+        id: string;
+        dismiss: () => void;
+        update: (props: ToasterToast) => void;
+    };
+    function useToast(): {
+        toast: typeof toast;
+        dismiss: (toastId?: string) => void;
+        toasts: ToasterToast[];
+    };
+    export { useToast, toast };
+}
+declare module "components/table/fields/property/text/hooks" {
+    import { TextProperty } from "packages/lib/fields/text";
+    type ProgressCallback = (progress: {
+        processed: number;
+        total: number;
+        percentage: number;
+    }) => void;
+    export const usePreview: (updateProperty: (property: TextProperty) => void) => {
+        process: (tableId: string, viewId: string, fieldId: string, onProgress?: ProgressCallback) => Promise<void>;
+        queryEmbedding: (tableId: string, fieldId: string, query: string) => Promise<any>;
+        resetEmbedding: (tableId: string, fieldId: string) => Promise<void>;
+        getEmbeddingStats: (tableId: string, fieldId: string) => Promise<{
+            total: number;
+            vectorized: number;
+            outdated: number;
+            upToDate: number;
+            vectorizedPercentage: number;
+            outdatedPercentage: number;
+            upToDatePercentage: number;
+        }>;
+    };
+}
+declare module "components/table/fields/property/text/text-property-editor" {
+    import { TextProperty } from "packages/lib/fields/text";
+    import { IField } from "packages/lib/store/interface";
+    interface IFieldPropertyEditorProps {
+        uiColumn: IField<TextProperty>;
+        onPropertyChange: (property: TextProperty) => void;
+        isCreateNew?: boolean;
+    }
+    export const TextPropertyEditor: (props: IFieldPropertyEditorProps) => import("react/jsx-runtime").JSX.Element;
+}
+declare module "components/table/fields/field-property-editor" {
     import React from "react";
-    import { FieldType } from "lib/fields/const";
-    import { IField } from "lib/store/interface";
+    import { FieldType } from "packages/lib/fields/const";
+    import { IField } from "packages/lib/store/interface";
     export const PropertyEditorTypeMap: {
         [type: string]: React.FC<{
             uiColumn: IField<any>;
@@ -6677,16 +6954,16 @@ declare module "components/table/views/grid/fields/field-property-editor" {
     }
     export const FieldPropertyEditor: ({ updateFieldProperty, changeFieldType, tableName, databaseName, deleteField, }: IFieldPropertyEditorProps) => import("react/jsx-runtime").JSX.Element;
 }
-declare module "components/table/views/grid/fields/field-append-panel" {
-    import { FieldType } from "lib/fields/const";
-    import { IField } from "lib/store/interface";
+declare module "components/table/fields/field-append-panel" {
+    import { FieldType } from "packages/lib/fields/const";
+    import { IField } from "packages/lib/store/interface";
     export function FieldAppendPanel({ addField, uiColumns, }: {
         addField: (fieldName: string, fieldType: FieldType, property?: any) => Promise<void>;
         uiColumns: IField[];
     }): import("react/jsx-runtime").JSX.Element;
 }
-declare module "components/table/views/grid/fields/field-editor-dropdown" {
-    import { IView } from "lib/store/IView";
+declare module "components/table/fields/field-editor-dropdown" {
+    import { IView } from "packages/lib/store/IView";
     interface IFieldEditorDropdownProps {
         tableName: string;
         databaseName: string;
@@ -6695,14 +6972,109 @@ declare module "components/table/views/grid/fields/field-editor-dropdown" {
     }
     export const FieldEditorDropdown: (props: IFieldEditorDropdownProps) => import("react/jsx-runtime").JSX.Element;
 }
-declare module "components/table/views/grid/fields/index" {
-    import { IView } from "lib/store/IView";
+declare module "components/table/fields/index" {
+    import { IView } from "packages/lib/store/IView";
     interface IFieldEditorProps {
         tableName: string;
         databaseName: string;
         view: IView;
     }
     export const FieldEditor: (props: IFieldEditorProps) => import("react/jsx-runtime").JSX.Element;
+}
+declare module "components/ui/kibo-ui/kanban/index" {
+    import React, { type ReactNode } from "react";
+    import { type DragEndEvent } from "@dnd-kit/core";
+    export type { DragEndEvent } from "@dnd-kit/core";
+    export type Status = {
+        id: string;
+        name: string;
+        color: string;
+    };
+    export type KanbanBoardProps = {
+        id: Status["id"];
+        children: ReactNode;
+        className?: string;
+        style?: React.CSSProperties;
+    };
+    export const KanbanBoard: ({ id, children, className, style, }: KanbanBoardProps) => import("react/jsx-runtime").JSX.Element;
+    export type KanbanCardProps = {
+        id: string;
+        name: string;
+        index: number;
+        parent: string;
+        children?: ReactNode;
+        className?: string;
+    };
+    export const KanbanCard: ({ id, name, index, parent, children, className, }: KanbanCardProps) => import("react/jsx-runtime").JSX.Element;
+    export type KanbanCardsProps = {
+        children: ReactNode;
+        className?: string;
+        ref?: React.RefObject<HTMLDivElement>;
+    };
+    export const KanbanCards: React.ForwardRefExoticComponent<Omit<KanbanCardsProps, "ref"> & React.RefAttributes<HTMLDivElement>>;
+    export type KanbanHeaderProps = {
+        children: ReactNode;
+    } | {
+        name: Status["name"];
+        color: Status["color"];
+        className?: string;
+    };
+    export const KanbanHeader: (props: KanbanHeaderProps) => string | number | boolean | import("react/jsx-runtime").JSX.Element | Iterable<React.ReactNode>;
+    export type KanbanProviderProps = {
+        children: ReactNode;
+        onDragEnd: (event: DragEndEvent) => void;
+        className?: string;
+    };
+    export const KanbanProvider: ({ children, onDragEnd, className, }: KanbanProviderProps) => import("react/jsx-runtime").JSX.Element;
+}
+declare module "components/table/views/kanban/hooks" {
+    import { IView } from "packages/lib/store/IView";
+    export type KanbanItem = {
+        id: string;
+        status: string;
+        [key: string]: any;
+    };
+    export type StatusCount = {
+        status: string;
+        count: number;
+        color?: string;
+    };
+    export const NULL_STATUS = "EIDOS_NULL_STATUS";
+    export const useKanbanViewData: (view: IView) => {
+        items: KanbanItem[];
+        loading: boolean;
+        statusCounts: StatusCount[];
+        updateItemStatus: (itemId: string, newStatus: string) => Promise<void>;
+    };
+    export const useKanbanItemOperations: (tableId: string, space: string, groupByField?: string) => {
+        createItem: (title: string, status: string) => Promise<Record<string, any>>;
+    };
+}
+declare module "components/table/views/kanban/kanban-board" {
+    import { IField } from "packages/lib/store/interface";
+    import { IGalleryViewProperties } from "components/table/views/gallery/properties";
+    import { KanbanItem, StatusCount } from "components/table/views/kanban/hooks";
+    import { IKanbanViewProperties } from "components/table/views/kanban/properties";
+    export const KanbanBoard: import("react").MemoExoticComponent<({ status, items, showFields, uiColumnMap, rawIdNameMap, tableId, space, properties, hiddenFields, }: {
+        status: StatusCount;
+        items: KanbanItem[];
+        showFields: IField[];
+        uiColumnMap: Map<string, IField>;
+        rawIdNameMap: Map<string, string>;
+        tableId: string;
+        space: string;
+        properties?: IGalleryViewProperties & IKanbanViewProperties;
+        hiddenFields?: string[];
+    }) => import("react/jsx-runtime").JSX.Element>;
+}
+declare module "components/table/views/kanban/index" {
+    import { IView } from "packages/lib/store/IView";
+    export const KanbanView: ({ space, tableName, view, }: {
+        space: string;
+        tableName: string;
+        view: IView;
+    }) => import("react/jsx-runtime").JSX.Element;
+    export default KanbanView;
 }
 declare module "components/table/index" {
     interface ITableProps {
@@ -6827,10 +7199,10 @@ declare module "components/doc/plugins/AutoLoadSaveFocusPlugin/index" {
     export function EidosAutoLoadSaveFocusPlugin(props: AutoSavePluginProps): any;
 }
 declare module "hooks/use-sqlite" {
-    import type { DataSpace } from "worker/web-worker/DataSpace";
-    import { ITreeNode } from "lib/store/ITreeNode";
-    import { IView } from "lib/store/IView";
-    import { IDataStore, IField } from "lib/store/interface";
+    import type { DataSpace } from "packages/worker/web-worker/DataSpace";
+    import { ITreeNode } from "packages/lib/store/ITreeNode";
+    import { IView } from "packages/lib/store/IView";
+    import { IDataStore, IField } from "packages/lib/store/interface";
     interface SqliteState {
         isInitialized: boolean;
         setInitialized: (isInitialized: boolean) => void;
@@ -6901,7 +7273,7 @@ declare module "hooks/use-sqlite" {
     };
 }
 declare module "hooks/use-current-node" {
-    import { ITreeNode } from "lib/store/ITreeNode";
+    import { ITreeNode } from "packages/lib/store/ITreeNode";
     export const useNodeMap: () => {
         [nodeId: string]: ITreeNode;
     };
@@ -6932,7 +7304,7 @@ declare module "hooks/use-current-pathinfo" {
     };
 }
 declare module "hooks/use-files" {
-    import { IFile } from "worker/web-worker/meta-table/file";
+    import { IFile } from "packages/worker/web-worker/meta-table/file";
     /**
      * every upload file will be record meta data in `eidos__files` table, but we can't pass file via postMessage,
      * so we expose this hook to handle file upload\delete\update
@@ -6965,11 +7337,6 @@ declare module "hooks/use-files" {
     export const useFiles: () => {
         files: IFile[];
     };
-}
-declare module "components/ui/aspect-ratio" {
-    import * as AspectRatioPrimitive from "@radix-ui/react-aspect-ratio";
-    const AspectRatio: import("react").ForwardRefExoticComponent<AspectRatioPrimitive.AspectRatioProps & import("react").RefAttributes<HTMLDivElement>>;
-    export { AspectRatio };
 }
 declare module "components/file-selector" {
     export const DefaultColors: string[];
@@ -7019,10 +7386,10 @@ declare module "components/table/views/grid/cells/file/file-cell" {
     }>>;
     export const FileCellRenderer: CustomRenderer<FileCell>;
 }
-declare module "lib/fields/file" {
+declare module "packages/lib/fields/file" {
     import type { FileCell } from "components/table/views/grid/cells/file/file-cell";
-    import { BaseField } from "lib/fields/base";
-    import { CompareOperator, FieldType } from "lib/fields/const";
+    import { BaseField } from "packages/lib/fields/base";
+    import { CompareOperator, FieldType } from "packages/lib/fields/const";
     export type FileProperty = {
         proxyUrl?: string;
     };
@@ -7045,11 +7412,11 @@ declare module "lib/fields/file" {
         };
     }
 }
-declare module "lib/fields/last-edited-by" {
+declare module "packages/lib/fields/last-edited-by" {
     import { UserProfileCell } from "components/table/views/grid/cells/user-profile-cell";
-    import { BaseField } from "lib/fields/base";
-    import { CompareOperator, FieldType } from "lib/fields/const";
-    import { UserFieldContext } from "lib/fields/created-by";
+    import { BaseField } from "packages/lib/fields/base";
+    import { CompareOperator, FieldType } from "packages/lib/fields/const";
+    import { UserFieldContext } from "packages/lib/fields/created-by";
     type LastEditedByProperty = {};
     export class LastEditedByField extends BaseField<UserProfileCell, LastEditedByProperty, string, UserFieldContext> {
         static type: FieldType;
@@ -7061,10 +7428,10 @@ declare module "lib/fields/last-edited-by" {
         };
     }
 }
-declare module "lib/fields/last-edited-time" {
+declare module "packages/lib/fields/last-edited-time" {
     import { TextCell } from "@glideapps/glide-data-grid";
-    import { BaseField } from "lib/fields/base";
-    import { CompareOperator, FieldType } from "lib/fields/const";
+    import { BaseField } from "packages/lib/fields/base";
+    import { CompareOperator, FieldType } from "packages/lib/fields/const";
     type DateProperty = {};
     export class LastEditedTimeField extends BaseField<TextCell, DateProperty, string> {
         static type: FieldType;
@@ -7076,10 +7443,10 @@ declare module "lib/fields/last-edited-time" {
         };
     }
 }
-declare module "lib/fields/rating" {
+declare module "packages/lib/fields/rating" {
     import type { RatingCell } from "components/table/views/grid/cells/rating-cell";
-    import { BaseField } from "lib/fields/base";
-    import { CompareOperator, FieldType } from "lib/fields/const";
+    import { BaseField } from "packages/lib/fields/base";
+    import { CompareOperator, FieldType } from "packages/lib/fields/const";
     type RatingProperty = {};
     export class RatingField extends BaseField<RatingCell, RatingProperty, number> {
         static type: FieldType;
@@ -7091,25 +7458,10 @@ declare module "lib/fields/rating" {
         };
     }
 }
-declare module "lib/fields/text" {
+declare module "packages/lib/fields/title" {
     import type { TextCell } from "@glideapps/glide-data-grid";
-    import { BaseField } from "lib/fields/base";
-    import { FieldType } from "lib/fields/const";
-    type TextProperty = {};
-    export class TextField extends BaseField<TextCell, TextProperty> {
-        static type: FieldType;
-        get compareOperators(): import("@/lib/fields/const").CompareOperator[];
-        rawData2JSON(rawData: string): string;
-        getCellContent(rawData: string | null): TextCell;
-        cellData2RawData(cell: TextCell): {
-            rawData: string;
-        };
-    }
-}
-declare module "lib/fields/title" {
-    import type { TextCell } from "@glideapps/glide-data-grid";
-    import { BaseField } from "lib/fields/base";
-    import { CompareOperator, FieldType } from "lib/fields/const";
+    import { BaseField } from "packages/lib/fields/base";
+    import { CompareOperator, FieldType } from "packages/lib/fields/const";
     type TitleProperty = {};
     export class TitleField extends BaseField<TextCell, TitleProperty> {
         static type: FieldType;
@@ -7121,10 +7473,10 @@ declare module "lib/fields/title" {
         };
     }
 }
-declare module "lib/fields/url" {
+declare module "packages/lib/fields/url" {
     import type { UriCell } from "@glideapps/glide-data-grid";
-    import { BaseField } from "lib/fields/base";
-    import { FieldType } from "lib/fields/const";
+    import { BaseField } from "packages/lib/fields/base";
+    import { FieldType } from "packages/lib/fields/const";
     type URLProperty = {};
     type URLCell = UriCell;
     export class URLField extends BaseField<URLCell, URLProperty> {
@@ -7137,24 +7489,25 @@ declare module "lib/fields/url" {
         };
     }
 }
-declare module "lib/fields/index" {
-    import { IField } from "lib/store/interface";
-    import { BaseField } from "lib/fields/base";
-    import { CheckboxField } from "lib/fields/checkbox";
-    import { FieldType } from "lib/fields/const";
-    import { CreatedByField } from "lib/fields/created-by";
-    import { CreatedTimeField } from "lib/fields/created-time";
-    import { DateField } from "lib/fields/date";
-    import { FileField } from "lib/fields/file";
-    import { FormulaField } from "lib/fields/formula";
-    import { LinkField } from "lib/fields/link";
-    import { LookupField } from "lib/fields/lookup";
-    import { MultiSelectField } from "lib/fields/multi-select";
-    import { NumberField } from "lib/fields/number";
-    import { RatingField } from "lib/fields/rating";
-    import { SelectField } from "lib/fields/select";
-    import { URLField } from "lib/fields/url";
-    const baseFieldTypes: (typeof CheckboxField | typeof CreatedByField | typeof CreatedTimeField | typeof DateField | typeof LinkField | typeof FileField | typeof MultiSelectField | typeof NumberField | typeof RatingField | typeof SelectField | typeof URLField | typeof FormulaField)[];
+declare module "packages/lib/fields/index" {
+    import { IField } from "packages/lib/store/interface";
+    import { BaseField } from "packages/lib/fields/base";
+    import { CheckboxField } from "packages/lib/fields/checkbox";
+    import { FieldType } from "packages/lib/fields/const";
+    import { CreatedByField } from "packages/lib/fields/created-by";
+    import { CreatedTimeField } from "packages/lib/fields/created-time";
+    import { DateField } from "packages/lib/fields/date";
+    import { FileField } from "packages/lib/fields/file";
+    import { FormulaField } from "packages/lib/fields/formula";
+    import { LinkField } from "packages/lib/fields/link";
+    import { LookupField } from "packages/lib/fields/lookup";
+    import { MultiSelectField } from "packages/lib/fields/multi-select";
+    import { NumberField } from "packages/lib/fields/number";
+    import { RatingField } from "packages/lib/fields/rating";
+    import { SelectField } from "packages/lib/fields/select";
+    import { TextField } from "packages/lib/fields/text";
+    import { URLField } from "packages/lib/fields/url";
+    const baseFieldTypes: (typeof CheckboxField | typeof CreatedByField | typeof CreatedTimeField | typeof DateField | typeof LinkField | typeof FileField | typeof MultiSelectField | typeof NumberField | typeof RatingField | typeof SelectField | typeof TextField | typeof URLField | typeof FormulaField)[];
     type FieldTypeAndClsMap = {
         [key in FieldType]: (typeof baseFieldTypes)[number];
     } & {
@@ -7163,15 +7516,15 @@ declare module "lib/fields/index" {
     export const allFieldTypesMap: FieldTypeAndClsMap;
     export function getFieldInstance<T = BaseField<any, any, any, any, any>>(field: IField<any>, context?: any): T;
 }
-declare module "worker/web-worker/store" {
+declare module "packages/worker/web-worker/store" {
     export const workerStore: {
         currentCallUserId: string | null;
     };
 }
-declare module "worker/web-worker/sdk/rows" {
-    import type { IField } from "lib/store/interface";
-    import { DataSpace } from "worker/web-worker/DataSpace";
-    import { TableManager } from "worker/web-worker/sdk/table";
+declare module "packages/worker/web-worker/sdk/rows" {
+    import type { IField } from "packages/lib/store/interface";
+    import { DataSpace } from "packages/worker/web-worker/DataSpace";
+    import { TableManager } from "packages/worker/web-worker/sdk/table";
     export class RowsManager {
         private table;
         dataSpace: DataSpace;
@@ -7258,12 +7611,12 @@ declare module "worker/web-worker/sdk/rows" {
         highlight(id: string): Promise<void>;
     }
 }
-declare module "worker/web-worker/sdk/service/link" {
-    import { FieldType } from "lib/fields/const";
-    import { ILinkProperty } from "lib/fields/link";
-    import { IField } from "lib/store/interface";
-    import { DataSpace, EidosDatabase } from "worker/web-worker/DataSpace";
-    import { TableManager } from "worker/web-worker/sdk/table";
+declare module "packages/worker/web-worker/sdk/service/link" {
+    import { FieldType } from "packages/lib/fields/const";
+    import { ILinkProperty } from "packages/lib/fields/link";
+    import { IField } from "packages/lib/store/interface";
+    import { DataSpace, EidosDatabase } from "packages/worker/web-worker/DataSpace";
+    import { TableManager } from "packages/worker/web-worker/sdk/table";
     interface IRelation {
         self: string;
         ref: string;
@@ -7332,12 +7685,12 @@ declare module "worker/web-worker/sdk/service/link" {
         beforeDeleteColumn(tableName: string, columnName: string, db?: import("@/lib/sqlite/interface").BaseServerDatabase): Promise<void>;
     }
 }
-declare module "worker/web-worker/sdk/service/lookup" {
-    import { ILookupContext, ILookupProperty } from "lib/fields/lookup";
-    import { IField } from "lib/store/interface";
-    import { DataSpace } from "worker/web-worker/DataSpace";
-    import { TableManager } from "worker/web-worker/sdk/table";
-    import { BaseServerDatabase } from "lib/sqlite/interface";
+declare module "packages/worker/web-worker/sdk/service/lookup" {
+    import { ILookupContext, ILookupProperty } from "packages/lib/fields/lookup";
+    import { IField } from "packages/lib/store/interface";
+    import { DataSpace } from "packages/worker/web-worker/DataSpace";
+    import { TableManager } from "packages/worker/web-worker/sdk/table";
+    import { BaseServerDatabase } from "packages/lib/sqlite/interface";
     export class LookupFieldService {
         private table;
         dataSpace: DataSpace;
@@ -7377,11 +7730,11 @@ declare module "worker/web-worker/sdk/service/lookup" {
         }) => Promise<void>;
     }
 }
-declare module "worker/web-worker/sdk/service/multi-select" {
-    import { SelectProperty } from "lib/fields/select";
-    import { IField } from "lib/store/interface";
-    import { DataSpace } from "worker/web-worker/DataSpace";
-    import { TableManager } from "worker/web-worker/sdk/table";
+declare module "packages/worker/web-worker/sdk/service/multi-select" {
+    import { SelectProperty } from "packages/lib/fields/select";
+    import { IField } from "packages/lib/store/interface";
+    import { DataSpace } from "packages/worker/web-worker/DataSpace";
+    import { TableManager } from "packages/worker/web-worker/sdk/table";
     export class MultiSelectFieldService {
         private table;
         dataSpace: DataSpace;
@@ -7394,11 +7747,11 @@ declare module "worker/web-worker/sdk/service/multi-select" {
         deleteSelectOption: (field: IField<SelectProperty>, option: string) => Promise<void>;
     }
 }
-declare module "worker/web-worker/sdk/service/select" {
-    import { SelectProperty } from "lib/fields/select";
-    import { IField } from "lib/store/interface";
-    import { DataSpace } from "worker/web-worker/DataSpace";
-    import { TableManager } from "worker/web-worker/sdk/table";
+declare module "packages/worker/web-worker/sdk/service/select" {
+    import { SelectProperty } from "packages/lib/fields/select";
+    import { IField } from "packages/lib/store/interface";
+    import { DataSpace } from "packages/worker/web-worker/DataSpace";
+    import { TableManager } from "packages/worker/web-worker/sdk/table";
     export class SelectFieldService {
         private table;
         dataSpace: DataSpace;
@@ -7417,25 +7770,28 @@ declare module "worker/web-worker/sdk/service/select" {
         }[]>;
     }
 }
-declare module "worker/web-worker/sdk/service/index" {
-    import { DataSpace } from "worker/web-worker/DataSpace";
-    import { TableManager } from "worker/web-worker/sdk/table";
-    import { LinkFieldService } from "worker/web-worker/sdk/service/link";
-    import { LookupFieldService } from "worker/web-worker/sdk/service/lookup";
-    import { MultiSelectFieldService } from "worker/web-worker/sdk/service/multi-select";
-    import { SelectFieldService } from "worker/web-worker/sdk/service/select";
+declare module "packages/worker/web-worker/sdk/service/index" {
+    import { DataSpace } from "packages/worker/web-worker/DataSpace";
+    import { TableManager } from "packages/worker/web-worker/sdk/table";
+    import { LinkFieldService } from "packages/worker/web-worker/sdk/service/link";
+    import { LookupFieldService } from "packages/worker/web-worker/sdk/service/lookup";
+    import { MultiSelectFieldService } from "packages/worker/web-worker/sdk/service/multi-select";
+    import { SelectFieldService } from "packages/worker/web-worker/sdk/service/select";
+    import { TextFieldService } from "packages/worker/web-worker/sdk/service/text";
     export class FieldsManager {
         private table;
         dataSpace: DataSpace;
         constructor(table: TableManager);
+        all(): Promise<import("@/lib/store/interface").IField[]>;
         get lookup(): LookupFieldService;
         get select(): SelectFieldService;
         get multiSelect(): MultiSelectFieldService;
         get link(): LinkFieldService;
+        get text(): TextFieldService;
     }
 }
-declare module "worker/web-worker/sdk/service/compute" {
-    import { DataSpace } from "worker/web-worker/DataSpace";
+declare module "packages/worker/web-worker/sdk/service/compute" {
+    import { DataSpace } from "packages/worker/web-worker/DataSpace";
     export class ComputeService {
         private dataSpace;
         constructor(dataSpace: DataSpace);
@@ -7450,14 +7806,14 @@ declare module "worker/web-worker/sdk/service/compute" {
         }) => Promise<void>;
     }
 }
-declare module "worker/web-worker/sdk/table" {
-    import { IView } from "lib/store/IView";
-    import { DataSpace, EidosDatabase } from "worker/web-worker/DataSpace";
-    import { IndexManager } from "worker/web-worker/sdk/index-manager";
-    import { RowsManager } from "worker/web-worker/sdk/rows";
-    import { FieldsManager } from "worker/web-worker/sdk/service/index";
-    import { ComputeService } from "worker/web-worker/sdk/service/compute";
-    import { FieldType } from "lib/fields/const";
+declare module "packages/worker/web-worker/sdk/table" {
+    import { IView } from "packages/lib/store/IView";
+    import { DataSpace, EidosDatabase } from "packages/worker/web-worker/DataSpace";
+    import { IndexManager } from "packages/worker/web-worker/sdk/index-manager";
+    import { RowsManager } from "packages/worker/web-worker/sdk/rows";
+    import { FieldsManager } from "packages/worker/web-worker/sdk/service/index";
+    import { ComputeService } from "packages/worker/web-worker/sdk/service/compute";
+    import { FieldType } from "packages/lib/fields/const";
     interface ITable {
         id: string;
         name: string;
@@ -7487,8 +7843,8 @@ declare module "worker/web-worker/sdk/table" {
         };
     }
 }
-declare module "worker/web-worker/data-pipeline/DataChangeEventHandler" {
-    import { DataSpace } from "worker/web-worker/DataSpace";
+declare module "packages/worker/web-worker/data-pipeline/DataChangeEventHandler" {
+    import { DataSpace } from "packages/worker/web-worker/DataSpace";
     export class DataChangeEventHandler {
         private dataSpace;
         constructor(dataSpace: DataSpace);
@@ -7503,8 +7859,8 @@ declare module "worker/web-worker/data-pipeline/DataChangeEventHandler" {
         }>;
     }
 }
-declare module "worker/web-worker/data-pipeline/DataChangeTrigger" {
-    import { DataSpace } from "worker/web-worker/DataSpace";
+declare module "packages/worker/web-worker/data-pipeline/DataChangeTrigger" {
+    import { DataSpace } from "packages/worker/web-worker/DataSpace";
     type IRegisterTrigger = {
         update: string;
         insert: string;
@@ -7520,8 +7876,8 @@ declare module "worker/web-worker/data-pipeline/DataChangeTrigger" {
         setTrigger(dataspace: DataSpace, tableName: string, collist: any[], toDeleteColumns?: string[]): Promise<void>;
     }
 }
-declare module "worker/web-worker/data-pipeline/LinkRelationUpdater" {
-    import { DataSpace } from "worker/web-worker/DataSpace";
+declare module "packages/worker/web-worker/data-pipeline/LinkRelationUpdater" {
+    import { DataSpace } from "packages/worker/web-worker/DataSpace";
     export class LinkRelationUpdater {
         private dataSpace;
         needUpdateCell: Record<string, Record<string, Set<string>>>;
@@ -7530,11 +7886,12 @@ declare module "worker/web-worker/data-pipeline/LinkRelationUpdater" {
         addCell: (tableName: string, tableColumnName: string, rowId: string) => void;
     }
 }
-declare module "worker/web-worker/data-pipeline/TableFullTextSearch" {
-    import { DataSpace } from "worker/web-worker/DataSpace";
+declare module "packages/worker/web-worker/data-pipeline/TableFullTextSearch" {
+    import { DataSpace } from "packages/worker/web-worker/DataSpace";
     export class TableFullTextSearch {
         private dataspace;
-        constructor(dataspace: DataSpace);
+        private enableFTS;
+        constructor(dataspace: DataSpace, enableFTS?: boolean);
         createDynamicFTS(tableName: string, temporary?: boolean, inTransaction?: boolean): Promise<void>;
         private createTriggers;
         search(tableName: string, query: string, viewId: string, page?: number, pageSize?: number): Promise<{
@@ -7555,8 +7912,8 @@ declare module "worker/web-worker/data-pipeline/TableFullTextSearch" {
         rebuildFTS(tableName: string): Promise<void>;
     }
 }
-declare module "worker/web-worker/data-pipeline/UndoRedo" {
-    import { DataSpace } from "worker/web-worker/DataSpace";
+declare module "packages/worker/web-worker/data-pipeline/UndoRedo" {
+    import { DataSpace } from "packages/worker/web-worker/DataSpace";
     interface StackEntry {
         begin: number;
         end: number;
@@ -7592,8 +7949,8 @@ declare module "worker/web-worker/data-pipeline/UndoRedo" {
         private _step;
     }
 }
-declare module "worker/web-worker/db-migrator/DbMigrator" {
-    import { DataSpace } from "worker/web-worker/DataSpace";
+declare module "packages/worker/web-worker/db-migrator/DbMigrator" {
+    import { DataSpace } from "packages/worker/web-worker/DataSpace";
     /**
      * auto migrate db schema when db schema changed
      */
@@ -7610,11 +7967,11 @@ declare module "worker/web-worker/db-migrator/DbMigrator" {
         private cleanDraftDb;
     }
 }
-declare module "worker/web-worker/helper" {
+declare module "packages/worker/web-worker/helper" {
     export function timeit(threshold: number): (target: any, propertyKey: string, descriptor: PropertyDescriptor) => PropertyDescriptor;
 }
-declare module "worker/web-worker/import-and-export/base" {
-    import { DataSpace } from "worker/web-worker/DataSpace";
+declare module "packages/worker/web-worker/import-and-export/base" {
+    import { DataSpace } from "packages/worker/web-worker/DataSpace";
     export abstract class BaseImportAndExport {
         abstract import(textFileLike: {
             name: string;
@@ -7623,10 +7980,14 @@ declare module "worker/web-worker/import-and-export/base" {
         abstract export(nodeId: string, dataSpace: DataSpace): Promise<string>;
     }
 }
-declare module "worker/web-worker/import-and-export/csv" {
-    import { DataSpace } from "worker/web-worker/DataSpace";
-    import { BaseImportAndExport } from "worker/web-worker/import-and-export/base";
+declare module "packages/worker/web-worker/import-and-export/csv" {
+    import { DataSpace } from "packages/worker/web-worker/DataSpace";
+    import { BaseImportAndExport } from "packages/worker/web-worker/import-and-export/base";
     export class CsvImportAndExport extends BaseImportAndExport {
+        useWal: boolean;
+        constructor({ useWal }: {
+            useWal?: boolean;
+        });
         guessColumnType(content: string): Promise<{
             [name: string]: "String" | "Number" | "Date";
         }>;
@@ -7637,9 +7998,9 @@ declare module "worker/web-worker/import-and-export/csv" {
         export(nodeId: string, dataSpace: DataSpace): Promise<string>;
     }
 }
-declare module "worker/web-worker/import-and-export/markdown" {
-    import { DataSpace } from "worker/web-worker/DataSpace";
-    import { BaseImportAndExport } from "worker/web-worker/import-and-export/base";
+declare module "packages/worker/web-worker/import-and-export/markdown" {
+    import { DataSpace } from "packages/worker/web-worker/DataSpace";
+    import { BaseImportAndExport } from "packages/worker/web-worker/import-and-export/base";
     export class MarkdownImportAndExport extends BaseImportAndExport {
         import(file: {
             name: string;
@@ -7648,8 +8009,8 @@ declare module "worker/web-worker/import-and-export/markdown" {
         export(nodeId: string, dataSpace: DataSpace): Promise<string>;
     }
 }
-declare module "worker/web-worker/meta-table/action" {
-    import { BaseTable, BaseTableImpl } from "worker/web-worker/meta-table/base";
+declare module "packages/worker/web-worker/meta-table/action" {
+    import { BaseTable, BaseTableImpl } from "packages/worker/web-worker/meta-table/base";
     type ParamType = "string" | "number" | "boolean";
     interface IFunction {
         name: string;
@@ -7676,8 +8037,8 @@ declare module "worker/web-worker/meta-table/action" {
         del(id: string): Promise<boolean>;
     }
 }
-declare module "worker/web-worker/meta-table/chat" {
-    import { BaseTable, BaseTableImpl } from "worker/web-worker/meta-table/base";
+declare module "packages/worker/web-worker/meta-table/chat" {
+    import { BaseTable, BaseTableImpl } from "packages/worker/web-worker/meta-table/base";
     export type Chat = {
         id: string;
         created_at: string;
@@ -7692,10 +8053,10 @@ declare module "worker/web-worker/meta-table/chat" {
         delete(chatId: string): Promise<void>;
     }
 }
-declare module "worker/web-worker/meta-table/doc" {
+declare module "packages/worker/web-worker/meta-table/doc" {
     import { Email } from "postal-mime";
-    import { MsgType } from "lib/const";
-    import { BaseTable, BaseTableImpl } from "worker/web-worker/meta-table/base";
+    import { MsgType } from "packages/lib/const";
+    import { BaseTable, BaseTableImpl } from "packages/worker/web-worker/meta-table/base";
     export interface IDoc {
         id: string;
         content: string;
@@ -7764,8 +8125,8 @@ declare module "worker/web-worker/meta-table/doc" {
         }>;
     }
 }
-declare module "worker/web-worker/meta-table/message" {
-    import { BaseTable, BaseTableImpl } from "worker/web-worker/meta-table/base";
+declare module "packages/worker/web-worker/meta-table/message" {
+    import { BaseTable, BaseTableImpl } from "packages/worker/web-worker/meta-table/base";
     export type ChatMessage = {
         id: string;
         chat_id: string;
@@ -7780,9 +8141,9 @@ declare module "worker/web-worker/meta-table/message" {
         clearMessages(chatId: string): Promise<void>;
     }
 }
-declare module "worker/web-worker/meta-table/reference" {
-    import { IField } from "lib/store/interface";
-    import { BaseTable, BaseTableImpl } from "worker/web-worker/meta-table/base";
+declare module "packages/worker/web-worker/meta-table/reference" {
+    import { IField } from "packages/lib/store/interface";
+    import { BaseTable, BaseTableImpl } from "packages/worker/web-worker/meta-table/base";
     export interface IReference {
         self: string;
         ref: string;
@@ -7804,9 +8165,9 @@ declare module "worker/web-worker/meta-table/reference" {
         getEffectedFields: (table_name: string, table_column_name: string) => Promise<IField[]>;
     }
 }
-declare module "worker/web-worker/meta-table/tree" {
-    import { ITreeNode } from "lib/store/ITreeNode";
-    import { BaseTable, BaseTableImpl } from "worker/web-worker/meta-table/base";
+declare module "packages/worker/web-worker/meta-table/tree" {
+    import { ITreeNode } from "packages/lib/store/ITreeNode";
+    import { BaseTable, BaseTableImpl } from "packages/worker/web-worker/meta-table/base";
     export class TreeTable extends BaseTableImpl implements BaseTable<ITreeNode> {
         name: string;
         createTableSql: string;
@@ -7838,9 +8199,9 @@ declare module "worker/web-worker/meta-table/tree" {
         }): Promise<number>;
     }
 }
-declare module "worker/web-worker/meta-table/view" {
-    import { IView } from "lib/store/IView";
-    import { BaseTable, BaseTableImpl } from "worker/web-worker/meta-table/base";
+declare module "packages/worker/web-worker/meta-table/view" {
+    import { IView, ViewTypeEnum } from "packages/lib/store/IView";
+    import { BaseTable, BaseTableImpl } from "packages/worker/web-worker/meta-table/base";
     export class ViewTable extends BaseTableImpl implements BaseTable<IView> {
         name: string;
         createTableSql: string;
@@ -7849,7 +8210,7 @@ declare module "worker/web-worker/meta-table/view" {
         del(id: string): Promise<boolean>;
         deleteByTableId(table_id: string, db?: import("@/lib/sqlite/interface").BaseServerDatabase): Promise<void>;
         updateQuery(id: string, query: string): Promise<void>;
-        createDefaultView(table_id: string): Promise<IView<any>>;
+        createDefaultView(table_id: string, type?: ViewTypeEnum): Promise<IView<any>>;
         isRowExistInQuery(table_id: string, rowId: string, query: string): Promise<boolean>;
         findRowIndexInQuery(table_id: string, rowId: string, query: string): Promise<number>;
         recompute(table_id: string, rowIds: string[]): Promise<any>;
@@ -7878,9 +8239,10 @@ declare module "worker/web-worker/meta-table/view" {
          * @param viewIds Array of view ids in desired order (first = highest position)
          */
         reorderViews(viewIds: string[]): Promise<void>;
+        private checkAndReorderIfNeeded;
     }
 }
-declare module "worker/web-worker/udf/index" {
+declare module "packages/worker/web-worker/udf/index" {
     export const withSqlite3AllUDF: (bc: {
         postMessage: (data: any) => void;
     }) => {
@@ -7894,32 +8256,56 @@ declare module "worker/web-worker/udf/index" {
         }[];
     };
 }
-declare module "worker/web-worker/DataSpace" {
-    import { FieldType } from "lib/fields/const";
-    import { EidosFileSystemManager, FileSystemType } from "lib/storage/eidos-file-system";
-    import { ITreeNode } from "lib/store/ITreeNode";
-    import { IView } from "lib/store/IView";
-    import { IField } from "lib/store/interface";
-    import { BaseServerDatabase } from "lib/sqlite/interface";
+declare module "packages/worker/web-worker/data-pipeline/TableSemanticSearch" {
+    import { DataSpace } from "packages/worker/web-worker/DataSpace";
+    export class TableSemanticSearch {
+        private readonly dataspace;
+        constructor(dataspace: DataSpace);
+        search(params: {
+            tableName: string;
+            query: string;
+            viewId?: string;
+            fieldId?: string;
+            page?: number;
+            pageSize?: number;
+            method?: 'L2' | 'COSINE';
+        }): Promise<{
+            meta: {
+                embeddingFieldId: string;
+                page: number;
+                pageSize: number;
+            };
+            results: any;
+        }>;
+    }
+}
+declare module "packages/worker/web-worker/DataSpace" {
+    import { FieldType } from "packages/lib/fields/const";
+    import { EidosFileSystemManager, FileSystemType } from "packages/lib/storage/eidos-file-system";
+    import { ITreeNode } from "packages/lib/store/ITreeNode";
+    import { IView, ViewTypeEnum } from "packages/lib/store/IView";
+    import { IField } from "packages/lib/store/interface";
+    import { BaseServerDatabase } from "packages/lib/sqlite/interface";
     import { Email } from "postal-mime";
-    import { DataChangeEventHandler } from "worker/web-worker/data-pipeline/DataChangeEventHandler";
-    import { DataChangeTrigger } from "worker/web-worker/data-pipeline/DataChangeTrigger";
-    import { LinkRelationUpdater } from "worker/web-worker/data-pipeline/LinkRelationUpdater";
-    import { TableFullTextSearch } from "worker/web-worker/data-pipeline/TableFullTextSearch";
-    import { SQLiteUndoRedo } from "worker/web-worker/data-pipeline/UndoRedo";
-    import { ActionTable } from "worker/web-worker/meta-table/action";
-    import { BaseTable } from "worker/web-worker/meta-table/base";
-    import { ChatTable } from "worker/web-worker/meta-table/chat";
-    import { ColumnTable } from "worker/web-worker/meta-table/column";
-    import { DocTable } from "worker/web-worker/meta-table/doc";
-    import { EmbeddingTable, IEmbedding } from "worker/web-worker/meta-table/embedding";
-    import { FileTable, IFile } from "worker/web-worker/meta-table/file";
-    import { MessageTable } from "worker/web-worker/meta-table/message";
-    import { ReferenceTable } from "worker/web-worker/meta-table/reference";
-    import { IScript, ScriptStatus, ScriptTable } from "worker/web-worker/meta-table/script";
-    import { TreeTable } from "worker/web-worker/meta-table/tree";
-    import { ViewTable } from "worker/web-worker/meta-table/view";
-    import { TableManager } from "worker/web-worker/sdk/table";
+    import { DataChangeEventHandler } from "packages/worker/web-worker/data-pipeline/DataChangeEventHandler";
+    import { DataChangeTrigger } from "packages/worker/web-worker/data-pipeline/DataChangeTrigger";
+    import { LinkRelationUpdater } from "packages/worker/web-worker/data-pipeline/LinkRelationUpdater";
+    import { TableFullTextSearch } from "packages/worker/web-worker/data-pipeline/TableFullTextSearch";
+    import { SQLiteUndoRedo } from "packages/worker/web-worker/data-pipeline/UndoRedo";
+    import { ActionTable } from "packages/worker/web-worker/meta-table/action";
+    import { BaseTable } from "packages/worker/web-worker/meta-table/base";
+    import { ChatTable } from "packages/worker/web-worker/meta-table/chat";
+    import { ColumnTable } from "packages/worker/web-worker/meta-table/column";
+    import { DocTable } from "packages/worker/web-worker/meta-table/doc";
+    import { EmbeddingTable, IEmbedding } from "packages/worker/web-worker/meta-table/embedding";
+    import { FileTable, IFile } from "packages/worker/web-worker/meta-table/file";
+    import { MessageTable } from "packages/worker/web-worker/meta-table/message";
+    import { ReferenceTable } from "packages/worker/web-worker/meta-table/reference";
+    import { IScript, ScriptStatus, ScriptTable } from "packages/worker/web-worker/meta-table/script";
+    import { TreeTable } from "packages/worker/web-worker/meta-table/tree";
+    import { ViewTable } from "packages/worker/web-worker/meta-table/view";
+    import { TableManager } from "packages/worker/web-worker/sdk/table";
+    import { TableSemanticSearch } from "packages/worker/web-worker/data-pipeline/TableSemanticSearch";
     export type EidosTable = DocTable | ActionTable | ScriptTable | TreeTable | ViewTable | ColumnTable | EmbeddingTable | FileTable;
     export type EidosDatabase = BaseServerDatabase;
     export class DataSpace {
@@ -7950,13 +8336,19 @@ declare module "worker/web-worker/DataSpace" {
         efsManager?: EidosFileSystemManager;
         hasMigrated: boolean;
         tableFullTextSearch: TableFullTextSearch;
+        tableSemanticSearch: TableSemanticSearch;
         isUDFWithCtx: boolean;
+        context: {
+            setInterval?: typeof setInterval;
+            embedding?: (text: string) => Promise<Array<number>>;
+        };
         constructor(config: {
             db: EidosDatabase;
             activeUndoManager: boolean;
             dbName: string;
             context: {
                 setInterval?: typeof setInterval;
+                embedding?: (text: string) => Promise<Array<number>>;
             };
             hasLoadExtension?: boolean;
             createUDF?: (db: EidosDatabase) => void;
@@ -7967,8 +8359,51 @@ declare module "worker/web-worker/DataSpace" {
             dataEventChannel: BroadcastChannel;
             cacheSize?: number;
             isUDFWithCtx?: boolean;
+            enableFTS?: boolean;
         });
-        closeDb(): void;
+        semanticSearch: (params: {
+            tableName: string;
+            query: string;
+            viewId?: string;
+            fieldId?: string;
+            page: number;
+            pageSize: number;
+        }) => Promise<{
+            meta: {
+                embeddingFieldId: string;
+                page: number;
+                pageSize: number;
+            };
+            results: any;
+        }>;
+        updateEmbedding: (tableId: string, fieldId: string, data: {
+            recordId: string;
+            value: string;
+        }[]) => Promise<void>;
+        queryEmbedding: (tableId: string, fieldId: string, query: string, limit?: number) => Promise<any>;
+        getEmbeddingStats: (tableId: string, fieldId: string) => Promise<{
+            total: number;
+            vectorized: number;
+            outdated: number;
+            upToDate: number;
+            vectorizedPercentage: number;
+            outdatedPercentage: number;
+            upToDatePercentage: number;
+        }>;
+        resetEmbedding: (tableId: string, fieldId: string) => Promise<void>;
+        status(): Promise<{
+            [key: string]: any;
+        }>;
+        pages(): Promise<{
+            [key: string]: any;
+        }>;
+        pull(): Promise<{
+            [key: string]: any;
+        }>;
+        reset(): Promise<{
+            [key: string]: any;
+        }>;
+        close(): void;
         private setCacheSize;
         private initUDF;
         private initMetaTable;
@@ -8028,7 +8463,7 @@ declare module "worker/web-worker/DataSpace" {
         addView(view: IView): Promise<IView<any>>;
         delView(viewId: string): Promise<boolean>;
         updateView(viewId: string, view: Partial<IView>): Promise<boolean>;
-        createDefaultView(tableId: string): Promise<IView<any>>;
+        createDefaultView(tableId: string, type?: ViewTypeEnum): Promise<IView<any>>;
         isRowExistInQuery(tableId: string, rowId: string, query: string): Promise<boolean>;
         getRecomputeRows(tableId: string, rowIds: string[]): Promise<any>;
         addField(data: IField): Promise<IField>;
@@ -8043,7 +8478,9 @@ declare module "worker/web-worker/DataSpace" {
             property: any;
             type: FieldType;
         }): Promise<void>;
-        addRow(tableName: string, data: Record<string, any>): Promise<Record<string, any>>;
+        addRow(tableName: string, data: Record<string, any>, options?: {
+            useFieldId?: boolean;
+        }): Promise<Record<string, any>>;
         addAction(data: any): Promise<void>;
         listActions(): Promise<any[]>;
         addScript(data: IScript): Promise<void>;
@@ -8059,7 +8496,9 @@ declare module "worker/web-worker/DataSpace" {
         getDocBaseInfo(id: string): Promise<Partial<import("@/worker/web-worker/meta-table/doc").IDoc>>;
         updateDoc(docId: string, content: string, markdown: string, _isDayPage?: boolean): Promise<void>;
         getDoc(docId: string): Promise<string>;
-        getDocMarkdown(docId: string): Promise<string>;
+        getDocMarkdown(docId: string, { withTitle, }?: {
+            withTitle?: boolean;
+        }): Promise<string>;
         /**
          * if you want to create or update a day page, you should pass a day page id. page id is like 2021-01-01
          * @param docId
@@ -8105,7 +8544,7 @@ declare module "worker/web-worker/DataSpace" {
         deleteTable(id: string): Promise<void>;
         listDays(page: number): Promise<any>;
         listAllDays(): Promise<any>;
-        syncExec2(sql: string, bind?: any[], db?: BaseServerDatabase): any;
+        syncExec2(sql: string, bind?: any[], db?: BaseServerDatabase): Promise<any>;
         exec2(sql: string, bind?: any[]): Promise<any>;
         runAIgeneratedSQL(sql: string, tableName: string): Promise<Record<string, any>[]>;
         listTreeNodes(query?: string, withSubNode?: boolean): Promise<ITreeNode[]>;
@@ -8191,7 +8630,7 @@ declare module "worker/web-worker/DataSpace" {
     }
 }
 declare module "@eidos.space/types" {
-    import { DataSpace } from "worker/web-worker/DataSpace";
+    import { DataSpace } from "packages/worker/web-worker/DataSpace";
     export interface Eidos {
         space(spaceName: string): DataSpace;
         currentSpace: DataSpace;
