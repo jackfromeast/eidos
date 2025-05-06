@@ -746,8 +746,17 @@ export class DataSpace {
     return doc?.content
   }
 
-  public async getDocMarkdown(docId: string) {
-    return this.doc.getMarkdown(docId)
+  public async getDocMarkdown(docId: string, {
+    withTitle = false,
+  }: {
+    withTitle?: boolean
+  } = {}) {
+    const doc = await this.doc.get(docId)
+    if (withTitle) {
+      const node = await this.tree.get(docId)
+      return `# ${node?.name}\n\n${doc?.markdown}`
+    }
+    return doc?.markdown
   }
 
   /**
