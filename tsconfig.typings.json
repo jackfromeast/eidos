@@ -48,6 +48,12 @@
   "exclude": [
     "node_modules",
     "components/ui",
-    "**/*.?raw.ts"
+    "components/doc",
+    "components/sidebar",
+    "components/table",
+    "hooks",
+    "**/*.?raw.ts",
+    "**/*.stories.*",
+    "**/*.test.*"
   ]
 }
