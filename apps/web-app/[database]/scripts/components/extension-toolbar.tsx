@@ -1,19 +1,20 @@
-import { useCallback, useRef } from "react"
 import { IScript } from "@/worker/web-worker/meta-table/script"
 import { useMount } from "ahooks"
 import { Copy, ExternalLink, Play } from "lucide-react"
+import { useCallback, useMemo, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { useLoaderData, useRevalidator } from "react-router-dom"
 
+import { usePlayground } from "@/apps/desktop/renderer/hooks/usePlayground"
+import { Button } from "@/components/ui/button"
+import { useToast } from "@/components/ui/use-toast"
+import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
+import { useScriptCall } from "@/hooks/use-script-call"
 import { useAppRuntimeStore } from "@/lib/store/runtime-store"
+import { isUuid } from "@/lib/utils"
 import { compileCode } from "@/lib/v3/compiler"
 import { getCompileMethod } from "@/lib/v3/script-compiler"
 import { openCursor } from "@/lib/web/schema"
-import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
-import { useScriptCall } from "@/hooks/use-script-call"
-import { Button } from "@/components/ui/button"
-import { useToast } from "@/components/ui/use-toast"
-import { usePlayground } from "@/apps/desktop/renderer/hooks/usePlayground"
 
 import { useRemixPrompt } from "../hooks/use-remix-prompt"
 import { useScript } from "../hooks/use-script"
@@ -177,6 +178,11 @@ export const ExtensionToolbar = () => {
     }
   }, [script, callScript, toast, t, updateScript, revalidator, compileCode])
 
+  // if script.id is a uuid, it means the script is forked from marketplace
+  const isScriptForkFromMarketplace = useMemo(() => {
+    return isUuid(script.id)
+  }, [script.id])
+
   return (
     <div className="flex items-center gap-2">
       <Button variant="ghost" size="sm" onClick={handleCopyCode}>
@@ -209,7 +215,7 @@ export const ExtensionToolbar = () => {
         script={script}
         onSuccess={() => revalidator.revalidate()}
       />
-      {script.marketplace_id && (
+      {isScriptForkFromMarketplace && (
         <CheckForUpdatesButton
           script={script}
           editorContent={script.ts_code || script.code}

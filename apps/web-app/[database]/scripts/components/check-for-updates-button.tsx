@@ -1,8 +1,9 @@
-import { useCallback, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { IScript } from "@/worker/web-worker/meta-table/script"
 import { RefreshCw } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
+import { isUuid } from "@/lib/utils"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,8 +45,6 @@ export const CheckForUpdatesButton = ({
     useEditorStore() // Added setPendingVersionUpdate
 
   const handleCheckForUpdates = useCallback(async () => {
-    if (!script.marketplace_id) return
-
     setIsChecking(true)
     setRemoteCode(null)
     setNewVersionString(null)
@@ -96,7 +95,7 @@ export const CheckForUpdatesButton = ({
         )
       } else {
         setUpdateMessage(
-          t("extension.checkForUpdates.noUpdate", "当前已是最新版本。")
+          t("extension.checkForUpdates.noUpdate", "It's up to date.")
         )
       }
     } catch (error) {
@@ -140,15 +139,18 @@ export const CheckForUpdatesButton = ({
       setPendingVersionUpdate(script.id, null) // Clear pending version on cancel
     }
   }
+  const isScriptForkFromMarketplace = useMemo(() => {
+    return isUuid(script.id)
+  }, [script.id])
 
   return (
     <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <Button // Changed AlertDialogTrigger to a direct Button for more control
         variant="ghost"
         size="sm"
-        title={t("extension.checkForUpdates.title", "检查更新")}
+        title={t("extension.checkForUpdates.title", "Check for updates")}
         onClick={handleTriggerClick} // Use explicit onClick handler
-        disabled={!script.marketplace_id || isChecking} // Disable while checking
+        disabled={!isScriptForkFromMarketplace || isChecking} // Disable while checking
       >
         {isChecking ? (
           <RefreshCw className="h-4 w-4 animate-spin" />
@@ -160,7 +162,7 @@ export const CheckForUpdatesButton = ({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {t("extension.checkForUpdates.title", "检查更新")}
+              {t("extension.checkForUpdates.title", "Check for updates")}
             </AlertDialogTitle>
             <AlertDialogDescription>{updateMessage}</AlertDialogDescription>
           </AlertDialogHeader>

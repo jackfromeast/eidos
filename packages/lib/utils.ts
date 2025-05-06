@@ -61,6 +61,10 @@ export const isUuidv4 = (id: string) => {
   return id[14] === "4"
 }
 
+export const isUuid = (id: string) => {
+  return /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id)
+}
+
 export function nonNullable<T>(value: T): value is NonNullable<T> {
   return value != null
 }

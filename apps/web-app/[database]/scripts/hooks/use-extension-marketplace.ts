@@ -4,6 +4,7 @@ import { IScript } from "@/worker/web-worker/meta-table/script";
 import { getEditorLanguage } from "../helper";
 import { useScript } from "./use-script";
 import { EIDOS_SPACE_BASE_URL } from "@/lib/const";
+import { isUuid } from "@/lib/utils";
 
 interface UseExtensionMarketplaceProps {
     script: IScript;
@@ -40,12 +41,16 @@ export const useExtensionMarketplace = ({ script, editorContent }: UseExtensionM
 
     // check update
     const checkUpdate = useCallback(async (): Promise<LatestVersionResponse | null> => {
-        if (!script?.marketplace_id) {
+        if (!isUuid(script.id)) {
+            return null
+        }
+        const marketplaceId = script.id
+        if (!marketplaceId) {
             // Optionally, handle this case more specifically, e.g., return null or throw an error
             console.warn("Marketplace ID is missing, cannot check for updates.");
             return null;
         }
-        const url = `${EIDOS_SPACE_BASE_URL}/api/extensions/${script.marketplace_id}/latestVersion`;
+        const url = `${EIDOS_SPACE_BASE_URL}/api/extensions/${marketplaceId}/latestVersion`;
         const response = await fetch(url, {
             method: "GET",
             credentials: 'include' // Include cookies for cross-origin requests
@@ -70,7 +75,7 @@ export const useExtensionMarketplace = ({ script, editorContent }: UseExtensionM
             const scriptLanguage = getEditorLanguage(script);
 
             const payload = {
-                name: script.name || `Script ${script.id}`,
+                name: script.name || `Extension ${script.id}`,
                 version: "0.0.1", // Consider making this dynamic
                 code: codeToSubmit,
                 description: script.description || "",
