@@ -27,7 +27,7 @@ export const compileCode = async (
 
     const jsxResult = await transform(sourceCode, {
       loader: "tsx",
-      target: "esnext",
+      target: "es2020",
       jsxFactory: "React.createElement",
       jsxFragment: "React.Fragment",
       banner: reactBanner + uiLibCode,

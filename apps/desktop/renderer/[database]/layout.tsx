@@ -1,5 +1,5 @@
-import { Suspense, lazy, useEffect } from "react"
-import { useLocalStorageState } from "ahooks"
+import { Suspense, lazy, useEffect, useRef } from "react"
+import { useLocalStorageState, useSize } from "ahooks"
 import { Outlet, useLocation, useNavigate, useParams } from "react-router-dom"
 
 import { EidosDataEventChannelName } from "@/lib/const"
@@ -43,6 +43,8 @@ export function DesktopSpaceLayout() {
   const isBlocksPath = isStandaloneBlocksPath(useLocation().pathname)
 
   const { scriptId } = useParams()
+  const rightPanelRef = useRef<HTMLDivElement>(null)
+  const size = useSize(rightPanelRef)
 
   useLayoutInit()
   const { efsManager } = useEidosFileSystemManager()
@@ -152,7 +154,10 @@ export function DesktopSpaceLayout() {
                   >
                     <RightPanelNav />
                   </div>
-                  <div className="grow border-t h-[calc(100%-38px)] overflow-y-auto">
+                  <div
+                    className="grow border-t h-[calc(100%-38px)] overflow-y-auto"
+                    ref={rightPanelRef}
+                  >
                     {currentApp === "chat" && (
                       <Suspense fallback={<Loading />}>
                         <AIChat />
@@ -160,7 +165,7 @@ export function DesktopSpaceLayout() {
                     )}
                     {isCurrentAppABlock && (
                       <Suspense fallback={<Loading />}>
-                        <BlockApp url={currentApp} />
+                        <BlockApp url={currentApp} height={size?.height} />
                       </Suspense>
                     )}
                   </div>

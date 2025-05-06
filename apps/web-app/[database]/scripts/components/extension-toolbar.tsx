@@ -1,24 +1,24 @@
 import { IScript } from "@/worker/web-worker/meta-table/script"
 import { useMount } from "ahooks"
-import { BlendIcon, Copy, Play } from "lucide-react"
+import { Copy, ExternalLink, Play } from "lucide-react"
 import { useCallback, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { useLoaderData, useRevalidator } from "react-router-dom"
 
 import { usePlayground } from "@/apps/desktop/renderer/hooks/usePlayground"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/use-toast"
 import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
 import { useScriptCall } from "@/hooks/use-script-call"
-import { isDesktopMode } from "@/lib/env"
 import { useAppRuntimeStore } from "@/lib/store/runtime-store"
 import { compileCode } from "@/lib/v3/compiler"
 import { openCursor } from "@/lib/web/schema"
 
+import { useExtensionSubmit } from "../hooks/use-extension-submit"
 import { useRemixPrompt } from "../hooks/use-remix-prompt"
 import { useScript } from "../hooks/use-script"
 import { useEditorStore } from "../stores/editor-store"
+import { ShareExtensionButton } from "./share-extension-button"
 
 export const ExtensionToolbar = () => {
   const { t } = useTranslation()
@@ -120,25 +120,58 @@ export const ExtensionToolbar = () => {
     initializePlayground,
   ])
 
+  const { isSubmitting, submitExtension, isPublishing, publishNewVersion } =
+    useExtensionSubmit({
+      script,
+      editorContent: script.ts_code || script.code,
+    })
+
   const handleRunScript = useCallback(() => {
     callScript(script.id, {})
   }, [script.id])
 
+  const handleSubmitOrPublish = async () => {
+    if (script.marketplace_id) {
+      await publishNewVersion()
+    } else {
+      await submitExtension()
+    }
+    revalidator.revalidate()
+  }
+
   return (
     <div className="flex items-center gap-2">
-      <Button variant="outline" size="xs" onClick={handleCopyCode}>
-        <Copy className="mr-2 h-4 w-4" />
-        {t("extension.toolbar.copy")}
+      <Button variant="ghost" size="sm" onClick={handleCopyCode}>
+        <Copy className="h-4 w-4" />
+        {/* {t("extension.toolbar.copy")} */}
       </Button>
 
       {(script.type === "script" || script.type === "py_script") && (
-        <Button variant="outline" size="xs" onClick={handleRunScript}>
-          <Play className="mr-2 h-4 w-4" />
-          {t("extension.toolbar.run")}
+        <Button variant="ghost" size="sm" onClick={handleRunScript}>
+          <Play className="h-4 w-4" />
+          {/* {t("extension.toolbar.run")} */}
         </Button>
       )}
 
       {script.type === "m_block" && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() =>
+            window.open(`/${space}/standalone-blocks/${script.id}`, "_blank")
+          }
+          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+          title="Open in standalone mode"
+        >
+          <ExternalLink className="h-4 w-4" />
+          {/* <span>Standalone</span> */}
+        </Button>
+      )}
+      <ShareExtensionButton
+        script={script}
+        onSuccess={() => revalidator.revalidate()}
+      />
+      {/* {script.type === "m_block" && (
         <Button
           size="xs"
           onClick={handleOpenInCursor}
@@ -152,7 +185,7 @@ export const ExtensionToolbar = () => {
             </Badge>
           )}
         </Button>
-      )}
+      )} */}
     </div>
   )
 }

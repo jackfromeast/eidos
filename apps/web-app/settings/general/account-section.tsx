@@ -1,14 +1,13 @@
-import { AlertCircle } from "lucide-react"
 import { useState } from "react"
+import { AlertCircle } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
+import { authClient } from "@/lib/auth-client"
+import { DOMAINS } from "@/lib/const"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { toast } from "@/components/ui/use-toast"
-import { authClient } from "@/lib/auth-client"
-import { DOMAINS } from "@/lib/const"
-
-import { LoginDialog } from "./login-dialog"
+import { LoginDialog } from "@/components/login-dialog"
 
 interface AccountSectionProps {}
 
