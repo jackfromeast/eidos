@@ -1,17 +1,16 @@
-import { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react"
 import { IScript } from "@/worker/web-worker/meta-table/script"
 import { useLocalStorageState, useMount, useSize } from "ahooks"
-import { Code, ExternalLink, Eye } from "lucide-react"
+import { Code, Eye } from "lucide-react"
 import { useTheme } from "next-themes"
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react"
 import {
   useLoaderData,
   useRevalidator,
   useSearchParams,
 } from "react-router-dom"
 
-import { compileCode } from "@/lib/v3/compiler"
-import { compileLexicalCode } from "@/lib/v3/lexical-compiler"
-import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
+import { BlockRenderer } from "@/components/block-renderer/block-renderer"
+import { DocEditorPlayground } from "@/components/doc-editor-playground"
 import { Button } from "@/components/ui/button"
 import {
   ResizableHandle,
@@ -22,8 +21,9 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { useToast } from "@/components/ui/use-toast"
-import { BlockRenderer } from "@/components/block-renderer/block-renderer"
-import { DocEditorPlayground } from "@/components/doc-editor-playground"
+import { compileCode } from "@/lib/v3/compiler"
+import { compileLexicalCode } from "@/lib/v3/lexical-compiler"
+import { getCompileMethod } from "@/lib/v3/script-compiler"
 
 import { ChatSidebar } from "./components/chat"
 import { Header } from "./components/chat/header"
@@ -190,37 +190,18 @@ export const ScriptDetailPage = () => {
     [revalidator, script, toast, updateScript]
   )
   const { theme } = useTheme()
-  const { space } = useCurrentPathInfo()
-
-  const manualSave = () => {
-    editorRef.current?.save()
-  }
 
   useEffect(() => {
     editorRef.current?.layout()
   }, [layoutMode])
 
-  const blockCodeCompile = async (ts_code: string) => {
-    const result = await compileCode(ts_code)
-    return result.code
-  }
-  const pythonCodeCompile = async (code: string) => {
-    return code
-  }
-  const lexicalCodeCompile = async (ts_code: string) => {
-    const result = await compileLexicalCode(ts_code)
-    return result.code
-  }
-
-  const compile = async () => {
+  const compileAndSubmit = async () => {
     const ts_code = script.ts_code
     if (ts_code) {
-      const compileMethod =
-        script.type === "doc_plugin"
-          ? lexicalCodeCompile
-          : script.type === "py_script"
-          ? pythonCodeCompile
-          : blockCodeCompile
+      const compileMethod = getCompileMethod(script)
+      if (!compileMethod) {
+        return
+      }
       const result = await compileMethod(ts_code)
       onSubmit(result, ts_code)
     }
@@ -328,15 +309,7 @@ export const ScriptDetailPage = () => {
                             bindings={script.bindings}
                             scriptId={script.id}
                             theme={theme === "dark" ? "vs-dark" : "light"}
-                            customCompile={
-                              script.type === "m_block"
-                                ? blockCodeCompile
-                                : script.type === "doc_plugin"
-                                ? lexicalCodeCompile
-                                : script.type === "py_script"
-                                ? pythonCodeCompile
-                                : undefined
-                            }
+                            customCompile={getCompileMethod(script)}
                           />
                         </Suspense>
                       ) : (
@@ -347,7 +320,7 @@ export const ScriptDetailPage = () => {
                                 No preview available. Build first to see the
                                 preview.
                               </p>
-                              <Button onClick={compile} size="sm">
+                              <Button onClick={compileAndSubmit} size="sm">
                                 Build
                               </Button>
                             </div>

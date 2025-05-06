@@ -48,6 +48,7 @@ export const useExtensionSubmit = ({ script, editorContent }: UseExtensionSubmit
                 description: script.description || "",
                 type: script.type,
                 language: scriptLanguage,
+                icon_url: script.icon,
                 changelog: "Initial submission", // Consider making this dynamic
                 initialStatus: "public",
                 publishFirstVersion: true,

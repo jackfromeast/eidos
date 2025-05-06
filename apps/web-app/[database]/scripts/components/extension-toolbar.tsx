@@ -12,9 +12,9 @@ import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
 import { useScriptCall } from "@/hooks/use-script-call"
 import { useAppRuntimeStore } from "@/lib/store/runtime-store"
 import { compileCode } from "@/lib/v3/compiler"
+import { getCompileMethod } from "@/lib/v3/script-compiler"
 import { openCursor } from "@/lib/web/schema"
 
-import { useExtensionSubmit } from "../hooks/use-extension-submit"
 import { useRemixPrompt } from "../hooks/use-remix-prompt"
 import { useScript } from "../hooks/use-script"
 import { useEditorStore } from "../stores/editor-store"
@@ -120,24 +120,61 @@ export const ExtensionToolbar = () => {
     initializePlayground,
   ])
 
-  const { isSubmitting, submitExtension, isPublishing, publishNewVersion } =
-    useExtensionSubmit({
-      script,
-      editorContent: script.ts_code || script.code,
-    })
-
-  const handleRunScript = useCallback(() => {
-    callScript(script.id, {})
-  }, [script.id])
-
-  const handleSubmitOrPublish = async () => {
-    if (script.marketplace_id) {
-      await publishNewVersion()
+  const handleRunScript = useCallback(async () => {
+    if (!script.code) {
+      if (script.ts_code) {
+        toast({
+          title: t(
+            "extension.toolbar.autoBuildingScript",
+            "Auto-building script..."
+          ),
+        })
+        try {
+          const compileMethod = getCompileMethod(script)
+          if (!compileMethod) {
+            return
+          }
+          const compiledJs = await compileMethod(script.ts_code)
+          await updateScript({
+            id: script.id,
+            code: compiledJs,
+            ts_code: script.ts_code,
+          })
+          revalidator.revalidate()
+          toast({
+            title: t(
+              "extension.toolbar.buildSuccessful",
+              "Build successful, running script."
+            ),
+          })
+          callScript(script.id, {})
+        } catch (error) {
+          console.error("Auto-build or update script failed:", error)
+          toast({
+            title: t("extension.toolbar.buildFailed", "Build failed"),
+            description:
+              (error as Error)?.message ||
+              t("common.unknownError", "An unknown error occurred."),
+            variant: "destructive",
+          })
+        }
+      } else {
+        toast({
+          title: t(
+            "extension.toolbar.noTsCodeToBuild",
+            "No source code to build from."
+          ),
+          description: t(
+            "extension.toolbar.noTsCodeToBuildHint",
+            "Please ensure the script has TypeScript/JavaScript source code."
+          ),
+          variant: "destructive",
+        })
+      }
     } else {
-      await submitExtension()
+      callScript(script.id, {})
     }
-    revalidator.revalidate()
-  }
+  }, [script, callScript, toast, t, updateScript, revalidator, compileCode])
 
   return (
     <div className="flex items-center gap-2">

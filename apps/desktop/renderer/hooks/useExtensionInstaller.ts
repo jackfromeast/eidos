@@ -30,6 +30,7 @@ export const useExtensionInstaller = () => {
                 name: extensionData.extension.name, // Use name from extension object
                 type: extensionData.extension.type, // Assuming type is 'script', adjust if extensionData.extension.type is relevant
                 description: extensionData.extension.description, // Use description from extension object
+                icon: extensionData.extension.icon_url,
                 version: extensionData.latestVersion.version, // Use version from latestVersion object
                 ...(extensionData.extension.type === 'm_block' || extensionData.extension.type === 'script'
                     ? { ts_code: extensionData.latestVersion.code, code: '' }
