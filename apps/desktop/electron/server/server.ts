@@ -80,6 +80,7 @@ export function startServer({ dist, port }: { dist: string, port: number }) {
         const headers = new Headers()
         headers.append("Content-Type", file.type)
         headers.append("Cross-Origin-Embedder-Policy", "require-corp")
+        headers.append("Cross-Origin-Resource-Policy", "cross-origin")
         headers.append("Accept-Ranges", "bytes")
 
         const rangeHeader = c.req.header('range')

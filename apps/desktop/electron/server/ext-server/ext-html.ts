@@ -30,7 +30,15 @@ export const getIndexHtml = (props: {
               document.documentElement.className = event.data.theme;
             }
           });
-          // props change
+          document.addEventListener('click', function(event) {
+            const link = event.target.closest('a');
+            if (link && link.href) {
+              event.preventDefault();
+              if (link.href.hostname !== window.location.hostname) {
+                window.open(link.href, '_blank');
+              }
+            }
+          });
         </script>
         <style>
           ${themeRawCode}

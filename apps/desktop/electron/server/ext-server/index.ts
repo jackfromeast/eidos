@@ -39,16 +39,24 @@ export const interceptExtensionRequest = (dist: string, port: number) => async (
     if (url.pathname.startsWith('/tailwind-raw.js')) {
         return new Response(tailwindRaw, { headers })
     }
-    console.log('interceptExtensionRequest', hostname)
     // Regex to match <extensionId>.ext.<spaceId>.eidos.localhost
     // myext.ext.25-w19.eidos.localhost
     const match = hostname.match(/^([a-zA-Z0-9-]+)\.ext\.(.*)\.eidos\.localhost$/);
 
+
+
     if (match) {
         const extensionId = match[1];
         const spaceId = match[2];
-        log(`Intercepted request for extension: ${extensionId}, space: ${spaceId} on host: ${hostname}`);
 
+        // if pathname is /<spaceId>/files/*
+        if (url.pathname.startsWith('/' + spaceId + '/files/')) {
+            // const file = fs.readFileSync(path.join(dist, url.pathname))
+            // redirect to localhost:13127
+            return c.redirect(`http://localhost:13127${url.pathname}`)
+        }
+        console.log('interceptExtensionRequest', c.req.url)
+        // log(`Intercepted request for extension: ${extensionId}, space: ${spaceId} on host: ${hostname}`);
         try {
             const dataSpace = await getOrSetDataSpace(spaceId);
             const extension = await dataSpace.script.get(extensionId);

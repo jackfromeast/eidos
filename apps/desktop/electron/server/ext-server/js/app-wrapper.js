@@ -5,7 +5,13 @@ import { Toaster } from "@/components/ui/toaster"
 
 let appRootInstance = null
 let AppComponentRef = null
-let currentProps = JSON.parse(window.name)
+let currentProps = {}
+
+try {
+  currentProps = JSON.parse(window.name)
+} catch (err) {
+  console.error("Error parsing props:", err)
+}
 
 let retryCount = 0
 const maxRetries = 3
