@@ -1,5 +1,3 @@
-'use server';
-
 import { LanguageModelV1, generateText, type CoreUserMessage, CoreToolMessage, CoreAssistantMessage } from 'ai';
 
 

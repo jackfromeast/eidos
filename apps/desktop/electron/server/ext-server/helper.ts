@@ -131,12 +131,12 @@ export async function generateImportMap(
   </script>
   `;
 
-    console.debug('Import Map:', JSON.stringify({
-        thirdPartyLibs,
-        uiLibs,
-        imports,
-        importMapScript
-    }, null, 2));
+    // console.debug('Import Map:', JSON.stringify({
+    //     thirdPartyLibs,
+    //     uiLibs,
+    //     imports,
+    //     importMapScript
+    // }, null, 2));
 
     return {
         importMap: importMapScript,

@@ -41,8 +41,8 @@ export class NodeServerDatabase extends BaseServerDatabase {
     constructor(config: NodeDomainDbInfo['config'], options: NodeServerDatabaseOptions) {
         super();
         console.log('Initializing NodeServerDatabase...');
-        console.log('Options:', options);
-        console.log('Config:', config);
+        // console.log('Options:', options);
+        // console.log('Config:', config);
         this.options = options;
 
         try {
@@ -119,10 +119,10 @@ export class NodeServerDatabase extends BaseServerDatabase {
                 )
                 .get() as any;
             console.log(`sqlite_version=${sqlite_version}, vec_version=${vec_version}`);
-            const result = db
-                .prepare("select vec_f32(?) as result")
-                .get('[1.0,2.0,3.0]');
-            console.log('result', result)
+            // const result = db
+            //     .prepare("select vec_f32(?) as result")
+            //     .get('[1.0,2.0,3.0]');
+            // console.log('result', result)
         }
     }
 

@@ -44,7 +44,6 @@ export const interceptExtensionRequest = (dist: string, port: number) => async (
     // myext.ext.25-w19.eidos.localhost
     const match = hostname.match(/^([a-zA-Z0-9-]+)\.ext\.(.*)\.eidos\.localhost$/);
 
-    console.log('match', match)
     if (match) {
         const extensionId = match[1];
         const spaceId = match[2];
@@ -55,13 +54,12 @@ export const interceptExtensionRequest = (dist: string, port: number) => async (
             const extension = await dataSpace.script.get(extensionId);
             //     log('Successfully got dataSpace for:', spaceId, 'DB Name:', dataSpace.dbName);
             const theme = 'light'
+            const start = performance.now()
             const sdkInjectScriptContent = makeSdkInjectScript({
                 space: spaceId,
                 bindings: extension?.bindings,
             })
-            console.log(sdkInjectScriptContent)
             const code = extension?.ts_code || ""
-            console.log(code)
             const compiledCode = extension?.code || ""
 
             if (url.pathname.startsWith('/app.js')) {
@@ -82,7 +80,6 @@ export const interceptExtensionRequest = (dist: string, port: number) => async (
             const envString = extension?.envs ? JSON.stringify(extension.envs) : "{}"
             const defaultPropsString = JSON.stringify({})
             const { importMap } = await generateImportMap(thirdPartyLibs, uiLibs)
-            console.log(importMap)
             // // Placeholder for BlockRenderer server-side logic
             const html = getIndexHtml({
                 theme,
@@ -94,6 +91,8 @@ export const interceptExtensionRequest = (dist: string, port: number) => async (
                 defaultPropsString
             })
 
+            const end = performance.now()
+            console.log(`Time taken: ${end - start} milliseconds`)
             const htmlResponseHeaders = new Headers();
             // Allow this page to frame content from any http://localhost:* origin
             htmlResponseHeaders.append('Content-Security-Policy', "frame-src 'self' http://localhost:*;");
