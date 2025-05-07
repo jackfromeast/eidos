@@ -85,7 +85,7 @@ export const interceptExtensionRequest = (dist: string, port: number) => async (
                 "lucide-react"
             )
             uiLibs.push("toast", "toaster", "use-toast")
-            const envString = extension?.envs ? JSON.stringify(extension.envs) : "{}"
+            const envString = extension?.env_map ? JSON.stringify(extension.env_map) : "{}"
             const defaultPropsString = JSON.stringify({})
             const { importMap } = await generateImportMap(thirdPartyLibs, uiLibs)
             // // Placeholder for BlockRenderer server-side logic
