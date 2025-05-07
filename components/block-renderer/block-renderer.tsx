@@ -87,14 +87,6 @@ export const BlockRenderer = React.forwardRef<
       if (!iframeRef.current) return
       if (isDesktopMode) {
         iframeRef.current.src = `http://${blockId}.ext.${space}.eidos.localhost:13127/`
-
-        // set defaultProps in iframe window when src is loaded
-        iframeRef.current.onload = () => {
-          if (iframeRef.current?.contentWindow) {
-            ;(iframeRef.current.contentWindow as any)["__defaultProps"] =
-              defaultProps
-          }
-        }
         return
       }
 
@@ -273,9 +265,7 @@ export const BlockRenderer = React.forwardRef<
       uiComponents,
       importMap,
       env,
-      height,
       defaultPropsString,
-      theme,
     ])
 
     useEffect(() => {
@@ -285,6 +275,14 @@ export const BlockRenderer = React.forwardRef<
         "*"
       )
     }, [theme])
+
+    useEffect(() => {
+      if (!iframeRef.current) return
+      iframeRef.current.contentWindow?.postMessage(
+        { type: "props-change", props: defaultProps },
+        "*"
+      )
+    }, [defaultProps])
 
     useImperativeHandle(
       ref,
@@ -325,6 +323,7 @@ export const BlockRenderer = React.forwardRef<
       <iframe
         ref={iframeRef}
         title="preview"
+        name={defaultPropsString}
         sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
         style={style}
       />

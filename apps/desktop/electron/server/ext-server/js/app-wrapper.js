@@ -3,14 +3,44 @@ import { createRoot } from "react-dom/client"
 
 import { Toaster } from "@/components/ui/toaster"
 
+let appRootInstance = null
+let AppComponentRef = null
+let currentProps = JSON.parse(window.name)
+
 let retryCount = 0
 const maxRetries = 3
 
-const executeCode = async () => {
+// Helper function to perform the rendering
+const performRender = () => {
+  if (appRootInstance && AppComponentRef) {
+    appRootInstance.render(
+      React.createElement(React.StrictMode, null, [
+        React.createElement(AppComponentRef, currentProps),
+        React.createElement(Toaster),
+      ])
+    )
+  }
+}
+
+// Global function to update props and re-render
+window.updateAppProps = (newProps) => {
+  if (JSON.stringify(currentProps) === JSON.stringify(newProps)) {
+    return
+  }
+  currentProps = newProps // Replace current props with new ones
+  performRender()
+}
+
+window.addEventListener("message", (event) => {
+  if (event.data.type === "props-change") {
+    console.log("props-change", event.data.props)
+    window.updateAppProps(event.data.props)
+  }
+})
+
+const executeCode = async (initialProps = {}) => {
   try {
     const moduleExports = await import("/app.js")
-    // URL.revokeObjectURL('/app.js')
-
     let MyComponent = moduleExports.default
 
     if (!MyComponent) {
@@ -23,19 +53,20 @@ const executeCode = async () => {
       throw new Error("Make sure to export a default component or a function")
     }
 
+    AppComponentRef = MyComponent // Store the component reference
+    currentProps = initialProps // Set initial props
+
     const rootElement = document.getElementById("root")
     if (!rootElement) {
       throw new Error("Root element not found")
     }
 
-    const root = createRoot(rootElement)
+    // Create root instance only if it doesn't exist
+    if (!appRootInstance) {
+      appRootInstance = createRoot(rootElement)
+    }
 
-    root.render(
-      React.createElement(React.StrictMode, null, [
-        React.createElement(MyComponent, {}),
-        React.createElement(Toaster),
-      ])
-    )
+    performRender() // Call the render helper
 
     document.getElementById("loading").style.opacity = "0"
     setTimeout(() => {
@@ -50,7 +81,7 @@ const executeCode = async () => {
       const loadingEl = document.getElementById("loading")
       loadingEl.style.opacity = "1"
       loadingEl.style.display = "flex"
-      setTimeout(executeCode, 1000)
+      setTimeout(() => executeCode(initialProps), 1000) // Pass initialProps in retry
       return
     }
 
@@ -65,7 +96,8 @@ const executeCode = async () => {
   }
 }
 
-executeCode().catch((err) => {
+executeCode(currentProps).catch((err) => {
+  // Pass initial props (e.g., an empty object)
   console.error("Top level error:", err)
   document.getElementById("loading").style.display = "none"
 })
