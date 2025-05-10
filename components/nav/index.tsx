@@ -1,12 +1,12 @@
 import { Menu, PanelRightIcon } from "lucide-react"
 import { useTheme } from "next-themes"
 
-import { useSpaceAppStore } from "@/apps/web-app/[database]/store"
-import { Button } from "@/components/ui/button"
 import { isDesktopMode } from "@/lib/env"
 import { useAppStore } from "@/lib/store/app-store"
 import { cn } from "@/lib/utils"
 import { isMac, isWindowsDesktop } from "@/lib/web/helper"
+import { Button } from "@/components/ui/button"
+import { useSpaceAppStore } from "@/apps/web-app/[database]/store"
 
 import { BreadCrumb } from "./breadcrumb"
 import { NavDropdownMenu } from "./dropdown-menu"
@@ -48,7 +48,7 @@ export const Nav = ({
     <div
       id={isMac() ? "title-bar-mac" : "title-bar"}
       className={cn(
-        "flex h-8 w-full border-separate items-center justify-between pl-2 shrink-0",
+        "flex h-8 w-full shrink-0 border-separate items-center justify-between pl-2",
         {
           fixed: navigator.windowControlsOverlay?.visible,
           "!pl-[72px]":
@@ -58,6 +58,8 @@ export const Nav = ({
           "!pr-[230px]":
             navigator.windowControlsOverlay?.visible && isSidebarOpen,
           "!h-[38px]": isMac(),
+          // fix title bar height for windows
+          "pt-[6px]": isWindowsDesktop,
           "bg-[#000]": theme === "dark",
           "bg-[#fff]": theme === "light",
           // PWA does not support css variables for theme color yet, we just use bg-white text-black for now
@@ -71,7 +73,7 @@ export const Nav = ({
           variant="ghost"
           size="xs"
           onClick={toggleSidebar}
-        // className="hidden md:block"
+          // className="hidden md:block"
         >
           <Menu className="h-5 w-5" />
         </Button>
@@ -79,11 +81,11 @@ export const Nav = ({
 
       <div className="hidden md:block">{children || <BreadCrumb />}</div>
       <div className="h-full grow" id="drag-region" />
-      <div className={
-        cn("mr-3 flex items-center justify-between gap-2", {
-          'pr-[100px]': isWindowsDesktop && !isRightPanelOpen,
-        })
-      }>
+      <div
+        className={cn("mr-3 flex items-center justify-between gap-2", {
+          "pr-[100px]": isWindowsDesktop && !isRightPanelOpen,
+        })}
+      >
         <NavStatus />
         <NavDropdownMenu />
         {isDesktopMode && !isRightPanelOpen && (
