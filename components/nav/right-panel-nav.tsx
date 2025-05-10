@@ -191,10 +191,10 @@ export const RightPanelNav = () => {
                               <img
                                 src={IconOrUri}
                                 alt={title}
-                                className="h-5 w-5"
+                                className="h-4 w-4"
                               />
                             ) : (
-                              IconOrUri && <IconOrUri className="h-5 w-5" />
+                              IconOrUri && <IconOrUri className="h-4 w-4" />
                             )}
                           </Button>
                         </ContextMenuTrigger>
@@ -228,10 +228,10 @@ export const RightPanelNav = () => {
                           <img
                             src={IconOrUri}
                             alt={title}
-                            className="h-5 w-5"
+                            className="h-4 w-4"
                           />
                         ) : (
-                          IconOrUri && <IconOrUri className="h-5 w-5" />
+                          IconOrUri && <IconOrUri className="h-4 w-4" />
                         )}
                       </Button>
                     )}
@@ -256,7 +256,7 @@ export const RightPanelNav = () => {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button size="xs" variant="ghost" className="rounded-b-none">
-                <MoreHorizontalIcon className="h-5 w-5" />
+                <MoreHorizontalIcon className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
@@ -286,7 +286,7 @@ export const RightPanelNav = () => {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button size="xs" variant="ghost" className="rounded-b-none">
-              <PlusIcon className="h-5 w-5" />
+              <PlusIcon className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
@@ -313,10 +313,10 @@ export const RightPanelNav = () => {
                     <img
                       src={block.icon}
                       alt={block.name}
-                      className="h-5 w-5"
+                      className="h-4 w-4"
                     />
                   ) : (
-                    <ToyBrickIcon className="h-5 w-5" />
+                    <ToyBrickIcon className="h-4 w-4" />
                   )}
                   <span>{block.name}</span>
                 </div>
@@ -331,7 +331,7 @@ export const RightPanelNav = () => {
         variant="ghost"
         onClick={() => setIsRightPanelOpen(false, -1)}
       >
-        <PanelRightIcon className="h-5 w-5" />
+        <PanelRightIcon className="h-4 w-4" />
       </Button>
     </div>
   )
