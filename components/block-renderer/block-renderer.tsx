@@ -1,4 +1,10 @@
-import React, { useEffect, useImperativeHandle, useRef, useState } from "react"
+import React, {
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
 import { useTheme } from "next-themes"
 
 import { isDesktopMode } from "@/lib/env"
@@ -319,6 +325,15 @@ export const BlockRenderer = React.forwardRef<
       []
     )
 
+    const extUrl = useMemo(() => {
+      return serializePropsToUrl(
+        defaultProps,
+        `http://${blockId}.ext.${space}.eidos.localhost:13127/`
+      )
+      // do not listen to defaultProps changes, avoid webview repeating props-change messages
+      // the message mechanism can ensure subsequent changes are passed
+    }, [blockId, space])
+
     const style = {
       border: "none",
       display: "block",
@@ -341,10 +356,6 @@ export const BlockRenderer = React.forwardRef<
       )
     }
     if (isDesktopMode) {
-      const extUrl = serializePropsToUrl(
-        defaultProps,
-        `http://${blockId}.ext.${space}.eidos.localhost:13127/`
-      )
       return (
         <webview
           ref={webviewRef}
