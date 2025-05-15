@@ -11,10 +11,23 @@ try {
   if (window.name) {
     currentProps = JSON.parse(window.name || "{}")
   } else {
-    // check url params
-    const urlParams = new URLSearchParams(window.location.search)
-    const props = Object.fromEntries(urlParams.entries())
-    currentProps = props
+    const deserializePropsFromUrl = (url) => {
+      const props = {}
+      url.searchParams.forEach((value, key) => {
+        if (key === "__context__") {
+          try {
+            props[key] = JSON.parse(value)
+          } catch (e) {
+            console.error("Failed to parse __context__:", e)
+            props[key] = {}
+          }
+        } else {
+          props[key] = value
+        }
+      })
+      return props
+    }
+    currentProps = deserializePropsFromUrl(new URL(window.location.href))
   }
 } catch (err) {
   console.error("Error parsing props:", err)

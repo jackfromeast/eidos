@@ -2,6 +2,7 @@ import React, { useEffect, useImperativeHandle, useRef, useState } from "react"
 import { useTheme } from "next-themes"
 
 import { isDesktopMode } from "@/lib/env"
+import { serializePropsToUrl } from "@/lib/utils"
 import { generateImportMap, getAllLibs } from "@/lib/v3/compiler"
 import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
 
@@ -340,10 +341,14 @@ export const BlockRenderer = React.forwardRef<
       )
     }
     if (isDesktopMode) {
+      const extUrl = serializePropsToUrl(
+        defaultProps,
+        `http://${blockId}.ext.${space}.eidos.localhost:13127/`
+      )
       return (
         <webview
           ref={webviewRef}
-          src={`http://${blockId}.ext.${space}.eidos.localhost:13127/?${defaultPropsString}`}
+          src={extUrl.toString()}
           style={{
             minHeight: height,
             minWidth: width,

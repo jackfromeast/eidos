@@ -346,3 +346,15 @@ export const fetcher = async (url: string) => {
 
   return res.json();
 };
+
+export const serializePropsToUrl = (props: Record<string, any>, url: string) => {
+  const urlObj = new URL(url)
+  Object.entries(props).forEach(([key, value]) => {
+    if (key === '__context__') {
+      urlObj.searchParams.set(key, JSON.stringify(value))
+    } else {
+      urlObj.searchParams.set(key, String(value))
+    }
+  })
+  return urlObj.toString()
+}

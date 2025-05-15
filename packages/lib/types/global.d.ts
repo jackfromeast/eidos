@@ -17,6 +17,10 @@ interface Navigator {
   windowControlsOverlay: WindowControlsOverlay
 }
 
+interface HTMLWebViewElement {
+  contentWindow: Window
+}
+
 interface WindowControlsOverlay extends EventTarget {
   readonly visible: boolean
   getTitlebarAreaRect(): DOMRect
@@ -74,24 +78,24 @@ interface WindowControlsOverlayGeometryChangeEventInit extends EventInit {
 
 interface Window {
   eidos: import('electron').IpcRenderer & {
-      on: (channel: string, listener: IpcListener) => string | undefined
-      off: (channel: string, listenerId: string) => void
-      efsManager: import('@/packages/lib/storage/eidos-file-system').EidosFileSystemManager
-      spaceList: string[]
-      spaceFileSystem: import('@/packages/lib/storage/space').SpaceFileSystem
-      openTabs: string[]
-      config: import('./config/index').ConfigManager
-      selectFolder: () => Promise<string | undefined>
-      openFolder: (folder: string) => Promise<void>
-      isDataFolderSet: boolean
-      reloadApp: () => Promise<void>
-      minimizeWindow: () => void
-      maximizeWindow: () => void
-      unmaximizeWindow: () => void
-      closeWindow: () => void
-      onWindowStateChange: (callback: (state: 'maximized' | 'restored') => void) => () => void
-      initializePlayground: (space: string, blockId: string, files: PlaygroundFile[]) => Promise<string>
-      getApiAgentStatus: () => Promise<import('./server/api-agent').ApiAgentStatus>
-      onApiAgentStatusChanged: (callback: (status: import('./server/api-agent').ApiAgentStatus) => void) => () => void
+    on: (channel: string, listener: IpcListener) => string | undefined
+    off: (channel: string, listenerId: string) => void
+    efsManager: import('@/packages/lib/storage/eidos-file-system').EidosFileSystemManager
+    spaceList: string[]
+    spaceFileSystem: import('@/packages/lib/storage/space').SpaceFileSystem
+    openTabs: string[]
+    config: import('./config/index').ConfigManager
+    selectFolder: () => Promise<string | undefined>
+    openFolder: (folder: string) => Promise<void>
+    isDataFolderSet: boolean
+    reloadApp: () => Promise<void>
+    minimizeWindow: () => void
+    maximizeWindow: () => void
+    unmaximizeWindow: () => void
+    closeWindow: () => void
+    onWindowStateChange: (callback: (state: 'maximized' | 'restored') => void) => () => void
+    initializePlayground: (space: string, blockId: string, files: PlaygroundFile[]) => Promise<string>
+    getApiAgentStatus: () => Promise<import('./server/api-agent').ApiAgentStatus>
+    onApiAgentStatusChanged: (callback: (status: import('./server/api-agent').ApiAgentStatus) => void) => () => void
   }
 }
