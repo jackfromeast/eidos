@@ -6,8 +6,11 @@ import {
   Github,
   HomeIcon,
   Keyboard,
+  LockIcon,
+  LockOpenIcon,
   MailIcon,
   MoreHorizontal,
+  MoveHorizontal,
   PackageIcon,
   ScanTextIcon,
   Trash2Icon,
@@ -192,7 +195,11 @@ export function NavDropdownMenu() {
                         toggleNodeFullWidth(node)
                       }}
                     >
-                      {t("nav.dropdown.menu.fullWidth")}
+                      {/* icon for full width */}
+                      <div className="flex items-center gap-2">
+                        <MoveHorizontal className="mr-2 h-4 w-4" />
+                        {t("nav.dropdown.menu.fullWidth")}
+                      </div>
                       <Switch checked={node.is_full_width} />
                     </DropdownMenuItem>
                     <DropdownMenuItem
@@ -202,7 +209,14 @@ export function NavDropdownMenu() {
                         toggleNodeLock(node)
                       }}
                     >
-                      {t("nav.dropdown.menu.lock")}
+                      <div className="flex items-center gap-2">
+                        {node.is_locked ? (
+                          <LockIcon className="mr-2 h-4 w-4" />
+                        ) : (
+                          <LockOpenIcon className="mr-2 h-4 w-4" />
+                        )}
+                        {t("nav.dropdown.menu.lock")}
+                      </div>
                       <Switch checked={node.is_locked} />
                     </DropdownMenuItem>
                   </>
