@@ -109,6 +109,7 @@ export function MessageActions({
               className="py-1 px-2 h-fit text-muted-foreground"
               variant="outline"
               onClick={handleTogglePreview}
+              disabled
             >
               {isPreviewEnabled ? (
                 <EyeOffIcon className="w-4 h-4" />
