@@ -225,16 +225,21 @@ export const useSqliteStore = create<SqliteState>()((set, get) => ({
 
   setNode: (node: Partial<ITreeNode> & { id: string }) => {
     set((state) => {
-      const { nodeMap } = state.dataStore
-      nodeMap[node.id] = { ...nodeMap[node.id], ...node }
+      // Create a new nodeMap object
+      const newNodeMap = {
+        ...state.dataStore.nodeMap,
+        [node.id]: { ...state.dataStore.nodeMap[node.id], ...node },
+      }
       const nodeIds = orderBy(
-        Object.keys(nodeMap),
-        (id) => nodeMap[id].position,
+        Object.keys(newNodeMap),
+        (id) => newNodeMap[id].position,
         "desc"
       )
-      return { dataStore: { ...state.dataStore, nodeMap, nodeIds } }
+      // Return the new nodeMap in the updated state
+      return { dataStore: { ...state.dataStore, nodeMap: newNodeMap, nodeIds } }
     })
   },
+
 
   delNode: (nodeId: string) => {
     set((state) => {
