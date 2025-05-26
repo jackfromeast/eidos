@@ -14,8 +14,15 @@ export const useNodeMap = () => {
 }
 
 export const useCurrentNode = () => {
-  const { table: nodeId } = useParams()
+  const { table: nodeId, day } = useParams()
   const allNodesMap = useNodeMap()
+  if (day) {
+    return {
+      id: day,
+      name: day,
+      type: "doc",
+    }
+  }
   return nodeId ? allNodesMap[nodeId] : null
 }
 
