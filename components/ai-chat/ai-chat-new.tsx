@@ -282,19 +282,6 @@ export default function Chat() {
             </div>
             <div className="flex w-full items-center justify-between gap-2">
               <div className="flex items-center gap-1">
-                <AIChatPromptSelect
-                  value={currentSysPrompt}
-                  onValueChange={setCurrentSysPrompt}
-                  promptKeys={promptKeys}
-                  prompts={prompts}
-                />
-                <AIModelSelect
-                  onValueChange={setAIModel as any}
-                  value={aiModel}
-                  size="xs"
-                  className="max-w-[150px]"
-                  localModels={aiConfig.localModels}
-                />
               </div>
               <div className="flex items-center gap-1">
                 {isLoading && (
@@ -340,6 +327,13 @@ export default function Chat() {
           attachments={attachments}
           setAttachments={setAttachments}
           uploadQueue={uploadQueue}
+          currentSysPrompt={currentSysPrompt}
+          setCurrentSysPrompt={setCurrentSysPrompt}
+          promptKeys={promptKeys}
+          prompts={prompts}
+          aiModel={aiModel}
+          setAIModel={setAIModel}
+          localModels={aiConfig.localModels}
         />
       </div>
     </div>

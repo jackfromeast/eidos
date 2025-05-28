@@ -37,6 +37,8 @@ import NewMentionsPlugin, {
 import { allTransformers } from "@/components/doc/plugins/const"
 import { useAIConfigStore } from "@/apps/web-app/settings/ai/store"
 
+import { AIModelSelect } from "../ai-chat-model-select"
+import { AIChatPromptSelect } from "../ai-chat-prompt-select"
 import { AutoEditable } from "./plugins/auto-editable"
 import { SwitchPromptPlugin } from "./plugins/switch-prompt"
 
@@ -58,6 +60,13 @@ interface InputEditorProps {
   attachments?: Attachment[]
   setAttachments?: (attachments: Attachment[]) => void
   uploadQueue?: string[]
+  currentSysPrompt?: string
+  setCurrentSysPrompt?: (prompt: string) => void
+  promptKeys?: string[]
+  prompts?: any[]
+  aiModel?: string
+  setAIModel?: (model: string) => void
+  localModels?: string[]
 }
 
 export const nodeInfoMap = new Map<string, ITreeNode>()
@@ -122,6 +131,13 @@ export const AIInputEditor = ({
   attachments = [],
   setAttachments = () => {},
   uploadQueue = [],
+  currentSysPrompt,
+  setCurrentSysPrompt,
+  promptKeys,
+  prompts,
+  aiModel,
+  setAIModel,
+  localModels,
 }: InputEditorProps) => {
   const { t } = useTranslation()
   const initialConfig: InitialConfigType = {
@@ -195,7 +211,7 @@ export const AIInputEditor = ({
           const res = await queryEmbedding({
             query: markdown,
             model: "bge-m3",
-            provider: new BGEM3(embeddingTexts),
+            provider: new BGEM3(embeddingTexts as any),
           })
           res?.forEach((embedding) => {
             appendedEmbeddingMap.set(embedding.id, embedding)
@@ -267,7 +283,7 @@ export const AIInputEditor = ({
 
   return (
     <LexicalComposer initialConfig={initialConfig}>
-      <div className="relative max-h-[200px] overflow-y-auto">
+      <div className="relative max-h-[200px] overflow-y-auto bg-gray-100 outline-none dark:bg-gray-800">
         <RichTextPlugin
           contentEditable={
             <ContentEditable
@@ -295,6 +311,30 @@ export const AIInputEditor = ({
         <AutoFocusPlugin />
         <AIInputEditorDataPlugin ref={dataPluginRef} />
         <AutoEditable editable={Boolean(initialConfig.editable)} />
+        {currentSysPrompt &&
+          setCurrentSysPrompt &&
+          promptKeys &&
+          prompts &&
+          aiModel &&
+          setAIModel &&
+          localModels && (
+            <div className="flex items-center gap-1 mt-[10px]">
+              <AIChatPromptSelect
+                value={currentSysPrompt}
+                onValueChange={setCurrentSysPrompt}
+                promptKeys={promptKeys}
+                prompts={prompts}
+              />
+              <AIModelSelect
+                onValueChange={setAIModel}
+                value={aiModel}
+                size="xs"
+                className="max-w-[200px]  text-xs"
+                localModels={localModels}
+                noBorder
+              />
+            </div>
+          )}
       </div>
     </LexicalComposer>
   )
