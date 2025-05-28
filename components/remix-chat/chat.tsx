@@ -8,6 +8,7 @@ import { useSWRConfig } from "swr"
 import { useWindowSize } from "usehooks-ts"
 
 import docPluginPrompt from "@/lib/v3/prompts/built-in-remix-prompt-for-doc-plugin.md?raw"
+import builtInRemixPromptForPrompt from "@/lib/v3/prompts/built-in-remix-prompt-for-prompt.md?raw"
 import pythonScriptPrompt from "@/lib/v3/prompts/built-in-remix-prompt-for-python-script.md?raw"
 import scriptPrompt from "@/lib/v3/prompts/built-in-remix-prompt-for-script.md?raw"
 import builtInRemixPromptForUDF from "@/lib/v3/prompts/built-in-remix-prompt-for-udf.md?raw"
@@ -16,6 +17,7 @@ import { useAiConfig } from "@/hooks/use-ai-config"
 import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
 import { useMblock } from "@/hooks/use-mblock"
 import { useToast } from "@/components/ui/use-toast"
+import { useAllPrompts } from "@/apps/web-app/[database]/scripts/hooks/use-all-prompts"
 import { useRemixPrompt } from "@/apps/web-app/[database]/scripts/hooks/use-remix-prompt"
 import { useEditorStore } from "@/apps/web-app/[database]/scripts/stores/editor-store"
 import { TaskType } from "@/apps/web-app/settings/ai/hooks"
@@ -49,6 +51,10 @@ export function Chat({
   const script = useMblock(scriptId)
   const [remixPrompt, setRemixPrompt] = useState("")
   const { getRemixPrompt } = useRemixPrompt()
+  const { prompts } = useAllPrompts()
+  const [selectedCustomPromptId, setSelectedCustomPromptId] = useState<
+    string | null
+  >(null)
   const { setChatHistory } = useEditorStore()
   const { toast } = useToast()
 
@@ -63,17 +69,33 @@ export function Chat({
           return pythonScriptPrompt
         case "udf":
           return builtInRemixPromptForUDF
+        case "prompt":
+          return builtInRemixPromptForPrompt
         default:
           return builtInRemixPrompt
       }
     }
 
+    // If a custom prompt is selected, use it instead of the default prompt
+    const basePrompt = selectedCustomPromptId
+      ? prompts.find((p) => p.id === selectedCustomPromptId)?.code ||
+        getPromptByScriptType(script?.type)
+      : getPromptByScriptType(script?.type)
+
     getRemixPrompt(
       script?.bindings,
       script?.ts_code || script?.code,
-      getPromptByScriptType(script?.type)
+      basePrompt
     ).then(setRemixPrompt)
-  }, [script?.bindings, script?.ts_code, script?.code])
+  }, [
+    script?.bindings,
+    script?.ts_code,
+    script?.code,
+    script?.type,
+    selectedCustomPromptId,
+    prompts,
+    getRemixPrompt,
+  ])
   const [aiModel, setAIModel] = useState(
     codingModel ?? findFirstAvailableModel()
   )
@@ -238,6 +260,9 @@ export function Chat({
             append={append}
             aiModel={aiModel}
             setAIModel={setAIModel}
+            prompts={prompts}
+            selectedCustomPromptId={selectedCustomPromptId}
+            setSelectedCustomPromptId={setSelectedCustomPromptId}
           />
         </form>
       </div>
