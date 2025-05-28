@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react"
+import { useCallback, useEffect, useRef } from "react"
 import Prism from "prismjs"
 import ReactMarkdown, { Components } from "react-markdown"
 import remarkGfm from "remark-gfm"
@@ -32,43 +32,83 @@ export const MarkdownRenderer = ({
   customComponents = {},
 }: MarkdownRendererProps) => {
   const containerRef = useRef<HTMLDivElement>(null)
+  const resizeTimerRef = useRef<NodeJS.Timeout | null>(null)
+
+  const rehighlight = useCallback(() => {
+    if (containerRef.current) {
+      // Use highlightAllUnder for more targeted highlighting
+      Prism.highlightAllUnder(containerRef.current)
+    } else {
+      // Fallback to highlightAll if ref is not available
+      Prism.highlightAll()
+    }
+  }, [])
 
   useEffect(() => {
-    // Use both setTimeout and requestAnimationFrame to ensure DOM is fully rendered
+    // Use setTimeout to ensure DOM is fully rendered before highlighting
+    const timer = setTimeout(rehighlight, 0)
+    return () => clearTimeout(timer)
+  }, [children, rehighlight])
+
+  // Additional effect to ensure highlighting after component mount
+  useEffect(() => {
     const timer = setTimeout(() => {
-      requestAnimationFrame(() => {
-        if (containerRef.current) {
-          try {
-            // Highlight only within this component's container
-            Prism.highlightAllUnder(containerRef.current)
-          } catch (error) {
-            // Fallback to global highlight if container-specific fails
-            console.warn('Prism.highlightAllUnder failed, falling back to global highlight:', error)
-            Prism.highlightAll()
-          }
-        }
-      })
-    }, 0)
+      if (containerRef.current) {
+        // Find all code elements and manually highlight them
+        const codeElements = containerRef.current.querySelectorAll(
+          'code[class*="language-"]'
+        )
+        codeElements.forEach((element) => {
+          Prism.highlightElement(element)
+        })
+      }
+    }, 100) // Slightly longer delay for mount
 
     return () => clearTimeout(timer)
-  }, [children])
+  }, [])
+
+  // 监听容器大小变化，重新触发高亮
+  useEffect(() => {
+    if (!containerRef.current) return
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      if (resizeTimerRef.current) {
+        clearTimeout(resizeTimerRef.current)
+      }
+
+      resizeTimerRef.current = setTimeout(() => {
+        rehighlight()
+        resizeTimerRef.current = null
+      }, 100)
+    })
+
+    resizeObserver.observe(containerRef.current)
+
+    return () => {
+      resizeObserver.disconnect()
+      if (resizeTimerRef.current) {
+        clearTimeout(resizeTimerRef.current)
+        resizeTimerRef.current = null
+      }
+    }
+  }, [rehighlight])
 
   // Helper function to get valid language for Prism
   const getValidLanguage = (lang: string): string => {
     if (!lang) return "plaintext"
-    
+
     // Common language mappings
     const languageMap: Record<string, string> = {
-      'js': 'javascript',
-      'ts': 'typescript',
-      'py': 'python',
-      'sh': 'bash',
-      'shell': 'bash',
-      'yml': 'yaml',
-      'html': 'markup',
-      'xml': 'markup',
+      js: "javascript",
+      ts: "typescript",
+      py: "python",
+      sh: "bash",
+      shell: "bash",
+      yml: "yaml",
+      html: "markup",
+      xml: "markup",
     }
-    
+
     const normalizedLang = lang.toLowerCase()
     return languageMap[normalizedLang] || normalizedLang
   }
@@ -92,13 +132,17 @@ export const MarkdownRenderer = ({
 
       // For block code, use proper language or fallback to plaintext
       const validLanguage = getValidLanguage(language)
-      
+      const codeClassName = `language-${validLanguage}`
+
       return (
         <pre
           className="w-full overflow-x-auto bg-zinc-100 dark:bg-zinc-800 p-3 rounded-lg mt-2 mb-2"
           {...props}
         >
-          <code className={`language-${validLanguage} font-mono text-sm`}>
+          <code
+            className={`${codeClassName} font-mono text-sm`}
+            data-language={validLanguage}
+          >
             {children}
           </code>
         </pre>
