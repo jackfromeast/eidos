@@ -1,6 +1,6 @@
 import * as React from "react"
 import { IScript } from "@/worker/web-worker/meta-table/script"
-import { Check } from "lucide-react"
+import { Check, ChevronsUpDown } from "lucide-react"
 import { Link } from "react-router-dom"
 
 import { cn } from "@/lib/utils"
@@ -48,7 +48,7 @@ export const AIChatPromptSelect = (props: {
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
-          variant="outline"
+          variant="ghost"
           role="combobox"
           size="xs"
           aria-expanded={open}
@@ -59,7 +59,7 @@ export const AIChatPromptSelect = (props: {
               ? prompts.find((prompt) => prompt.id === value)?.name || value
               : "select prompt"}
           </p>
-          {/* <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /> */}
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[200px] p-0">
