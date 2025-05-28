@@ -1,18 +1,14 @@
-import { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react"
 import { IScript } from "@/worker/web-worker/meta-table/script"
 import { useLocalStorageState, useMount, useSize } from "ahooks"
 import { Code, Eye } from "lucide-react"
 import { useTheme } from "next-themes"
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react"
 import {
   useLoaderData,
   useRevalidator,
   useSearchParams,
 } from "react-router-dom"
 
-import { compileCode } from "@/lib/v3/compiler"
-import { compileLexicalCode } from "@/lib/v3/lexical-compiler"
-import { getCompileMethod } from "@/lib/v3/script-compiler"
-import { Button } from "@/components/ui/button"
 import {
   ResizableHandle,
   ResizablePanel,
@@ -22,13 +18,15 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { useToast } from "@/components/ui/use-toast"
-import { BlockRenderer } from "@/components/block-renderer/block-renderer"
-import { DocEditorPlayground } from "@/components/doc-editor-playground"
+import { compileCode } from "@/lib/v3/compiler"
+import { compileLexicalCode } from "@/lib/v3/lexical-compiler"
+import { getCompileMethod } from "@/lib/v3/script-compiler"
 
 import { ChatSidebar } from "./components/chat"
 import { Header } from "./components/chat/header"
 import { useChatHeader } from "./components/chat/use-chat-header"
 import { ExtensionToolbar } from "./components/extension-toolbar"
+import { ScriptPreview } from "./components/script-preview"
 import { ExtensionConfig } from "./config/config"
 import { ScriptSandbox } from "./editor/script-sandbox"
 import { getDescriptionFromCode, getEditorLanguage } from "./helper"
@@ -101,9 +99,12 @@ export const ScriptDetailPage = () => {
     script.code
   )
 
-  const isPreviewMode =
-    layoutMode === "preview" &&
-    (script.type === "doc_plugin" || script.type === "m_block")
+  const shouldShowPreview =
+    script.type === "doc_plugin" ||
+    script.type === "m_block" ||
+    script.type === "prompt"
+
+  const isPreviewMode = layoutMode === "preview" && shouldShowPreview
 
   useEffect(() => {
     if (currentDraftCode) {
@@ -121,7 +122,7 @@ export const ScriptDetailPage = () => {
     }
   }, [currentDraftCode, setLayoutMode])
 
-  const showChat = script.type !== "prompt"
+  const showChat = true
   // script.type !== "py_script"
 
   useEffect(() => {
@@ -258,7 +259,7 @@ export const ScriptDetailPage = () => {
         </div>
         {activeTab === "basic" && (
           <div className="flex items-center gap-2">
-            {(script.type === "m_block" || script.type === "doc_plugin") && (
+            {shouldShowPreview && (
               <PreviewToggle
                 layoutMode={layoutMode}
                 onLayoutModeChange={(newMode) => setLayoutMode(newMode)}
@@ -321,41 +322,13 @@ export const ScriptDetailPage = () => {
                           />
                         </Suspense>
                       ) : (
-                        <>
-                          {!script.code ? (
-                            <div className="flex h-full flex-col items-center justify-center gap-4">
-                              <p className="text-muted-foreground">
-                                No preview available. Build first to see the
-                                preview.
-                              </p>
-                              <Button onClick={compileAndSubmit} size="sm">
-                                Build
-                              </Button>
-                            </div>
-                          ) : (
-                            <div className="h-full p-2" ref={previewRef}>
-                              {script.type === "doc_plugin" && (
-                                <DocEditorPlayground
-                                  code={currentCompiledDraftCode || script.code}
-                                />
-                              )}
-                              {script.type === "m_block" && (
-                                <BlockRenderer
-                                  blockId={script.id}
-                                  code={script.ts_code || ""}
-                                  compiledCode={
-                                    currentCompiledDraftCode ||
-                                    script.code ||
-                                    ""
-                                  }
-                                  env={script.env_map}
-                                  bindings={script.bindings}
-                                  height={size?.height}
-                                />
-                              )}
-                            </div>
-                          )}
-                        </>
+                        <ScriptPreview
+                          script={script}
+                          currentCompiledDraftCode={currentCompiledDraftCode}
+                          height={size?.height}
+                          onCompileAndSubmit={compileAndSubmit}
+                          ref={previewRef}
+                        />
                       )}
                     </div>
                   </ResizablePanel>

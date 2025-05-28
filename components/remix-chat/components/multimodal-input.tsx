@@ -26,6 +26,7 @@ import { getSuggestedActions } from "@/apps/web-app/[database]/scripts/helper"
 
 import { ArrowUpIcon, PaperclipIcon, StopIcon } from "./icons"
 import { PreviewAttachment } from "./preview-attachment"
+import { PromptSelector } from "./prompt-selector"
 
 // Add helper function to generate random file names
 const generateRandomFileName = (extension: string) => {
@@ -50,6 +51,9 @@ export function MultimodalInput({
   type,
   aiModel,
   setAIModel,
+  prompts,
+  selectedCustomPromptId,
+  setSelectedCustomPromptId,
 }: {
   chatId: string
   input: string
@@ -74,6 +78,9 @@ export function MultimodalInput({
   type?: IScript["type"]
   aiModel: string
   setAIModel: (value: string) => void
+  prompts?: IScript[]
+  selectedCustomPromptId?: string | null
+  setSelectedCustomPromptId?: (value: string | null) => void
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const { width } = useWindowSize()
@@ -111,6 +118,11 @@ export function MultimodalInput({
   useEffect(() => {
     setLocalStorageInput(input)
   }, [input, setLocalStorageInput])
+
+  // Add effect to adjust height when input changes (especially when cleared)
+  useEffect(() => {
+    adjustHeight()
+  }, [input])
 
   const handleInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(event.target.value)
@@ -339,13 +351,20 @@ export function MultimodalInput({
       />
 
       <div className="h-fit absolute bottom-0 flex  items-center justify-between w-full p-1.5">
-        <AIModelSelect
-          onValueChange={setAIModel}
-          value={aiModel}
-          size="xs"
-          noBorder
-          className="max-w-[200px] bg-transparent"
-        />
+        <div className="flex gap-2 items-center">
+          <PromptSelector
+            prompts={prompts || []}
+            selectedCustomPromptId={selectedCustomPromptId || null}
+            onSelectedCustomPromptIdChange={setSelectedCustomPromptId || (() => {})}
+          />
+          <AIModelSelect
+            onValueChange={setAIModel}
+            value={aiModel}
+            size="xs"
+            noBorder
+            className="max-w-[200px] bg-transparent"
+          />
+        </div>
         <div className="flex gap-2">
           <Button
             className="rounded-full h-fit  m-0.5 dark:border-zinc-700"

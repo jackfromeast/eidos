@@ -14,6 +14,28 @@ export const getAllCodeBlocks = (
 }
 
 /**
+ * get all code blocks from llm-response tags
+ * @param markdown
+ * @returns
+ */
+export const getAllLLMResponseCodeBlocks = (
+  markdown: string
+): {
+  code: string
+  lang: string
+}[] => {
+  const llmResponseRegex = new RegExp(
+    /<llm-response(?:\s+language=["']([^"']*)["'])?[^>]*>([\s\S]*?)<\/llm-response>/gim
+  )
+  const llmResponses = markdown.matchAll(llmResponseRegex)
+  const code = Array.from(llmResponses).map((response) => ({
+    code: response[2].trim(),
+    lang: response[1] || "markdown", // 默认为 markdown
+  }))
+  return code
+}
+
+/**
  * get all links from markdown, but not include image
  * @param markdown
  * @returns
@@ -53,5 +75,6 @@ export const getCodeFromMarkdown = (
   markdown: string
 ): { code: string; lang: string }[] => {
   const codeBlocks = getAllCodeBlocks(markdown)
-  return codeBlocks
+  const llmResponseBlocks = getAllLLMResponseCodeBlocks(markdown)
+  return [...codeBlocks, ...llmResponseBlocks]
 }

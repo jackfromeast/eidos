@@ -48,7 +48,8 @@ export function MessageActions({
         code.lang === "jsx" ||
         code.lang === "typescript" ||
         code.lang === "python" ||
-        code.lang === "javascript"
+        code.lang === "javascript" ||
+        code.lang === "markdown"
     )?.code
     console.log("indexJsxCode", indexJsxCode)
     if (indexJsxCode) {
