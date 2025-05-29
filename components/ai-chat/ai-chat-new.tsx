@@ -15,8 +15,17 @@ import { toast } from "@/components/ui/use-toast"
 import { useAIConfigStore } from "@/apps/web-app/settings/ai/store"
 import { useExperimentConfigStore } from "@/apps/web-app/settings/experiment/store"
 
+import { UIBlock } from "../remix-chat/components/block"
+import {
+  PreviewMessage,
+  ThinkingMessage,
+} from "../remix-chat/components/message"
+import { useScrollToBottom } from "../remix-chat/components/use-scroll-to-bottom"
 import { Label } from "../ui/label"
 import { Switch } from "../ui/switch"
+import { AIChatAttachments } from "./ai-chat-attachments"
+import { AIModelSelect } from "./ai-chat-model-select"
+import { AIChatPromptSelect } from "./ai-chat-prompt-select"
 import { AIContextNodes } from "./ai-context-nodes"
 import { AIInputEditor, AIInputEditorRef } from "./ai-input-editor"
 import {
@@ -25,17 +34,14 @@ import {
   useSystemPrompt,
   useUserPrompts,
 } from "./hooks"
-import "./index.css"
-import { UIBlock } from "../remix-chat/components/block"
 import {
-  PreviewMessage,
-  ThinkingMessage,
-} from "../remix-chat/components/message"
-import { useScrollToBottom } from "../remix-chat/components/use-scroll-to-bottom"
-import { AIChatAttachments } from "./ai-chat-attachments"
-import { AIModelSelect } from "./ai-chat-model-select"
-import { AIChatPromptSelect } from "./ai-chat-prompt-select"
+  EIDOS_CHAT_PROJECT_ID,
+  useAIChatHistory,
+} from "./hooks/use-ai-chat-history"
 import { useAttachments } from "./hooks/use-attachments"
+import "./index.css"
+import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
+
 import { useAIChatSettingsStore } from "./settings/ai-chat-settings-store"
 import { useSpeak } from "./webspeech/hooks"
 
@@ -71,9 +77,11 @@ export default function Chat() {
     contextEmbeddings
   )
 
-  // const { reload: reloadModel } = useReloadModel()
+  const { chatId, chatHistory, setChatHistory, addMessage } = useAIChatHistory()
+
   const { aiModel, setAIModel } = useAppStore()
   const { speak } = useSpeak()
+  const { space } = useCurrentPathInfo()
 
   const disableInput = useMemo(
     () => !aiModel?.length || !systemPrompt?.length,
@@ -94,7 +102,8 @@ export default function Chat() {
     }
   }, [])
 
-  const { getConfigByModel } = useAiConfig()
+  const { getConfigByModel, textModelConfig } = useAiConfig()
+
   const config = useMemo(() => {
     try {
       return getConfigByModel(aiModel)
@@ -104,6 +113,7 @@ export default function Chat() {
   }, [aiModel, getConfigByModel])
 
   const { messages, setMessages, reload, append, isLoading, stop } = useChat({
+    initialMessages: chatHistory,
     onToolCall: async ({ toolCall }) => {
       const res = await handleToolsCall(toolCall.toolName, toolCall.args)
       console.log("toolCall", toolCall, res)
@@ -112,6 +122,7 @@ export default function Chat() {
     onFinish(message) {
       autoSpeak && speak(message.content, message.id)
       scrollToBottom()
+      addMessage(message)
     },
     onError(error) {
       console.log("error:", error)
@@ -124,9 +135,28 @@ export default function Chat() {
       ...config,
       systemPrompt,
       model: aiModel,
-      useTools: enableTools, // 使用 enableTools 状态控制
+
+      useTools: enableTools,
+      id: chatId,
+      projectId: EIDOS_CHAT_PROJECT_ID,
+      space,
+      textModel: textModelConfig,
     },
   })
+
+  useEffect(() => {
+    setMessages(chatHistory)
+  }, [chatHistory, setMessages])
+
+  useEffect(() => {
+    const lastMessage = messages[messages.length - 1]
+    if (lastMessage && lastMessage.role === "user") {
+      const messageExists = chatHistory.some((msg) => msg.id === lastMessage.id)
+      if (!messageExists) {
+        addMessage(lastMessage)
+      }
+    }
+  }, [messages, chatHistory, addMessage])
 
   const scrollToBottom = () => {
     if (chatContainerRef.current) {
@@ -161,12 +191,13 @@ export default function Chat() {
   const [messagesContainerRef, messagesEndRef] =
     useScrollToBottom<HTMLDivElement>()
 
-  const cleanMessages = useCallback(() => {
+  const cleanMessages = useCallback(async () => {
     setMessages([])
+    setChatHistory([])
     setContextNodes([])
     setContextEmbeddings([])
     setAttachments([])
-  }, [setMessages])
+  }, [setMessages, setChatHistory])
 
   const appendHiddenMessage = useCallback(
     (message: any) => {
@@ -223,8 +254,8 @@ export default function Chat() {
         {messages.map((message, index) => (
           <PreviewMessage
             key={message.id}
-            chatId={"demo"}
-            projectId={"demo"}
+            chatId={chatId}
+            projectId={EIDOS_CHAT_PROJECT_ID}
             message={message}
             block={block}
             setBlock={setBlock}

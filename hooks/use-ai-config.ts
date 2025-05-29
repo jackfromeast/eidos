@@ -86,6 +86,20 @@ export const useAiConfig = () => {
     return aiConfig.translationModel || findFirstAvailableModel()
   }, [aiConfig])
 
+
+  const textModelConfig = useMemo(() => {
+    const textModel = findAvailableModel(TaskType.Translation)
+    if (textModel) {
+      try {
+        return getConfigByModel(textModel)
+      } catch (error) {
+        return undefined
+      }
+    }
+    return undefined
+  }, [findAvailableModel, getConfigByModel])
+
+
   const embeddingModel = useMemo(() => {
     return aiConfig.embeddingModel
   }, [aiConfig])
@@ -99,5 +113,6 @@ export const useAiConfig = () => {
     codingModel,
     textModel,
     embeddingModel,
+    textModelConfig,
   }
 }
