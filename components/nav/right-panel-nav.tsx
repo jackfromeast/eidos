@@ -32,6 +32,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { AIChatHeader } from "@/components/ai-chat/ai-chat-header"
+import { useAIChatHistory } from "@/components/ai-chat/hooks/use-ai-chat-history"
 import { useAllMblocks } from "@/apps/web-app/[database]/scripts/hooks/use-all-mblocks"
 
 import {
@@ -65,6 +67,15 @@ export const RightPanelNav = () => {
   const { apps, addApp, deleteApp } = useAppsStore()
   const { space } = useCurrentPathInfo()
   const { t } = useTranslation()
+  const {
+    chatId,
+    sortedChats,
+    createNewChat,
+    switchChat,
+    deleteChat,
+    setChatHistory,
+  } = useAIChatHistory()
+
   const handleAppChange = (app: string) => {
     setCurrentApp(app)
   }
@@ -155,6 +166,10 @@ export const RightPanelNav = () => {
 
     return () => resizeObserver.disconnect()
   }, [])
+
+  const cleanMessages = () => {
+    setChatHistory([])
+  }
 
   return (
     <div className="flex gap-2 justify-between w-full" ref={containerRef}>
@@ -326,6 +341,16 @@ export const RightPanelNav = () => {
         </DropdownMenu>
       </div>
       <div className="drag-region grow"></div>
+      {currentApp === "chat" && (
+        <AIChatHeader
+          chatId={chatId}
+          sortedChats={sortedChats}
+          createNewChat={createNewChat}
+          switchChat={switchChat}
+          deleteChat={deleteChat}
+          onClearMessages={cleanMessages}
+        />
+      )}
       <Button
         size="xs"
         variant="ghost"

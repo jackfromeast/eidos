@@ -46,7 +46,7 @@ export function Chat({
     codingModel,
     getConfigByModel,
     findFirstAvailableModel,
-    findAvailableModel,
+    textModelConfig,
   } = useAiConfig()
   const script = useMblock(scriptId)
   const [remixPrompt, setRemixPrompt] = useState("")
@@ -99,18 +99,6 @@ export function Chat({
   const [aiModel, setAIModel] = useState(
     codingModel ?? findFirstAvailableModel()
   )
-
-  const textModelConfig = useMemo(() => {
-    const textModel = findAvailableModel(TaskType.Translation)
-    if (textModel) {
-      try {
-        return getConfigByModel(textModel)
-      } catch (error) {
-        return undefined
-      }
-    }
-    return undefined
-  }, [findAvailableModel, getConfigByModel])
 
   const config = useMemo(() => {
     try {
