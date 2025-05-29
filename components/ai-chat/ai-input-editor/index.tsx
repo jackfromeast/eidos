@@ -62,13 +62,6 @@ interface InputEditorProps {
   attachments?: Attachment[]
   setAttachments?: (attachments: Attachment[]) => void
   uploadQueue?: string[]
-  currentSysPrompt?: string
-  setCurrentSysPrompt?: (prompt: string) => void
-  promptKeys?: string[]
-  prompts?: any[]
-  aiModel?: string
-  setAIModel?: (model: string) => void
-  localModels?: string[]
 }
 
 export interface AIInputEditorRef {
@@ -154,14 +147,6 @@ export const AIInputEditor = React.forwardRef<
       setContextEmbeddings,
       attachments = [],
       setAttachments = () => {},
-      uploadQueue = [],
-      currentSysPrompt,
-      setCurrentSysPrompt,
-      promptKeys,
-      prompts,
-      aiModel,
-      setAIModel,
-      localModels,
     },
     ref
   ) => {
@@ -327,69 +312,46 @@ export const AIInputEditor = React.forwardRef<
 
     return (
       <LexicalComposer initialConfig={initialConfig}>
-        <div
-          className="relative max-h-[200px] overflow-y-auto bg-gray-100 outline-none dark:bg-gray-800 transition-colors duration-200 hover:bg-gray-50 dark:hover:bg-gray-700"
-          data-drop-zone="ai-editor"
-          data-testid="ai-input-editor"
-        >
-          <RichTextPlugin
-            contentEditable={
-              <ContentEditable
-                className="h-auto min-h-[100px] rounded-sm border-none bg-gray-100 p-2 outline-none dark:bg-gray-800"
-                onKeyDownCapture={handleEnterPress}
-              />
-            }
-            placeholder={
-              <div className="pointer-events-none absolute left-3 top-2 text-xs text-secondary-foreground opacity-50">
-                {t("aiChat.inputEditor.typeYourMessageHere")}
-                <br />
-                {t("aiChat.inputEditor.pressSlashToSwitchPrompt")}
-                {t("aiChat.inputEditor.pressAtToMentionResource")}
-                <br />
-                {t(
-                  "aiChat.inputEditor.dragDropToMention",
-                  "Drag & drop tree nodes here to mention"
-                )}
-              </div>
-            }
-            ErrorBoundary={LexicalErrorBoundary}
-          />
-          <PlainTextPastePlugin />
-          <NewMentionsPlugin
-            onOptionSelectCallback={handleNodeInsert}
-            placement="top-start"
-            onDeleteCallback={handleNodeDelete}
-          />
-          <DragDropPlugin onNodeInsert={handleNodeDrop} />
-          <SwitchPromptPlugin />
-          <HistoryPlugin />
-          <AutoFocusPlugin />
-          <AIInputEditorDataPlugin ref={dataPluginRef} />
-          <AutoEditable editable={Boolean(initialConfig.editable)} />
-          {currentSysPrompt &&
-            setCurrentSysPrompt &&
-            promptKeys &&
-            prompts &&
-            aiModel &&
-            setAIModel &&
-            localModels && (
-              <div className="flex items-center gap-1 mt-[10px]">
-                <AIChatPromptSelect
-                  value={currentSysPrompt}
-                  onValueChange={setCurrentSysPrompt}
-                  promptKeys={promptKeys}
-                  prompts={prompts}
+        <div data-testid="ai-input-editor">
+          <div
+            className="relative max-h-[200px] overflow-y-auto bg-gray-100 outline-none dark:bg-gray-800 transition-colors duration-200 hover:bg-gray-50 dark:hover:bg-gray-700"
+            data-drop-zone="ai-editor"
+          >
+            <RichTextPlugin
+              contentEditable={
+                <ContentEditable
+                  className="h-auto min-h-[100px] rounded-sm border-none bg-gray-100 p-2 outline-none dark:bg-gray-800"
+                  onKeyDownCapture={handleEnterPress}
                 />
-                <AIModelSelect
-                  onValueChange={setAIModel}
-                  value={aiModel}
-                  size="xs"
-                  className="max-w-[200px]  text-xs"
-                  localModels={localModels}
-                  noBorder
-                />
-              </div>
-            )}
+              }
+              placeholder={
+                <div className="pointer-events-none absolute left-3 top-2 text-xs text-secondary-foreground opacity-50">
+                  {t("aiChat.inputEditor.typeYourMessageHere")}
+                  <br />
+                  {t("aiChat.inputEditor.pressSlashToSwitchPrompt")}
+                  {t("aiChat.inputEditor.pressAtToMentionResource")}
+                  <br />
+                  {t(
+                    "aiChat.inputEditor.dragDropToMention",
+                    "Drag & drop tree nodes here to mention"
+                  )}
+                </div>
+              }
+              ErrorBoundary={LexicalErrorBoundary}
+            />
+            <PlainTextPastePlugin />
+            <NewMentionsPlugin
+              onOptionSelectCallback={handleNodeInsert}
+              placement="top-start"
+              onDeleteCallback={handleNodeDelete}
+            />
+            <DragDropPlugin onNodeInsert={handleNodeDrop} />
+            <SwitchPromptPlugin />
+            <HistoryPlugin />
+            <AutoFocusPlugin />
+            <AIInputEditorDataPlugin ref={dataPluginRef} />
+            <AutoEditable editable={Boolean(initialConfig.editable)} />
+          </div>
         </div>
       </LexicalComposer>
     )
