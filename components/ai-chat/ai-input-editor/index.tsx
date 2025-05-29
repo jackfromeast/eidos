@@ -21,6 +21,7 @@ import {
   $getRoot,
   $getSelection,
   $isRangeSelection,
+  $nodesOfType,
   createCommand,
 } from "lexical"
 import { useTranslation } from "react-i18next"
@@ -70,6 +71,12 @@ interface InputEditorProps {
   localModels?: string[]
 }
 
+export interface AIInputEditorRef {
+  getData: () => string
+  clear: () => void
+  deleteMentionNode: (nodeId: string) => void
+}
+
 export const nodeInfoMap = new Map<string, ITreeNode>()
 
 const AIInputEditorDataPlugin = React.forwardRef((props, ref) => {
@@ -87,6 +94,17 @@ const AIInputEditorDataPlugin = React.forwardRef((props, ref) => {
       editor.update(() => {
         const root = $getRoot()
         root.clear()
+      })
+    },
+    deleteMentionNode: (nodeId: string) => {
+      editor.update(() => {
+        const mentionNodes = $nodesOfType(MentionNode)
+        for (const mentionNode of mentionNodes) {
+          if (mentionNode.__id === nodeId) {
+            mentionNode.remove()
+            break
+          }
+        }
       })
     },
   }))
@@ -121,243 +139,259 @@ function PlainTextPastePlugin() {
   return null
 }
 
-export const AIInputEditor = ({
-  disabled,
-  append,
-  enableRAG,
-  appendHiddenMessage,
-  isLoading,
-  setContextNodes,
-  setContextEmbeddings,
-  attachments = [],
-  setAttachments = () => {},
-  uploadQueue = [],
-  currentSysPrompt,
-  setCurrentSysPrompt,
-  promptKeys,
-  prompts,
-  aiModel,
-  setAIModel,
-  localModels,
-}: InputEditorProps) => {
-  const { t } = useTranslation()
-  const initialConfig: InitialConfigType = {
-    namespace: "AI-Chat-Input-Editor",
-    theme,
-    onError: console.error,
-    editable: !disabled,
-    nodes: [
-      MarkNode,
-      HeadingNode,
-      QuoteNode,
-      LinkNode,
-      ListNode,
-      ListItemNode,
-      MentionNode,
-    ],
-  }
-
-  const { hasEmbeddingModel, embeddingTexts } = useEmbedding()
-
-  const { queryEmbedding } = useHnsw()
-  const dataPluginRef = useRef<{
-    getData: () => string
-    clear: () => void
-  }>(null)
-
-  useEffect(() => {
-    return () => {
-      nodeInfoMap.clear()
+export const AIInputEditor = React.forwardRef<
+  AIInputEditorRef,
+  InputEditorProps
+>(
+  (
+    {
+      disabled,
+      append,
+      enableRAG,
+      appendHiddenMessage,
+      isLoading,
+      setContextNodes,
+      setContextEmbeddings,
+      attachments = [],
+      setAttachments = () => {},
+      uploadQueue = [],
+      currentSysPrompt,
+      setCurrentSysPrompt,
+      promptKeys,
+      prompts,
+      aiModel,
+      setAIModel,
+      localModels,
+    },
+    ref
+  ) => {
+    const { t } = useTranslation()
+    const initialConfig: InitialConfigType = {
+      namespace: "AI-Chat-Input-Editor",
+      theme,
+      onError: console.error,
+      editable: !disabled,
+      nodes: [
+        MarkNode,
+        HeadingNode,
+        QuoteNode,
+        LinkNode,
+        ListNode,
+        ListItemNode,
+        MentionNode,
+      ],
     }
-  }, [])
 
-  const { toast } = useToast()
-  const { aiConfig } = useAIConfigStore()
-  // const { isEmbeddingModeLoaded } = useAppRuntimeStore()
-  // const [tryToLoadEmbeddingModel, setTryToLoadEmbeddingModel] =
-  //   React.useState(false)
-  // useEffect(() => {
-  //   isEmbeddingModeLoaded &&
-  //     tryToLoadEmbeddingModel &&
-  //     toast({
-  //       title: "Embedding Mode is loaded.",
-  //     })
-  // }, [isEmbeddingModeLoaded, toast, tryToLoadEmbeddingModel])
+    const { hasEmbeddingModel, embeddingTexts } = useEmbedding()
 
-  const handleEnterPress = async (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (e.key === "Enter") {
-      const contextMenu = document.querySelector("#typeahead-menu")
-      if (contextMenu?.hasChildNodes()) {
-        return
+    const { queryEmbedding } = useHnsw()
+    const dataPluginRef = useRef<{
+      getData: () => string
+      clear: () => void
+      deleteMentionNode: (nodeId: string) => void
+    }>(null)
+
+    React.useImperativeHandle(ref, () => ({
+      getData: () => dataPluginRef.current?.getData() || "",
+      clear: () => dataPluginRef.current?.clear(),
+      deleteMentionNode: (nodeId: string) =>
+        dataPluginRef.current?.deleteMentionNode(nodeId),
+    }))
+
+    useEffect(() => {
+      return () => {
+        nodeInfoMap.clear()
       }
-      if (e.shiftKey) return
-      e.preventDefault()
-      e.stopPropagation()
-      if (isLoading) {
-        return
-      }
-      const markdown = dataPluginRef.current?.getData()
-      if (markdown) {
-        if (enableRAG && hasEmbeddingModel) {
-          // if (!isEmbeddingModeLoaded) {
-          //   toast({
-          //     title: "Embedding Mode is not loaded yet. this may take a while.",
-          //   })
-          //   if (!aiConfig.autoLoadEmbeddingModel) {
-          //     embeddingTexts(["hi"])
-          //   }
-          //   setTryToLoadEmbeddingModel(true)
-          //   return
-          // }
-          const res = await queryEmbedding({
-            query: markdown,
-            model: "bge-m3",
-            provider: new BGEM3(embeddingTexts as any),
-          })
-          res?.forEach((embedding) => {
-            appendedEmbeddingMap.set(embedding.id, embedding)
-          })
-          setContextEmbeddings?.(res ?? [])
-          appendHiddenMessage({
-            id: crypto.randomUUID(),
-            role: "user",
-            content: "[ignore this message]",
-            references: Array.from(
-              new Set(res?.map((embedding) => embedding.source))
-            ),
-          } as any)
+    }, [])
+
+    const { toast } = useToast()
+    const { aiConfig } = useAIConfigStore()
+    // const { isEmbeddingModeLoaded } = useAppRuntimeStore()
+    // const [tryToLoadEmbeddingModel, setTryToLoadEmbeddingModel] =
+    //   React.useState(false)
+    // useEffect(() => {
+    //   isEmbeddingModeLoaded &&
+    //     tryToLoadEmbeddingModel &&
+    //     toast({
+    //       title: "Embedding Mode is loaded.",
+    //     })
+    // }, [isEmbeddingModeLoaded, toast, tryToLoadEmbeddingModel])
+
+    const handleEnterPress = async (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (e.key === "Enter") {
+        const contextMenu = document.querySelector("#typeahead-menu")
+        if (contextMenu?.hasChildNodes()) {
+          return
         }
-
-        const processedAttachments = await Promise.all(
-          attachments.map(async (attachment) => {
-            try {
-              const response = await fetch(attachment.url)
-              const blob = await response.blob()
-
-              if (attachment.contentType === "application/pdf") {
-                throw new Error("PDF is not supported")
-              }
-              const dataUri = await new Promise<string>((resolve) => {
-                const reader = new FileReader()
-                reader.onloadend = () => resolve(reader.result as string)
-                reader.readAsDataURL(blob)
-              })
-
-              return {
-                ...attachment,
-                url: dataUri,
-              }
-            } catch (error) {
-              console.error("Error processing attachment:", error)
-              return attachment
-            }
-          })
-        )
-
-        setTimeout(() => {
-          append(
-            {
+        if (e.shiftKey) return
+        e.preventDefault()
+        e.stopPropagation()
+        if (isLoading) {
+          return
+        }
+        const markdown = dataPluginRef.current?.getData()
+        if (markdown) {
+          if (enableRAG && hasEmbeddingModel) {
+            // if (!isEmbeddingModeLoaded) {
+            //   toast({
+            //     title: "Embedding Mode is not loaded yet. this may take a while.",
+            //   })
+            //   if (!aiConfig.autoLoadEmbeddingModel) {
+            //     embeddingTexts(["hi"])
+            //   }
+            //   setTryToLoadEmbeddingModel(true)
+            //   return
+            // }
+            const res = await queryEmbedding({
+              query: markdown,
+              model: "bge-m3",
+              provider: new BGEM3(embeddingTexts as any),
+            })
+            res?.forEach((embedding) => {
+              appendedEmbeddingMap.set(embedding.id, embedding)
+            })
+            setContextEmbeddings?.(res ?? [])
+            appendHiddenMessage({
               id: crypto.randomUUID(),
               role: "user",
-              content: markdown,
-            },
-            {
-              experimental_attachments: processedAttachments,
-            }
+              content: "[ignore this message]",
+              references: Array.from(
+                new Set(res?.map((embedding) => embedding.source))
+              ),
+            } as any)
+          }
+
+          const processedAttachments = await Promise.all(
+            attachments.map(async (attachment) => {
+              try {
+                const response = await fetch(attachment.url)
+                const blob = await response.blob()
+
+                if (attachment.contentType === "application/pdf") {
+                  throw new Error("PDF is not supported")
+                }
+                const dataUri = await new Promise<string>((resolve) => {
+                  const reader = new FileReader()
+                  reader.onloadend = () => resolve(reader.result as string)
+                  reader.readAsDataURL(blob)
+                })
+
+                return {
+                  ...attachment,
+                  url: dataUri,
+                }
+              } catch (error) {
+                console.error("Error processing attachment:", error)
+                return attachment
+              }
+            })
           )
-        }, 100)
 
-        setAttachments([])
+          setTimeout(() => {
+            append(
+              {
+                id: crypto.randomUUID(),
+                role: "user",
+                content: markdown,
+              },
+              {
+                experimental_attachments: processedAttachments,
+              }
+            )
+          }, 100)
+
+          setAttachments([])
+        }
+        dataPluginRef.current?.clear()
       }
-      dataPluginRef.current?.clear()
     }
-  }
 
-  const handleNodeInsert: MentionPluginProps["onOptionSelectCallback"] = (
-    option
-  ) => {
-    const node = option.rawData
-    nodeInfoMap.set(node.id, node)
-    setContextNodes?.([...nodeInfoMap.values()])
-  }
+    const handleNodeInsert: MentionPluginProps["onOptionSelectCallback"] = (
+      option
+    ) => {
+      const node = option.rawData
+      nodeInfoMap.set(node.id, node)
+      setContextNodes?.([...nodeInfoMap.values()])
+    }
 
-  const handleNodeDelete = (nodeId: string) => {
-    // Remove the deleted node from the nodeInfoMap
-    nodeInfoMap.delete(nodeId)
-    // Update the context nodes to reflect the current state
-    setContextNodes?.([...nodeInfoMap.values()])
-  }
+    const handleNodeDelete = (nodeId: string) => {
+      // Remove the deleted node from the nodeInfoMap
+      nodeInfoMap.delete(nodeId)
+      // Update the context nodes to reflect the current state
+      setContextNodes?.([...nodeInfoMap.values()])
+    }
 
-  const handleNodeDrop = (node: ITreeNode) => {
-    setContextNodes?.([...nodeInfoMap.values()])
-  }
+    const handleNodeDrop = (node: ITreeNode) => {
+      setContextNodes?.([...nodeInfoMap.values()])
+    }
 
-  return (
-    <LexicalComposer initialConfig={initialConfig}>
-      <div
-        className="relative max-h-[200px] overflow-y-auto bg-gray-100 outline-none dark:bg-gray-800 transition-colors duration-200 hover:bg-gray-50 dark:hover:bg-gray-700"
-        data-drop-zone="ai-editor"
-        data-testid="ai-input-editor"
-      >
-        <RichTextPlugin
-          contentEditable={
-            <ContentEditable
-              className="h-auto min-h-[100px] rounded-sm border-none bg-gray-100 p-2 outline-none dark:bg-gray-800"
-              onKeyDownCapture={handleEnterPress}
-            />
-          }
-          placeholder={
-            <div className="pointer-events-none absolute left-3 top-2 text-xs text-secondary-foreground opacity-50">
-              {t("aiChat.inputEditor.typeYourMessageHere")}
-              <br />
-              {t("aiChat.inputEditor.pressSlashToSwitchPrompt")}
-              {t("aiChat.inputEditor.pressAtToMentionResource")}
-              <br />
-              {t(
-                "aiChat.inputEditor.dragDropToMention",
-                "Drag & drop tree nodes here to mention"
-              )}
-            </div>
-          }
-          ErrorBoundary={LexicalErrorBoundary}
-        />
-        <PlainTextPastePlugin />
-        <NewMentionsPlugin
-          onOptionSelectCallback={handleNodeInsert}
-          placement="top-start"
-          onDeleteCallback={handleNodeDelete}
-        />
-        <DragDropPlugin onNodeInsert={handleNodeDrop} />
-        <SwitchPromptPlugin />
-        <HistoryPlugin />
-        <AutoFocusPlugin />
-        <AIInputEditorDataPlugin ref={dataPluginRef} />
-        <AutoEditable editable={Boolean(initialConfig.editable)} />
-        {currentSysPrompt &&
-          setCurrentSysPrompt &&
-          promptKeys &&
-          prompts &&
-          aiModel &&
-          setAIModel &&
-          localModels && (
-            <div className="flex items-center gap-1 mt-[10px]">
-              <AIChatPromptSelect
-                value={currentSysPrompt}
-                onValueChange={setCurrentSysPrompt}
-                promptKeys={promptKeys}
-                prompts={prompts}
+    return (
+      <LexicalComposer initialConfig={initialConfig}>
+        <div
+          className="relative max-h-[200px] overflow-y-auto bg-gray-100 outline-none dark:bg-gray-800 transition-colors duration-200 hover:bg-gray-50 dark:hover:bg-gray-700"
+          data-drop-zone="ai-editor"
+          data-testid="ai-input-editor"
+        >
+          <RichTextPlugin
+            contentEditable={
+              <ContentEditable
+                className="h-auto min-h-[100px] rounded-sm border-none bg-gray-100 p-2 outline-none dark:bg-gray-800"
+                onKeyDownCapture={handleEnterPress}
               />
-              <AIModelSelect
-                onValueChange={setAIModel}
-                value={aiModel}
-                size="xs"
-                className="max-w-[200px]  text-xs"
-                localModels={localModels}
-                noBorder
-              />
-            </div>
-          )}
-      </div>
-    </LexicalComposer>
-  )
-}
+            }
+            placeholder={
+              <div className="pointer-events-none absolute left-3 top-2 text-xs text-secondary-foreground opacity-50">
+                {t("aiChat.inputEditor.typeYourMessageHere")}
+                <br />
+                {t("aiChat.inputEditor.pressSlashToSwitchPrompt")}
+                {t("aiChat.inputEditor.pressAtToMentionResource")}
+                <br />
+                {t(
+                  "aiChat.inputEditor.dragDropToMention",
+                  "Drag & drop tree nodes here to mention"
+                )}
+              </div>
+            }
+            ErrorBoundary={LexicalErrorBoundary}
+          />
+          <PlainTextPastePlugin />
+          <NewMentionsPlugin
+            onOptionSelectCallback={handleNodeInsert}
+            placement="top-start"
+            onDeleteCallback={handleNodeDelete}
+          />
+          <DragDropPlugin onNodeInsert={handleNodeDrop} />
+          <SwitchPromptPlugin />
+          <HistoryPlugin />
+          <AutoFocusPlugin />
+          <AIInputEditorDataPlugin ref={dataPluginRef} />
+          <AutoEditable editable={Boolean(initialConfig.editable)} />
+          {currentSysPrompt &&
+            setCurrentSysPrompt &&
+            promptKeys &&
+            prompts &&
+            aiModel &&
+            setAIModel &&
+            localModels && (
+              <div className="flex items-center gap-1 mt-[10px]">
+                <AIChatPromptSelect
+                  value={currentSysPrompt}
+                  onValueChange={setCurrentSysPrompt}
+                  promptKeys={promptKeys}
+                  prompts={prompts}
+                />
+                <AIModelSelect
+                  onValueChange={setAIModel}
+                  value={aiModel}
+                  size="xs"
+                  className="max-w-[200px]  text-xs"
+                  localModels={localModels}
+                  noBorder
+                />
+              </div>
+            )}
+        </div>
+      </LexicalComposer>
+    )
+  }
+)

@@ -22,7 +22,7 @@ import { useExperimentConfigStore } from "@/apps/web-app/settings/experiment/sto
 import { Label } from "../ui/label"
 import { Switch } from "../ui/switch"
 import { AIContextNodes } from "./ai-context-nodes"
-import { AIInputEditor } from "./ai-input-editor"
+import { AIInputEditor, AIInputEditorRef } from "./ai-input-editor"
 import {
   sysPrompts,
   useAIChatStore,
@@ -50,6 +50,7 @@ export default function Chat() {
 
   const loadingRef = useRef<HTMLDivElement>(null)
   const chatContainerRef = useRef<HTMLDivElement>(null)
+  const aiInputEditorRef = useRef<AIInputEditorRef>(null)
 
   const currentNode = useCurrentNode()
   const { prompts } = useUserPrompts()
@@ -68,7 +69,6 @@ export default function Chat() {
 
   const [contextNodes, setContextNodes] = useState<ITreeNode[]>([])
   const [contextEmbeddings, setContextEmbeddings] = useState<IEmbedding[]>([])
-  const [hasRemovedCurrentNode, setHasRemovedCurrentNode] = useState(false) // 跟踪是否主动删除过 currentNode
   const { systemPrompt } = useSystemPrompt(
     currentSysPrompt,
     contextNodes,
@@ -170,7 +170,6 @@ export default function Chat() {
     setContextNodes([])
     setContextEmbeddings([])
     setAttachments([])
-    setHasRemovedCurrentNode(false) // 清理消息时重置删除状态
   }, [setMessages])
 
   const appendHiddenMessage = useCallback(
@@ -213,9 +212,7 @@ export default function Chat() {
 
   const removeContextNode = (nodeId: string) => {
     setContextNodes((prev) => prev.filter((node) => node.id !== nodeId))
-    if (currentNode && nodeId === currentNode.id) {
-      setHasRemovedCurrentNode(true)
-    }
+    aiInputEditorRef.current?.deleteMentionNode(nodeId)
   }
 
   return (
@@ -337,6 +334,7 @@ export default function Chat() {
           className="absolute right-0 top-0 z-10 ml-0 h-1 rounded-sm bg-green-300 opacity-50"
         ></div>
         <AIInputEditor
+          ref={aiInputEditorRef}
           enableRAG={withSpaceData}
           disabled={disableInput}
           setContextNodes={setContextNodes}
