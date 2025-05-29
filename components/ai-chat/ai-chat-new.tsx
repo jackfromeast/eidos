@@ -1,12 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { IEmbedding } from "@/worker/web-worker/meta-table/embedding"
 import { useChat } from "ai/react"
-import {
-  Paintbrush,
-  PaperclipIcon,
-  PauseIcon,
-  RefreshCcwIcon,
-} from "lucide-react"
+import { Paintbrush, PaperclipIcon, PauseIcon } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { useWindowSize } from "usehooks-ts"
 
@@ -14,6 +9,7 @@ import { ITreeNode } from "@/lib/store/ITreeNode"
 import { useAppStore } from "@/lib/store/app-store"
 import { useAiConfig } from "@/hooks/use-ai-config"
 import { useAIFunctions } from "@/hooks/use-ai-functions"
+import { useCurrentNode } from "@/hooks/use-current-node"
 import { Button } from "@/components/ui/button"
 import { toast } from "@/components/ui/use-toast"
 import { useAIConfigStore } from "@/apps/web-app/settings/ai/store"
@@ -30,8 +26,6 @@ import {
   useUserPrompts,
 } from "./hooks"
 import "./index.css"
-import { useCurrentNode } from "@/hooks/use-current-node"
-
 import { UIBlock } from "../remix-chat/components/block"
 import {
   PreviewMessage,
@@ -39,6 +33,8 @@ import {
 } from "../remix-chat/components/message"
 import { useScrollToBottom } from "../remix-chat/components/use-scroll-to-bottom"
 import { AIChatAttachments } from "./ai-chat-attachments"
+import { AIModelSelect } from "./ai-chat-model-select"
+import { AIChatPromptSelect } from "./ai-chat-prompt-select"
 import { useAttachments } from "./hooks/use-attachments"
 import { useAIChatSettingsStore } from "./settings/ai-chat-settings-store"
 import { useSpeak } from "./webspeech/hooks"
@@ -283,7 +279,7 @@ export default function Chat() {
           )}
 
           <div className="flex w-full flex-col">
-            <div className="flex min-w-[200px] items-center justify-end gap-2">
+            {/* <div className="flex min-w-[200px] items-center justify-end gap-2">
               <Label htmlFor="ai-chat-use-tools" className="text-sm opacity-80">
                 {t("aiChat.inputEditor.useTools")}
               </Label>
@@ -292,67 +288,69 @@ export default function Chat() {
                 checked={enableTools}
                 onCheckedChange={setEnableTools}
               ></Switch>
-            </div>
-            <div className="flex w-full items-center justify-between gap-2">
-              <AIContextNodes
-                contextNodes={contextNodes}
-                onRemoveNode={removeContextNode}
-              />
-
-              <div className="flex items-center gap-1"></div>
-              <div className="flex items-center gap-1">
-                {isLoading && (
-                  <Button onClick={stop} variant="ghost" size="sm">
-                    <PauseIcon className="h-5 w-5" />
-                  </Button>
-                )}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isLoading}
-                >
-                  <PaperclipIcon className="h-5 w-5" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  onClick={() => reload()}
-                  size="sm"
-                  disabled={isLoading}
-                >
-                  <RefreshCcwIcon className="h-5 w-5" />
-                </Button>
-                <Button variant="ghost" onClick={cleanMessages} size="sm">
-                  <Paintbrush className="h-5 w-5" />
-                </Button>
-              </div>
-            </div>
+            </div> */}
           </div>
         </div>
         <div
           id="circle"
           className="absolute right-0 top-0 z-10 ml-0 h-1 rounded-sm bg-green-300 opacity-50"
         ></div>
-        <AIInputEditor
-          ref={aiInputEditorRef}
-          enableRAG={withSpaceData}
-          disabled={disableInput}
-          setContextNodes={setContextNodes}
-          setContextEmbeddings={setContextEmbeddings}
-          append={append}
-          appendHiddenMessage={appendHiddenMessage}
-          isLoading={isLoading}
-          attachments={attachments}
-          setAttachments={setAttachments}
-          uploadQueue={uploadQueue}
-          currentSysPrompt={currentSysPrompt}
-          setCurrentSysPrompt={setCurrentSysPrompt}
-          promptKeys={promptKeys}
-          prompts={prompts}
-          aiModel={aiModel}
-          setAIModel={setAIModel}
-          localModels={aiConfig.localModels}
+
+        <AIContextNodes
+          contextNodes={contextNodes}
+          onRemoveNode={removeContextNode}
         />
+        <div className="flex flex-col mt-2">
+          <AIInputEditor
+            ref={aiInputEditorRef}
+            enableRAG={withSpaceData}
+            disabled={disableInput}
+            setContextNodes={setContextNodes}
+            setContextEmbeddings={setContextEmbeddings}
+            append={append}
+            appendHiddenMessage={appendHiddenMessage}
+            isLoading={isLoading}
+            attachments={attachments}
+            setAttachments={setAttachments}
+            uploadQueue={uploadQueue}
+          />
+          <div className="flex items-center gap-1  bg-gray-100 dark:bg-gray-800 rounded-sm justify-between">
+            <div className="flex items-center gap-1">
+              <AIChatPromptSelect
+                value={currentSysPrompt}
+                onValueChange={setCurrentSysPrompt}
+                promptKeys={promptKeys}
+                prompts={prompts}
+              />
+              <AIModelSelect
+                onValueChange={setAIModel}
+                value={aiModel}
+                size="xs"
+                className="max-w-[200px]  text-xs"
+                localModels={[]}
+                noBorder
+              />
+            </div>
+            <div className="flex items-center gap-1">
+              {isLoading && (
+                <Button onClick={stop} variant="ghost" size="sm">
+                  <PauseIcon className="h-5 w-5" />
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isLoading}
+              >
+                <PaperclipIcon className="h-5 w-5" />
+              </Button>
+              <Button variant="ghost" onClick={cleanMessages} size="sm">
+                <Paintbrush className="h-5 w-5" />
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )
