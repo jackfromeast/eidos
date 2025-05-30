@@ -1,7 +1,6 @@
 import { getProvider } from "@/lib/ai/helper";
-import { CoreTool, CoreUserMessage, LanguageModelV1, convertToCoreMessages, createDataStreamResponse, extractReasoningMiddleware, smoothStream, streamText, wrapLanguageModel } from "ai";
+import { CoreUserMessage, LanguageModelV1, Tool, convertToCoreMessages, createDataStreamResponse, extractReasoningMiddleware, jsonSchema, smoothStream, streamText, wrapLanguageModel } from "ai";
 
-import { allFunctions } from "@/lib/ai/functions";
 
 // import { queryEmbedding } from "../routes/lib"
 import { isDesktopMode } from "@/lib/env";
@@ -11,7 +10,14 @@ import { ChatMessage } from "@/worker/web-worker/meta-table/message";
 import { generateTitleFromUserMessage, getChatById, getMostRecentUserMessage, saveChat, saveMessages, updateChatTitle } from "./helper";
 import { IData } from "./interface";
 
-export async function handleOpenAI(
+
+/**
+ * handle chat api for frontend, use with `useChat` hook in ai sdk
+ * @param data 
+ * @param ctx 
+ * @returns 
+ */
+export async function handleChatApi(
   data: IData,
   ctx?: {
     getDataspace: (space: string) => Promise<DataSpace | null>
@@ -29,13 +35,19 @@ export async function handleOpenAI(
     space,
     id,
     projectId,
-    useTools,
     textModel,
+    tools,
     chunking = 'line'
   } = data
-  if (useTools != null) {
-    useFunctions = useTools
-  }
+
+  // now tools defined in `tools` field will be used, It comes from `useChat` hook in ai sdk
+  const _tools: Record<string, Tool> = {}
+
+  Object.entries(tools ?? {}).forEach(([key, value]) => {
+    _tools[key] = {
+      parameters: jsonSchema(value?.parameters as object),
+    }
+  })
 
   const model = modelAndProvider.split("@")[0]
   const provider = getProvider({
@@ -107,13 +119,7 @@ export async function handleOpenAI(
     }, dataspace);
   }
 
-  const _tools: Record<string, CoreTool> = {}
-  allFunctions.forEach((f) => {
-    _tools[f.name] = {
-      description: f.description,
-      parameters: f.schema
-    }
-  })
+
   // immediately start streaming (solves RAG issues with status, etc.)
   return createDataStreamResponse({
     execute: dataStream => {

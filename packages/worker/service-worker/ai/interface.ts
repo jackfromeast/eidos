@@ -1,5 +1,5 @@
 import { LLMProvider } from "@/lib/ai/config"
-import type { Message } from "ai"
+import type { Message, Tool } from "ai"
 
 export interface IData {
   messages: Message[]
@@ -21,4 +21,5 @@ export interface IData {
     type?: undefined;
   }
   chunking?: 'word' | 'line' | RegExp;
+  tools?: Record<string, Tool>;
 }
