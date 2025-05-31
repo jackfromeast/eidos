@@ -236,6 +236,7 @@
     "sqlite-vec": "0.1.7-alpha.2",
     "swr": "^2.2.5",
     "tailwindcss-animate": "^1.0.6",
+    "unist-util-visit": "^5.0.0",
     "unpdf": "^0.12.1",
     "usehooks-ts": "^3.1.0",
     "utf-8-validate": "^6.0.3",
