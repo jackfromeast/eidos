@@ -1,3 +1,4 @@
+import { useMemo } from "react"
 import { IScript } from "@/worker/web-worker/meta-table/script"
 import useUrlState from "@ahooksjs/use-url-state"
 import { useMount } from "ahooks"
@@ -7,11 +8,13 @@ import {
   PencilRulerIcon,
   SparkleIcon,
   SquareCodeIcon,
-  ToyBrickIcon
+  ToyBrickIcon,
 } from "lucide-react"
-import { useMemo } from "react"
 import { useLoaderData, useRevalidator } from "react-router-dom"
 
+import { EIDOS_SPACE_BASE_URL } from "@/lib/const"
+import { cn, getExtensionUrl } from "@/lib/utils"
+import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -19,9 +22,6 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
 import { useToast } from "@/components/ui/use-toast"
-import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
-import { EIDOS_SPACE_BASE_URL } from "@/lib/const"
-import { cn, getExtensionUrl } from "@/lib/utils"
 
 import { useAppsStore, useSpaceAppStore } from "../store"
 import { NewExtensionButton } from "./components/NewExtensionButton"
@@ -38,13 +38,13 @@ const extensionTypes = [
     icon: FolderIcon,
   },
   {
-    id: "script",
-    name: "Scripts",
-    icon: SquareCodeIcon,
+    id: "m_block",
+    name: "Micro Blocks",
+    icon: ToyBrickIcon,
   },
   {
-    id: "py_script",
-    name: "Python Scripts",
+    id: "script",
+    name: "Scripts",
     icon: SquareCodeIcon,
   },
   {
@@ -58,14 +58,14 @@ const extensionTypes = [
     icon: SparkleIcon,
   },
   {
-    id: "m_block",
-    name: "Micro Blocks",
-    icon: ToyBrickIcon,
-  },
-  {
     id: "doc_plugin",
     name: "Doc Plugins",
     icon: PencilRulerIcon,
+  },
+  {
+    id: "py_script",
+    name: "Python Scripts",
+    icon: SquareCodeIcon,
   },
 ]
 
@@ -255,7 +255,7 @@ export const ScriptPage = () => {
     })
   }
   return (
-    <div className="flex h-full">
+    <div className="flex h-full overflow-hidden">
       {/* Left Sidebar */}
       <div className="w-64 border-r p-4">
         <ScrollArea className="h-full">

@@ -41,6 +41,7 @@ export const ScriptListItem = ({
   onReload,
 }: ScriptListItemProps) => {
   const Icon = IconMap[script.type] || IconMap.script
+  const iconIsDataUri = script.icon && script.icon.startsWith("data:image")
 
   return (
     <div className="flex items-center justify-between border-b px-4 py-3 hover:bg-muted/50">
@@ -48,7 +49,15 @@ export const ScriptListItem = ({
         to={`/${space}/extensions/${script.id}`}
         className="flex flex-1 items-center gap-3"
       >
-        <Icon size={20} className="opacity-60" />
+        {iconIsDataUri ? (
+          <img
+            src={script.icon}
+            alt={script.name}
+            className="h-6 w-6 shrink-0 opacity-70 border rounded-md"
+          />
+        ) : (
+          <Icon size={24} className="opacity-60" />
+        )}
         <div>
           <div className="flex items-center gap-2">
             <span className="font-medium">{script.name}</span>

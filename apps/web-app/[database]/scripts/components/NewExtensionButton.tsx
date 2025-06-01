@@ -17,7 +17,7 @@ import { useNewScript } from "../hooks/use-new-script"
 const ScriptTooltip = ({ children }: { children: React.ReactNode }) => {
   return (
     <div
-      className="ring invisible group-hover:visible absolute left-full top-0 ml-2 w-64 rounded-md border bg-popover p-3 text-sm before:absolute before:-left-4 before:top-0 before:h-full before:w-4"
+      className="ring invisible group-hover:visible absolute right-full top-0 mr-2 w-64 rounded-md border bg-popover p-3 text-sm before:absolute before:-right-4 before:top-0 before:h-full before:w-4"
       onClick={(e) => e.stopPropagation()}
     >
       {children}
@@ -36,7 +36,7 @@ export const NewExtensionButton = () => {
           {t("common.new")} <ChevronDownIcon className="ml-1 h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="overflow-visible" align="start">
+      <DropdownMenuContent className="overflow-visible" align="end">
         <DropdownMenuLabel>{t("extension.createNew")}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem
@@ -48,33 +48,11 @@ export const NewExtensionButton = () => {
         </DropdownMenuItem>
         <DropdownMenuItem
           className="group relative"
-          onClick={() => handleCreateNewScript("doc_plugin")}
-        >
-          {t("extension.docPlugin")}
-          <Badge variant="secondary">{t("common.badge.alpha")}</Badge>
-          <ScriptTooltip>{t("extension.docPluginDescription")}</ScriptTooltip>
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          className="group relative"
           onClick={() => handleCreateNewScript()}
         >
           {t("extension.script")}
           <ScriptTooltip>{t("extension.scriptDescription")}</ScriptTooltip>
         </DropdownMenuItem>
-        <DropdownMenuItem
-          className="group relative"
-          onClick={() => handleCreateNewScript("py_script")}
-        >
-          {t("extension.pythonScript")}{" "}
-          <Badge variant="secondary">{t("common.badge.alpha")}</Badge>
-          <Badge variant="default" className="bg-primary">
-            {t("common.badge.new")}
-          </Badge>
-          <ScriptTooltip>
-            {t("extension.pythonScriptDescription")}
-          </ScriptTooltip>
-        </DropdownMenuItem>
-
         <DropdownMenuItem
           className="group relative"
           onClick={() => handleCreateNewScript("udf")}
@@ -93,6 +71,27 @@ export const NewExtensionButton = () => {
         >
           {t("extension.prompt")}
           <ScriptTooltip>{t("extension.promptDescription")}</ScriptTooltip>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          className="group relative"
+          onClick={() => handleCreateNewScript("doc_plugin")}
+        >
+          {t("extension.docPlugin")}
+          <Badge variant="secondary">{t("common.badge.alpha")}</Badge>
+          <ScriptTooltip>{t("extension.docPluginDescription")}</ScriptTooltip>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          className="group relative"
+          onClick={() => handleCreateNewScript("py_script")}
+        >
+          {t("extension.pythonScript")}{" "}
+          <Badge variant="secondary">{t("common.badge.alpha")}</Badge>
+          {/* <Badge variant="default" className="bg-primary">
+            {t("common.badge.new")}
+          </Badge> */}
+          <ScriptTooltip>
+            {t("extension.pythonScriptDescription")}
+          </ScriptTooltip>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
