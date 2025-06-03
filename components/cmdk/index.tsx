@@ -1,25 +1,21 @@
 "use client"
 
-import { useEffect } from "react"
 import { useDebounceFn, useKeyPress } from "ahooks"
 import {
   Bot,
   Clock3Icon,
   FilePlus2Icon,
+  PaintBucket,
   Palette,
   RefreshCcwIcon,
-  Settings,
+  Settings
 } from "lucide-react"
 import { useTheme } from "next-themes"
+import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { isDesktopMode, isInkServiceMode } from "@/lib/env"
-import { useAppRuntimeStore } from "@/lib/store/runtime-store"
-import { getToday } from "@/lib/utils"
-import { useCurrentNode } from "@/hooks/use-current-node"
-import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
-import { useQueryNode } from "@/hooks/use-query-node"
-import { useSqlite } from "@/hooks/use-sqlite"
+import { useLastOpened } from "@/apps/web-app/[database]/hook"
+import { useSpaceAppStore } from "@/apps/web-app/[database]/store"
 import {
   CommandDialog,
   CommandEmpty,
@@ -30,15 +26,27 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from "@/components/ui/command"
-import { useLastOpened } from "@/apps/web-app/[database]/hook"
-import { useSpaceAppStore } from "@/apps/web-app/[database]/store"
+import { useCurrentNode } from "@/hooks/use-current-node"
+import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
+import { useQueryNode } from "@/hooks/use-query-node"
+import { useSqlite } from "@/hooks/use-sqlite"
+import { isDesktopMode, isInkServiceMode } from "@/lib/env"
+import { useAppRuntimeStore } from "@/lib/store/runtime-store"
+import { getToday } from "@/lib/utils"
 
+import { ThemeStudio } from "../theme-studio"
 import { ActionCommandItems } from "./action"
 // import { ExtensionCommandItems } from "./extension"
 import { useCMDKGoto, useCMDKStore, useInput } from "./hooks"
 import { NodeCommandItems } from "./nodes"
 import { ScriptCommandItems } from "./script"
+import { SecondaryView } from "./secondary-view"
 import { SpaceCommandItems } from "./spaces"
+
+type SecondaryView = {
+  component: React.ReactNode
+  title: string
+} | null
 
 export function CommandDialogDemo() {
   const { isCmdkOpen, setCmdkOpen } = useAppRuntimeStore()
@@ -47,6 +55,8 @@ export function CommandDialogDemo() {
   const { theme, setTheme } = useTheme()
   const { space } = useCurrentPathInfo()
   const { setSearchNodes } = useCMDKStore()
+  const [isCustomThemeOpen, setIsCustomThemeOpen] = useState(false)
+  const [secondaryView, setSecondaryView] = useState<SecondaryView>(null)
 
   const currentNode = useCurrentNode()
 
@@ -84,7 +94,8 @@ export function CommandDialogDemo() {
   const goShare = goto("/share")
 
   const switchTheme = () => {
-    setTheme(theme === "light" ? "dark" : "light")
+    const newTheme = theme === "light" ? "dark" : "light"
+    setTheme(newTheme)
   }
 
   const rebuildTableFTS = async (id: string) => {
@@ -108,89 +119,111 @@ export function CommandDialogDemo() {
 
   return (
     <CommandDialog open={isCmdkOpen} onOpenChange={setCmdkOpen}>
-      <CommandInput
-        placeholder={t("cmdk.inputPlaceholder")}
-        value={input}
-        onValueChange={setInput}
-      />
-      <CommandList>
-        <CommandEmpty>
-          <span>{t("cmdk.notFound", { input })}</span>
-        </CommandEmpty>
+      {secondaryView ? (
+        <SecondaryView
+          component={secondaryView.component}
+          title={secondaryView.title}
+          onBack={() => setSecondaryView(null)}
+        />
+      ) : (
+        <>
+          <CommandInput
+            placeholder={t("cmdk.inputPlaceholder")}
+            value={input}
+            onValueChange={setInput}
+            autoFocus
+          />
+          <CommandList>
+            <CommandEmpty>
+              <span>{t("cmdk.notFound", { input })}</span>
+            </CommandEmpty>
 
-        {mode === "search" && (
-          <>
-            {!isInkServiceMode && (
-              <CommandGroup heading={t("cmdk.suggestions")}>
-                <CommandItem onSelect={goToday} value="today">
-                  <Clock3Icon className="mr-2 h-4 w-4" />
-                  <span>{t("common.today")}</span>
-                </CommandItem>
-                <CommandItem onSelect={createNewDoc} value="new draft doc">
-                  <FilePlus2Icon className="mr-2 h-4 w-4" />
-                  <span>{t("cmdk.newDraftDoc")}</span>
-                </CommandItem>
-                <CommandItem onSelect={toggleAI}>
-                  <Bot className="mr-2 h-4 w-4" />
-                  <span>{t("common.ai")}</span>
-                </CommandItem>
-              </CommandGroup>
-            )}
-
-            {isDesktopMode && currentNode?.type === "table" && (
-              <CommandGroup heading={t("cmdk.table")}>
-                <CommandItem
-                  onSelect={() => {
-                    rebuildTableFTS(currentNode.id)
-                  }}
-                  value="rebuild fts"
-                >
-                  <RefreshCcwIcon className="mr-2 h-4 w-4" />
-                  <span>{t("cmdk.rebuildFTS")}</span>
-                </CommandItem>
-              </CommandGroup>
-            )}
-            <CommandSeparator />
-            {!isInkServiceMode && (
+            {mode === "search" && (
               <>
-                <NodeCommandItems />
-                <SpaceCommandItems />
+                {!isInkServiceMode && (
+                  <CommandGroup heading={t("cmdk.suggestions")}>
+                    <CommandItem onSelect={goToday} value="today">
+                      <Clock3Icon className="mr-2 h-4 w-4" />
+                      <span>{t("common.today")}</span>
+                    </CommandItem>
+                    <CommandItem onSelect={createNewDoc} value="new draft doc">
+                      <FilePlus2Icon className="mr-2 h-4 w-4" />
+                      <span>{t("cmdk.newDraftDoc")}</span>
+                    </CommandItem>
+                    <CommandItem onSelect={toggleAI}>
+                      <Bot className="mr-2 h-4 w-4" />
+                      <span>{t("common.ai")}</span>
+                    </CommandItem>
+                  </CommandGroup>
+                )}
+
+                {isDesktopMode && currentNode?.type === "table" && (
+                  <CommandGroup heading={t("cmdk.table")}>
+                    <CommandItem
+                      onSelect={() => {
+                        rebuildTableFTS(currentNode.id)
+                      }}
+                      value="rebuild fts"
+                    >
+                      <RefreshCcwIcon className="mr-2 h-4 w-4" />
+                      <span>{t("cmdk.rebuildFTS")}</span>
+                    </CommandItem>
+                  </CommandGroup>
+                )}
+                <CommandSeparator />
+                {!isInkServiceMode && (
+                  <>
+                    <NodeCommandItems />
+                    <SpaceCommandItems />
+                  </>
+                )}
               </>
             )}
-          </>
-        )}
 
-        {mode === "action" && (
-          <ScriptCommandItems
-            input={input}
-            setInput={setInput}
-            setCmdkOpen={setCmdkOpen}
-            mode={mode}
-          />
-        )}
-        {mode === "syscall" && (
-          <ActionCommandItems
-            input={input}
-            setInput={setInput}
-            setCmdkOpen={setCmdkOpen}
-            mode={mode}
-          />
-        )}
-        <CommandSeparator />
-        <CommandGroup heading={t("common.settings")}>
-          <CommandItem onSelect={switchTheme}>
-            <Palette className="mr-2 h-4 w-4" />
-            <span>{t("cmdk.switchTheme")}</span>
-            <CommandShortcut>⌘+Shift+L</CommandShortcut>
-          </CommandItem>
-          {!isInkServiceMode && (
-            <CommandItem onSelect={goto("/settings")}>
-              <Settings className="mr-2 h-4 w-4" />
-              <span>{t("common.settings")}</span>
-            </CommandItem>
-          )}
-        </CommandGroup>
-      </CommandList>
+            {mode === "action" && (
+              <ScriptCommandItems
+                input={input}
+                setInput={setInput}
+                setCmdkOpen={setCmdkOpen}
+                mode={mode}
+              />
+            )}
+            {mode === "syscall" && (
+              <ActionCommandItems
+                input={input}
+                setInput={setInput}
+                setCmdkOpen={setCmdkOpen}
+                mode={mode}
+              />
+            )}
+            <CommandSeparator />
+            <CommandGroup heading={t("common.settings")}>
+              <CommandItem onSelect={switchTheme}>
+                <Palette className="mr-2 h-4 w-4" />
+                <span>{t("cmdk.switchTheme")}</span>
+                <CommandShortcut>⌘+Shift+L</CommandShortcut>
+              </CommandItem>
+              <CommandItem
+                onSelect={() => {
+                  setSecondaryView({
+                    component: <ThemeStudio />,
+                    title: t("cmdk.themeStudio", "Theme Studio"),
+                  })
+                }}
+              >
+                <PaintBucket className="mr-2 h-4 w-4" />
+                <span>{t("cmdk.themeStudio", "Theme Studio")}</span>
+              </CommandItem>
+              {!isInkServiceMode && (
+                <CommandItem onSelect={goto("/settings")}>
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>{t("common.settings")}</span>
+                </CommandItem>
+              )}
+            </CommandGroup>
+          </CommandList>
+        </>
+      )}
     </CommandDialog>
   )
 }

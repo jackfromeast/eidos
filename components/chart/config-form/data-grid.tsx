@@ -6,11 +6,11 @@ import {
   Item,
 } from "@glideapps/glide-data-grid"
 
-import { darkTheme, lightTheme } from "@/components/table/views/grid/theme"
+import { useDynamicTheme } from "@/components/table/views/grid/theme"
 
 import "@glideapps/glide-data-grid/dist/index.css"
-import { useCallback, useEffect, useRef, useState } from "react"
 import { useTheme } from "next-themes"
+import { useCallback, useRef } from "react"
 
 interface DataGridProps {
   data: Record<string, any>[]
@@ -74,7 +74,7 @@ const getCellContent = (
 export function DataGrid({ data, onDataChange }: DataGridProps) {
   const gridRef = useRef<HTMLDivElement>(null)
   const { theme } = useTheme()
-  const _theme = theme === "light" ? lightTheme : darkTheme
+  const _theme = useDynamicTheme(theme || "light")
   const onCellEdited = useCallback(
     ([col, row]: Item, newValue: GridCell) => {
       if (newValue.kind !== GridCellKind.Text) return

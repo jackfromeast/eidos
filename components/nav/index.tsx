@@ -60,11 +60,11 @@ export const Nav = ({
           "!h-[38px]": isMac(),
           // fix title bar height for windows
           "pt-[6px]": isWindowsDesktop,
-          "bg-[#000]": theme === "dark",
-          "bg-[#fff]": theme === "light",
+          // "bg-primary": theme === "dark",
+          // "bg-background": theme === "light",
           // PWA does not support css variables for theme color yet, we just use bg-white text-black for now
           // https://github.com/w3c/manifest/issues/975
-          "bg-white text-black": navigator.windowControlsOverlay?.visible,
+          // "bg-white text-black": navigator.windowControlsOverlay?.visible,
         }
       )}
     >
