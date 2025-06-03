@@ -1,8 +1,12 @@
 import { useEffect } from "react"
 import { useTheme } from "next-themes"
 
+import { useApplyThemeByName } from "@/hooks/use-apply-theme-by-name"
+
 export const ThemeUpdater = () => {
   const { theme } = useTheme()
+  useApplyThemeByName()
+
   useEffect(() => {
     if (theme === "dark") {
       const themeMeta = document.querySelector('meta[name="theme-color"]')

@@ -8,6 +8,9 @@ import DataEditor, {
 import { useSpaceAppStore } from "@/apps/web-app/[database]/store"
 
 import "@glideapps/glide-data-grid/dist/index.css"
+import { useKeyPress, useSize } from "ahooks"
+import { Plus } from "lucide-react"
+import { useTheme } from "next-themes"
 import React, {
   useCallback,
   useContext,
@@ -15,15 +18,12 @@ import React, {
   useMemo,
   useRef,
 } from "react"
-import { useKeyPress, useSize } from "ahooks"
-import { Plus } from "lucide-react"
-import { useTheme } from "next-themes"
 
-import { IGridViewProperties, IView } from "@/lib/store/IView"
-import { cn } from "@/lib/utils"
 import { useSqlite } from "@/hooks/use-sqlite"
 import { useTableOperation } from "@/hooks/use-table"
 import { useUiColumns } from "@/hooks/use-ui-columns"
+import { IGridViewProperties, IView } from "@/lib/store/IView"
+import { cn } from "@/lib/utils"
 
 import { TwinkleSparkle } from "../../../loading"
 import { Button } from "../../../ui/button"
@@ -46,7 +46,7 @@ import { FormulaEditor } from "./plugins/formula-editor"
 import { useFormulaEditor } from "./plugins/use-formula-editor"
 import { useTableAppStore } from "./store"
 import "./styles.css"
-import { darkTheme, lightTheme } from "./theme"
+import { useDynamicTheme } from "./theme"
 
 interface IGridProps {
   tableName: string
@@ -57,10 +57,11 @@ interface IGridProps {
   className?: string
 }
 
+
 export default function GridView(props: IGridProps) {
   const { tableName, databaseName } = props
-  const { theme } = useTheme()
-  const _theme = theme === "light" ? lightTheme : darkTheme
+  const { theme = "light" } = useTheme()
+  const _theme = useDynamicTheme(theme)
   const { setCurrentTableSchema } = useSpaceAppStore()
   const glideDataGridRef = useRef<DataEditorRef>(null)
   const containerRef = useRef<HTMLDivElement>(null)

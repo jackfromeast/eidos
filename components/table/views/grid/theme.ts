@@ -1,4 +1,8 @@
+import { useCurrentTheme } from "@/hooks/use-all-themes"
+import { useThemeStore } from "@/lib/store/theme-store"
+import { getThemeVariables } from "@/lib/web/theme"
 import { Theme } from "@glideapps/glide-data-grid"
+import { useCallback, useMemo } from "react"
 
 const commonTheme: Partial<Theme> = {
   cellHorizontalPadding: 8,
@@ -14,71 +18,40 @@ const commonTheme: Partial<Theme> = {
   lineHeight: 1.4, //unitless scaler depends on your font
 }
 
-export const darkTheme: Partial<Theme> & { name: string } = {
-  name: "dark",
-  accentColor: "hsl(0,0%,100%)",
-  accentLight: "hsl(222.2,47.4%,11.2%)",
+export const useDynamicTheme = (theme: string) => {
+  const { currentThemeName } = useThemeStore()
+  const currentTheme = useCurrentTheme()
+  const getCSSVariable = useCallback((key: string) => {
+    const variables = getThemeVariables(currentTheme?.css || "", theme === "dark")
+    return variables?.[key] || ""
+  }, [currentTheme, theme])
 
-  textDark: "#ffffff",
-  textMedium: "#b8b8b8",
-  textLight: "#a0a0a0",
-  textBubble: "#ffffff",
-
-  bgIconHeader: "#b8b8b8",
-  fgIconHeader: "#000000",
-  textHeader: "#a1a1a1",
-  textHeaderSelected: "#000000",
-
-  bgCell: "hsl(224,71%, 4%)",
-  bgCellMedium: "#202027",
-  bgHeader: "hsl(224,71%, 4%)",
-  bgHeaderHasFocus: "hsl(224,71%, 4%)",
-  bgHeaderHovered: "#333333",
-
-  bgBubble: "#212121",
-  bgBubbleSelected: "#000000",
-
-  bgSearchResult: "#423c24",
-
-  borderColor: "rgba(225,225,225,0.2)",
-  drilldownBorder: "rgba(225,225,225,0.4)",
-
-  linkColor: "#4F5DFF",
-
-  ...commonTheme,
-}
-
-export const lightTheme: Partial<Theme> & { name: string } = {
-  name: "light",
-  accentColor: "hsl(0,0%,0%)",
-  accentFg: "#FFFFFF",
-  accentLight: "rgba(62, 116, 253, 0.1)",
-
-  textDark: "#313139",
-  textMedium: "#737383",
-  textLight: "#B2B2C0",
-  textBubble: "#313139",
-
-  bgIconHeader: "#aaaaaa",
-  fgIconHeader: "#FFFFFF",
-  textHeader: "#313139",
-  textGroupHeader: "#313139BB",
-  textHeaderSelected: "#FFFFFF",
-
-  bgCell: "#FFFFFF",
-  bgCellMedium: "#FAFAFB",
-  bgHeader: "#FFFFFF",
-  bgHeaderHasFocus: "#E9E9EB",
-  bgHeaderHovered: "#EFEFF1",
-
-  bgBubble: "#EDEDF3",
-  bgBubbleSelected: "#FFFFFF",
-
-  bgSearchResult: "#fff9e3",
-
-  borderColor: "rgba(115, 116, 131, 0.16)",
-  drilldownBorder: "rgba(0, 0, 0, 0)",
-
-  linkColor: "#4F5DFF",
-  ...commonTheme,
+  return useMemo(() => {
+    return {
+      ...commonTheme,
+      accentColor: `hsl(${getCSSVariable("primary")})`,
+      accentFg: `hsl(${getCSSVariable("primary-foreground")})`,
+      accentLight: `hsl(${getCSSVariable("secondary")})`,
+      textDark: `hsl(${getCSSVariable("foreground")})`,
+      textMedium: `hsl(${getCSSVariable("muted-foreground")})`,
+      textLight: `hsl(${getCSSVariable("muted-foreground")})`,
+      textBubble: `hsl(${getCSSVariable("foreground")})`,
+      bgIconHeader: `hsl(${getCSSVariable("muted-foreground")})`,
+      fgIconHeader: `hsl(${getCSSVariable("primary-foreground")})`,
+      textHeader: `hsl(${getCSSVariable("foreground")})`,
+      textGroupHeader: `hsl(${getCSSVariable("foreground")})`,
+      textHeaderSelected: `hsl(${getCSSVariable("primary-foreground")})`,
+      bgCell: `hsl(${getCSSVariable("background")})`,
+      bgCellMedium: `hsl(${getCSSVariable("secondary")})`,
+      bgHeader: `hsl(${getCSSVariable("background")})`,
+      bgHeaderHasFocus: `hsl(${getCSSVariable("border")})`,
+      bgHeaderHovered: `hsl(${getCSSVariable("muted")})`,
+      bgBubble: `hsl(${getCSSVariable("muted")})`,
+      bgBubbleSelected: `hsl(${getCSSVariable("background")})`,
+      bgSearchResult: `hsl(${getCSSVariable("muted")})`,
+      borderColor: `hsl(${getCSSVariable("border")})`,
+      drilldownBorder: `hsl(${getCSSVariable("border")})`,
+      linkColor: `hsl(${getCSSVariable("primary")})`,
+    }
+  }, [currentThemeName, getCSSVariable])
 }
