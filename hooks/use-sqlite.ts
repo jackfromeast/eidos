@@ -543,6 +543,12 @@ export const useSqlite = (dbName?: string) => {
     })
   }
 
+  const deleteExtNode = async (nodeId: string) => {
+    if (!sqlWorker) return
+    sqlWorker.permanentlyDeleteExtNode(nodeId)
+    delNode(nodeId)
+  }
+
   const permanentlyDeleteNode = async (node: ITreeNode) => {
     switch (node.type) {
       case "table":
@@ -552,6 +558,9 @@ export const useSqlite = (dbName?: string) => {
         await deleteDoc(node.id)
         break
       default:
+        if (node.type.startsWith("ext__")) {
+          await deleteExtNode(node.id)
+        }
         break
     }
   }

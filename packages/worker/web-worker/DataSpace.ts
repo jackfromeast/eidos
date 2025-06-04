@@ -721,6 +721,13 @@ export class DataSpace {
     return extNode
   }
 
+  public async permanentlyDeleteExtNode(nodeId: string) {
+    await this.db.transaction(async (db) => {
+      await this.extNode.del(nodeId)
+      await this.tree.del(nodeId)
+    })
+  }
+
   @timeit(100)
   public async addDoc(
     docId: string,
