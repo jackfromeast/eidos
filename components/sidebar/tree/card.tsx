@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils"
 import { useCurrentNode } from "@/hooks/use-current-node"
 import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
 import { useAllNodes } from "@/hooks/use-nodes"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { NodeIconEditor } from "@/apps/web-app/[database]/[node]/node-icon"
 
@@ -182,7 +183,7 @@ export const Card: FC<CardProps> = ({
     end: (item, monitor) => {
       const didDrop = monitor.didDrop()
       const dropResult = monitor.getDropResult()
-      
+
       // Only call onDrop if the drop was within the react-dnd context
       // If dropped outside (like on AI editor), react-dnd will consider it as not dropped
       if (didDrop && dropResult) {
@@ -199,9 +200,9 @@ export const Card: FC<CardProps> = ({
     // Only pass the node ID, keep it simple
     event.dataTransfer.setData("text/plain", node.id)
     event.dataTransfer.effectAllowed = "copy"
-    
+
     console.log("Native drag started for node:", node.name, node.id)
-    
+
     // Don't prevent default to allow both native and react-dnd to work
   }
 
@@ -277,6 +278,12 @@ export const Card: FC<CardProps> = ({
                 <span className="truncate" title={node.name}>
                   {node.name.length === 0 ? "Untitled" : node.name}
                 </span>
+
+                {node.type.startsWith("ext__") && (
+                  <Badge variant="outline" className="text-xs ml-2">
+                    {node.type.split("ext__")[1]}
+                  </Badge>
+                )}
               </Link>
             </Button>
           </NodeItem>
