@@ -107,20 +107,21 @@ export async function generateImportMap(
 
     thirdPartyLibs.forEach((dep) => {
         if (dep === "react" || dep === "react-dom") return;
+        // const shouldExternalizeReact = Array.from(uiLibDeps).some(pattern => {
+        //     if (pattern.endsWith('*')) {
+        //         const prefix = pattern.slice(0, -1);
+        //         return dep.startsWith(prefix);
+        //     }
+        //     return dep === pattern;
+        // });
+        // if (shouldExternalizeReact) {
+        //     imports[dep] = `https://esm.sh/${dep}?external=react,react-dom`;
+        // } else {
+        //     imports[dep] = `https://esm.sh/${dep}?deps=react@${REACT_VERSION}`;
+        // }
+        // all third party libs use external react and react-dom. avoid multiple versions of react and react-dom
+        imports[dep] = `https://esm.sh/${dep}?external=react,react-dom`;
 
-        const shouldExternalizeReact = Array.from(uiLibDeps).some(pattern => {
-            if (pattern.endsWith('*')) {
-                const prefix = pattern.slice(0, -1);
-                return dep.startsWith(prefix);
-            }
-            return dep === pattern;
-        });
-
-        if (shouldExternalizeReact) {
-            imports[dep] = `https://esm.sh/${dep}?external=react&alias=react@${REACT_VERSION}`;
-        } else {
-            imports[dep] = `https://esm.sh/${dep}?deps=react@${REACT_VERSION}`;
-        }
     });
 
 
