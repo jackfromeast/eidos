@@ -1,5 +1,5 @@
 import { useCallback, useContext, useState } from "react"
-import { IScript } from "@/worker/web-worker/meta-table/script"
+import { IExtension } from "@/worker/web-worker/meta-table/extension"
 import { DataEditorProps, GridSelection } from "@glideapps/glide-data-grid"
 
 import { generateText } from "@/lib/ai/generate"
@@ -15,9 +15,9 @@ import {
   CommandList,
 } from "@/components/ui/command"
 
-import { useUserPrompts } from "../../../../ai-chat/hooks"
 import { TableContext } from "../../../hooks"
 import { ScrollArea } from "../../../../ui/scroll-area"
+import { useAllPrompts } from "@/hooks/use-all-prompts"
 
 export const AITools = ({
   close,
@@ -36,8 +36,8 @@ export const AITools = ({
 }) => {
   const [customPrompt, setCustomPrompt] = useState<string>("")
   const [searchFieldName, setSearchFieldName] = useState<string>("")
-  const [selectedPrompt, setSelectedPrompt] = useState<IScript | null>(null)
-  const { prompts } = useUserPrompts()
+  const [selectedPrompt, setSelectedPrompt] = useState<IExtension | null>(null)
+  const { prompts } = useAllPrompts()
   const { getConfigByModel } = useAiConfig()
   const [step, setStep] = useState(0)
   const { space, tableName, viewId } = useContext(TableContext)

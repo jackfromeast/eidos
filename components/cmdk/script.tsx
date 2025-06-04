@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react"
-import { ICommand, IScript } from "@/worker/web-worker/meta-table/script"
+import { ICommand, IExtension } from "@/worker/web-worker/meta-table/extension"
 import { useKeyPress } from "ahooks"
 
 import { ActionExecutor } from "@/lib/action/action"
@@ -35,7 +35,7 @@ export const ScriptCommandItems = ({
   setCmdkOpen,
 }: ScriptCommandItemsProps) => {
   const { callFunction } = useScriptFunction()
-  const [currentAction, setCurrentAction] = useState<IScript>()
+  const [currentAction, setCurrentAction] = useState<IExtension>()
   const [currentCommand, setCurrentCommand] = useState<ICommand>()
   const { space, tableId, viewId } = useCurrentPathInfo()
   const currentNode = useCurrentNode()
@@ -48,7 +48,7 @@ export const ScriptCommandItems = ({
     })
   }, [_scripts])
 
-  const onItemSelect = (action: IScript, subCommand?: ICommand) => () => {
+  const onItemSelect = (action: IExtension, subCommand?: ICommand) => () => {
     const paramsString = Object.keys(
       subCommand?.inputJSONSchema?.properties || {}
     )

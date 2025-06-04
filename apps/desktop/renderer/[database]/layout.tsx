@@ -2,7 +2,7 @@ import { useLocalStorageState, useSize } from "ahooks"
 import { Suspense, lazy, useEffect, useRef } from "react"
 import { Outlet, useLocation, useNavigate, useParams } from "react-router-dom"
 
-import { ScriptBreadcrumb } from "@/apps/web-app/[database]/scripts/components/extension-breadcrumb"
+import { ScriptBreadcrumb } from "@/apps/web-app/[database]/extensions/components/extension-breadcrumb"
 import { BlockApp } from "@/components/block-renderer/block-app"
 import { DocExtBlockLoader } from "@/components/doc-ext-block-loader"
 import { KeyboardShortCuts } from "@/components/keyboard-shortcuts"

@@ -5,7 +5,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { useAllScripts } from "@/apps/web-app/[database]/scripts/hooks/use-all-scripts"
+import { useAllScripts } from "@/hooks/use-all-scripts"
 
 export const ScriptSelector = ({
   onSelect,

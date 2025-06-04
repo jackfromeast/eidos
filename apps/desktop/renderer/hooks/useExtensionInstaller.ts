@@ -1,15 +1,15 @@
 import { useIndexedDB } from "@/hooks/use-indexed-db";
-import { IScript } from "@/worker/web-worker/meta-table/script";
+import { IExtension } from "@/worker/web-worker/meta-table/extension";
 import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { useScript } from "../../../web-app/[database]/scripts/hooks/use-script";
+import { useExtension } from "../../../../hooks/use-extension";
 import { EIDOS_SPACE_BASE_URL } from "@/lib/const";
 import { useSqlite } from "@/hooks/use-sqlite";
 
 
 export const useExtensionInstaller = () => {
     const navigate = useNavigate();
-    const { addScript } = useScript();
+    const { addExtension } = useExtension();
     const { sqlite } = useSqlite();
     const [lastOpenedDatabase,] = useIndexedDB(
         "kv",
@@ -38,7 +38,7 @@ export const useExtensionInstaller = () => {
                 }
             }
 
-            const script: IScript = {
+            const script: IExtension = {
                 id: extensionIdFromApi,
                 name: extensionData.extension.name,
                 type: extensionData.extension.type,
@@ -52,7 +52,7 @@ export const useExtensionInstaller = () => {
                 commands: [],
             };
 
-            await addScript(script);
+            await addExtension(script);
             console.log(`Successfully installed extension: ${extensionId}`);
             if (lastOpenedDatabase) {
                 navigate(`/${lastOpenedDatabase}/extensions/${script.id}`);
@@ -63,7 +63,7 @@ export const useExtensionInstaller = () => {
             console.error("Error handling extension protocol action:", error);
             // TODO: Show error to user?
         }
-    }, [addScript, navigate, lastOpenedDatabase, sqlite]);
+    }, [addExtension, navigate, lastOpenedDatabase, sqlite]);
 
     return { installExtension };
 };

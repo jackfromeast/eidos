@@ -4,8 +4,9 @@ import { useParams } from "react-router-dom"
 import { ITreeNode } from "@/lib/store/ITreeNode"
 import { getWeek, isDayPageId, isWeekNodeId } from "@/lib/utils"
 
-import { useScriptById } from "@/apps/web-app/[database]/scripts/hooks/use-script"
+import { useExtensionById } from "@/hooks/use-extension"
 import { useSqliteStore } from "./use-sqlite"
+import { EIDOS_CHAT_PROJECT_ID } from "@/lib/const"
 
 export const useNodeMap = () => {
   const {
@@ -29,8 +30,20 @@ export const useCurrentNode = () => {
 
 export const useCurrentExtension = () => {
   const { scriptId: extensionId } = useParams()
-  const extension = useScriptById(extensionId)
+  const extension = useExtensionById(extensionId!)
   return extension
+}
+
+/**
+ * @returns the project id of the current chat project, default to EIDOS_CHAT_PROJECT_ID, if the current node is not an extension.
+ */
+export const useCurrentChatProjectId = () => {
+  const extension = useCurrentExtension()
+
+  if (extension) {
+    return extension.id
+  }
+  return EIDOS_CHAT_PROJECT_ID
 }
 
 export type INodePath = ITreeNode & { path?: string }

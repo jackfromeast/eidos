@@ -9,7 +9,7 @@ import { useCurrentPathInfo } from "./use-current-pathinfo"
 import { useEidosFileSystemManager } from "./use-fs"
 import { useSqlite } from "./use-sqlite"
 import { useTableOperation } from "./use-table"
-import { useAllTools } from "@/apps/web-app/[database]/scripts/hooks/use-all-tools"
+import { useAllTools } from "@/hooks/use-all-tools"
 import { useScriptCall } from "./use-script-call"
 
 const autoRunScope = ["SQL.SELECT"]

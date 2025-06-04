@@ -20,8 +20,8 @@ import SettingsAppearancePage from "@/apps/web-app/settings/appearance/page"
 import { BackupSettings } from "@/apps/web-app/settings/backup/page"
 import SettingsExperimentPage from "@/apps/web-app/settings/experiment/page"
 // settings
-import SettingsLayout from "@/apps/web-app/settings/layout"
 import SettingsPage from "@/apps/web-app/settings/general/page"
+import SettingsLayout from "@/apps/web-app/settings/layout"
 import ShareNodePage from "@/apps/web-app/share/[database]/[table]/page"
 import ShareLayout from "@/apps/web-app/share/[database]/layout"
 // share
@@ -29,9 +29,8 @@ import SharePage from "@/apps/web-app/share/page"
 
 import { NotFound } from "../../web-app/404"
 import { AppPage } from "../../web-app/[database]/apps/page"
-import { ScriptDetailPage } from "../../web-app/[database]/scripts/detail"
-import { ScriptPage } from "../../web-app/[database]/scripts/page"
-import { ScriptStorePage } from "../../web-app/[database]/scripts/store"
+import { ExtensionDetailPage } from "../../web-app/[database]/extensions/detail"
+import { ScriptPage } from "../../web-app/[database]/extensions/page"
 import { SpaceSetting } from "../../web-app/[database]/settings/page"
 import { DocEditor } from "../../web-app/eidtor/doc"
 import { ErrorBoundary } from "../../web-app/error"
@@ -39,10 +38,10 @@ import { LabPage } from "../../web-app/lab"
 import { LicenseManagePage } from "../../web-app/license-manage/page"
 import { SettingsAILayout } from "../../web-app/settings/ai/layout"
 import { ProviderPage } from "../../web-app/settings/ai/provider/page"
+import SettingsApiKeyPage from "../../web-app/settings/api-key/page"
 import { DevtoolsPage } from "../../web-app/settings/dev/page"
 import { DesktopSpaceLayout } from "./[database]/layout"
 import BlockPage from "./[database]/standalone-blocks/page"
-import SettingsApiKeyPage from "../../web-app/settings/api-key/page"
 // extensions
 import RootLayout from "./layout"
 
@@ -199,17 +198,6 @@ const router = createBrowserRouter([
                 element: <ScriptPage />,
               },
               {
-                id: "script-store",
-                path: "store",
-                loader: async () => {
-                  if (!(window as any)?.sqlite) {
-                    return []
-                  }
-                  return await (window as any)?.sqlite?.listScripts()
-                },
-                element: <ScriptStorePage />,
-              },
-              {
                 path: ":scriptId",
                 loader: async ({ params }) => {
                   if (!(window as any)?.sqlite) {
@@ -219,7 +207,7 @@ const router = createBrowserRouter([
                     params.scriptId
                   )
                 },
-                element: <ScriptDetailPage />,
+                element: <ExtensionDetailPage />,
               },
             ],
           },
