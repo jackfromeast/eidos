@@ -12,6 +12,7 @@ import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
 import { useAllNodes } from "@/hooks/use-nodes"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { ExtNodeBadge } from "@/components/ext-node-badge"
 import { NodeIconEditor } from "@/apps/web-app/[database]/[node]/node-icon"
 
 import { ItemIcon } from "../item-tree"
@@ -278,12 +279,7 @@ export const Card: FC<CardProps> = ({
                 <span className="truncate" title={node.name}>
                   {node.name.length === 0 ? "Untitled" : node.name}
                 </span>
-
-                {node.type.startsWith("ext__") && (
-                  <Badge variant="outline" className="text-xs ml-2">
-                    {node.type.split("ext__")[1]}
-                  </Badge>
-                )}
+                <ExtNodeBadge type={node.type} />
               </Link>
             </Button>
           </NodeItem>

@@ -1,6 +1,8 @@
 import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
 
+import { ExtNodeBadge } from "../ext-node-badge"
 import { ItemIcon } from "../sidebar/item-tree"
+import { Badge } from "../ui/badge"
 import {
   CommandGroup,
   CommandItem,
@@ -35,6 +37,7 @@ export const NodeCommandItems = () => {
                 >
                   <ItemIcon type={node.type} className="mr-2 h-4 w-4" />
                   <span>{node.name}</span>
+                  <ExtNodeBadge type={node.type} />
                   <CommandShortcut>Jump to</CommandShortcut>
                 </CommandItem>
               ))}
