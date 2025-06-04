@@ -2,12 +2,12 @@ import React from "react"
 import ReactDOM from "react-dom/client"
 import { RouterProvider, createBrowserRouter, redirect } from "react-router-dom"
 
-import "@/locales/i18n"
-import { SpaceFileSystem } from "@/lib/storage/space"
 import NodePage from "@/apps/web-app/[database]/[node]/page"
 import EverydayPage from "@/apps/web-app/[database]/everyday/[day]/page"
 import EverydayHomePage from "@/apps/web-app/[database]/everyday/page"
 import { FileManager } from "@/apps/web-app/[database]/files/page"
+import { SpaceFileSystem } from "@/lib/storage/space"
+import "@/locales/i18n"
 // space
 import SpaceLayout from "@/apps/web-app/[database]/layout"
 import SpaceHomePage from "@/apps/web-app/[database]/page"
@@ -30,9 +30,8 @@ import SharePage from "@/apps/web-app/share/page"
 
 import { NotFound } from "./404"
 import { AppPage } from "./[database]/apps/page"
-import { ScriptDetailPage } from "./[database]/scripts/detail"
-import { ScriptPage } from "./[database]/scripts/page"
-import { ScriptStorePage } from "./[database]/scripts/store"
+import { ExtensionDetailPage } from "./[database]/extensions/detail"
+import { ScriptPage } from "./[database]/extensions/page"
 import { SpaceSetting } from "./[database]/settings/page"
 import { DocEditor } from "./eidtor/doc"
 import { ErrorBoundary } from "./error"
@@ -40,8 +39,8 @@ import { LabPage } from "./lab"
 import { LicenseManagePage } from "./license-manage/page"
 import { SettingsAILayout } from "./settings/ai/layout"
 import { ProviderPage } from "./settings/ai/provider/page"
-import { DevtoolsPage } from "./settings/dev/page"
 import SettingsApiKeyPage from "./settings/api-key/page"
+import { DevtoolsPage } from "./settings/dev/page"
 
 const router = createBrowserRouter([
   {
@@ -171,17 +170,6 @@ const router = createBrowserRouter([
                 element: <ScriptPage />,
               },
               {
-                id: "script-store",
-                path: "store",
-                loader: async () => {
-                  if (!(window as any)?.sqlite) {
-                    return []
-                  }
-                  return await (window as any)?.sqlite?.listScripts()
-                },
-                element: <ScriptStorePage />,
-              },
-              {
                 path: ":scriptId",
                 loader: async ({ params }) => {
                   if (!(window as any)?.sqlite) {
@@ -191,7 +179,7 @@ const router = createBrowserRouter([
                     params.scriptId
                   )
                 },
-                element: <ScriptDetailPage />,
+                element: <ExtensionDetailPage />,
               },
             ],
           },

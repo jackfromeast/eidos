@@ -1,4 +1,4 @@
-import { ICommand, IScript } from "@/worker/web-worker/meta-table/script"
+import { ICommand, IExtension } from "@/worker/web-worker/meta-table/extension"
 import { RowsManager } from "@/worker/web-worker/sdk/rows"
 
 import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
@@ -22,7 +22,7 @@ export const ScriptContextMenu = ({
   const scripts = useAllExtensions(space)
   const { callFunction } = useScriptFunction()
   const { fieldRawColumnNameFieldMap } = useCurrentUiColumns()
-  const handleScriptActionCall = async (action: IScript, command: ICommand) => {
+  const handleScriptActionCall = async (action: IExtension, command: ICommand) => {
     const rows = getRows()
     if (!rows?.length) return
     for (const row of rows) {

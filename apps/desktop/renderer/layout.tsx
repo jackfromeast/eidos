@@ -2,9 +2,6 @@ import "@/styles/globals.css"
 import { useEffect } from "react"
 import { Outlet } from "react-router-dom"
 
-import { useAppStoreBase } from "@/lib/store/app-store"
-import { useWorker } from "@/hooks/use-worker"
-import { SidebarProvider } from "@/components/ui/sidebar"
 import { BlockUIDialog } from "@/components/block-ui-dialog"
 import { CommandDialogDemo } from "@/components/cmdk"
 import { ShortCuts } from "@/components/keyboard-shortcuts/shortcuts"
@@ -12,14 +9,16 @@ import { TailwindIndicator } from "@/components/tailwind-indicator"
 import { ThemeProvider } from "@/components/theme-provider"
 import { ThemeUpdater } from "@/components/theme-updater"
 import { Toaster } from "@/components/toaster"
+import { SidebarProvider } from "@/components/ui/sidebar"
 import { WindowControls } from "@/components/window-controls"
+import { useWorker } from "@/hooks/use-worker"
+import { useAppStoreBase } from "@/lib/store/app-store"
 
 import { useProtocolUrl } from "./hooks/useProtocolUrl"
 
 export default function RootLayout() {
   const { isInitialized, initWorker } = useWorker()
   const { isSidebarOpen } = useAppStoreBase()
-
   useProtocolUrl()
   useEffect(() => {
     if (!isInitialized) {
@@ -36,7 +35,6 @@ export default function RootLayout() {
           id="drag-region"
         ></div>
         {/* APP MODEL， a sidebar and main */}
-
         <div className="flex h-screen w-screen overflow-auto">
           <Outlet />
         </div>
@@ -45,6 +43,7 @@ export default function RootLayout() {
         <ShortCuts />
       </SidebarProvider>
       <TailwindIndicator />
+
       <Toaster />
       <BlockUIDialog />
       <ThemeUpdater />

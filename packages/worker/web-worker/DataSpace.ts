@@ -41,7 +41,7 @@ import { EmbeddingTable, IEmbedding } from "./meta-table/embedding"
 import { FileTable, IFile } from "./meta-table/file"
 import { MessageTable } from "./meta-table/message"
 import { ReferenceTable } from "./meta-table/reference"
-import { IScript, ScriptStatus, ScriptTable } from "./meta-table/script"
+import { IExtension, ExtensionStatus, ExtensionTable } from "./meta-table/extension"
 import { TreeTable } from "./meta-table/tree"
 import { ViewTable } from "./meta-table/view"
 import { RowsManager } from "./sdk/rows"
@@ -53,7 +53,7 @@ import { TableSemanticSearch } from "./data-pipeline/TableSemanticSearch"
 export type EidosTable =
   | DocTable
   | ActionTable
-  | ScriptTable
+  | ExtensionTable
   | TreeTable
   | ViewTable
   | ColumnTable
@@ -72,7 +72,9 @@ export class DataSpace {
   //  meta table
   doc: DocTable
   action: ActionTable
-  script: ScriptTable
+  // script is deprecated, use extension instead
+  script: ExtensionTable
+  extension: ExtensionTable
   tree: TreeTable
   view: ViewTable
   column: ColumnTable
@@ -166,7 +168,8 @@ export class DataSpace {
     // meta table
     this.doc = new DocTable(this)
     this.action = new ActionTable(this)
-    this.script = new ScriptTable(this)
+    this.script = new ExtensionTable(this)
+    this.extension = new ExtensionTable(this)
     this.tree = new TreeTable(this)
     this.view = new ViewTable(this)
     this.file = new FileTable(this)
@@ -648,11 +651,11 @@ export class DataSpace {
   }
 
   // scripts
-  public async addScript(data: IScript) {
+  public async addExtension(data: IExtension) {
     await this.script.add(data)
   }
 
-  public async listScripts(status: ScriptStatus = "all") {
+  public async listScripts(status: ExtensionStatus = "all") {
     const query =
       status === "all" ? undefined : { enabled: status === "enabled" }
     return this.script.list(query, {
@@ -668,18 +671,18 @@ export class DataSpace {
     return this.script.get(id)
   }
 
-  public async deleteScript(id: string) {
+  public async deleteExtension(id: string) {
     await this.script.del(id)
   }
 
-  public async updateScript(data: IScript) {
+  public async updateExtension(data: IExtension) {
     await this.script.set(data.id, data)
   }
-  public async enableScript(id: string) {
+  public async enableExtension(id: string) {
     await this.script.enable(id)
   }
 
-  public async disableScript(id: string) {
+  public async disableExtension(id: string) {
     await this.script.disable(id)
   }
 

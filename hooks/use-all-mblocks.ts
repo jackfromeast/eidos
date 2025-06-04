@@ -1,0 +1,45 @@
+import { useSqlite } from "@/hooks/use-sqlite"
+import { ScriptTableName } from "@/lib/sqlite/const"
+import { DataSpace } from '@/worker/web-worker/DataSpace'
+import { z } from 'zod'
+import { createReactiveData } from "./use-reactive-data"
+
+// Define the schema for mblocks
+const mblockSchema = z.object({
+    id: z.string(),
+    name: z.string(),
+    icon: z.string().optional(),
+    type: z.literal("m_block"),
+    code: z.string(),
+})
+
+type Mblock = z.infer<typeof mblockSchema>
+
+// Create the reactive data store
+const {
+    useItemsList,
+    useSyncWithBroadcast,
+    useReload
+} = createReactiveData<Mblock>({
+    modeName: ScriptTableName,
+    schema: mblockSchema,
+    list: async (sqlite: DataSpace) => {
+        const blocks = await sqlite.extension.list({
+            type: "m_block",
+            enabled: true,
+        })
+        return blocks as Mblock[]
+    }
+})
+
+export const useAllMblocks = () => {
+    const { sqlite } = useSqlite()
+    const { data: mblocks, loading } = useItemsList(sqlite)
+    useSyncWithBroadcast(sqlite)
+    const reload = useReload(sqlite)
+    return {
+        mblocks,
+        reload,
+        loading
+    }
+}

@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { useDebounceFn, useKeyPress } from "ahooks"
 import {
   Bot,
@@ -8,14 +9,18 @@ import {
   PaintBucket,
   Palette,
   RefreshCcwIcon,
-  Settings
+  Settings,
 } from "lucide-react"
 import { useTheme } from "next-themes"
-import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useLastOpened } from "@/apps/web-app/[database]/hook"
-import { useSpaceAppStore } from "@/apps/web-app/[database]/store"
+import { isDesktopMode, isInkServiceMode } from "@/lib/env"
+import { useAppRuntimeStore } from "@/lib/store/runtime-store"
+import { getToday } from "@/lib/utils"
+import { useCurrentNode } from "@/hooks/use-current-node"
+import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
+import { useQueryNode } from "@/hooks/use-query-node"
+import { useSqlite } from "@/hooks/use-sqlite"
 import {
   CommandDialog,
   CommandEmpty,
@@ -26,13 +31,8 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from "@/components/ui/command"
-import { useCurrentNode } from "@/hooks/use-current-node"
-import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
-import { useQueryNode } from "@/hooks/use-query-node"
-import { useSqlite } from "@/hooks/use-sqlite"
-import { isDesktopMode, isInkServiceMode } from "@/lib/env"
-import { useAppRuntimeStore } from "@/lib/store/runtime-store"
-import { getToday } from "@/lib/utils"
+import { useLastOpened } from "@/apps/web-app/[database]/hook"
+import { useSpaceAppStore } from "@/apps/web-app/[database]/store"
 
 import { ThemeStudio } from "../theme-studio"
 import { ActionCommandItems } from "./action"
@@ -55,7 +55,6 @@ export function CommandDialogDemo() {
   const { theme, setTheme } = useTheme()
   const { space } = useCurrentPathInfo()
   const { setSearchNodes } = useCMDKStore()
-  const [isCustomThemeOpen, setIsCustomThemeOpen] = useState(false)
   const [secondaryView, setSecondaryView] = useState<SecondaryView>(null)
 
   const currentNode = useCurrentNode()

@@ -16,7 +16,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/react-hook-form/form"
-import { useAllMblocks } from "@/apps/web-app/[database]/scripts/hooks/use-all-mblocks"
+import { useAllMblocks } from "@/hooks/use-all-mblocks"
 
 import { useFileFields } from "../../hooks"
 
