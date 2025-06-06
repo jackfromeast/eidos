@@ -113,7 +113,7 @@ code::before {
 }
 
 .eidos_editor_theme__code {
-  background-color: hsl(var(--secondary));
+  background-color: hsl(var(--sidebar));
   font-family: Menlo, Consolas, Monaco, monospace;
   display: block;
   padding: 8px 8px 8px 24px;
@@ -125,6 +125,8 @@ code::before {
   overflow-x: auto;
   position: relative;
   tab-size: 2;
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.5rem;
 }
 
 .eidos_editor_theme__code:before {
