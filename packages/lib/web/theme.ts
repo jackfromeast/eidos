@@ -153,11 +153,10 @@ export function parseCSSVariables(css: string): Record<string, string> {
 
   while ((match = regex.exec(css)) !== null) {
     const [, name, value] = match
-    // rewrite sidebar to sidebar-background
-    if (name.trim() === "sidebar") {
-      themeVariables["sidebar-background"] = value.trim()
-      continue
-    }
+    // if (name.trim() === "sidebar") {
+    //   themeVariables["sidebar-background"] = value.trim()
+    //   continue
+    // }
     themeVariables[name.trim()] = value.trim()
   }
 
