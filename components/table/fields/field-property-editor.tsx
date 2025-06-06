@@ -92,7 +92,7 @@ export const FieldPropertyEditor = ({
     PropertyEditorTypeMap[currentField?.type ?? "select"] ?? NotImplementEditor
   return (
     <div
-      className="absolute right-0 top-0 h-full w-[350px] border-l bg-white p-3 shadow-lg dark:bg-slate-950"
+      className="absolute right-0 top-0 h-full w-[350px] border-l bg-popover p-3 shadow-lg"
       ref={ref}
     >
       {currentField && (

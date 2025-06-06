@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useClickAway } from "ahooks"
 import {
   ArrowDownWideNarrowIcon,
@@ -5,14 +6,15 @@ import {
   ArrowRightToLine,
   ArrowUpNarrowWideIcon,
   Settings2,
-  Trash2
+  Trash2,
 } from "lucide-react"
-import { useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useLayer } from "react-laag"
 
-import { CommonMenuItem } from "@/components/common-menu-item"
-import { useCurrentView, useViewOperation } from "@/components/table/hooks"
+import { FieldType } from "@/lib/fields/const"
+import { IGridViewProperties, IView } from "@/lib/store/IView"
+import { cn } from "@/lib/utils"
+import { useTableFields } from "@/hooks/use-table"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -23,10 +25,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { useTableFields } from "@/hooks/use-table"
-import { FieldType } from "@/lib/fields/const"
-import { IGridViewProperties, IView } from "@/lib/store/IView"
-import { cn } from "@/lib/utils"
+import { CommonMenuItem } from "@/components/common-menu-item"
+import { useCurrentView, useViewOperation } from "@/components/table/hooks"
 
 import { useColumns } from "../views/grid/hooks/use-col"
 import { useTableAppStore } from "../views/grid/store"
@@ -168,7 +168,7 @@ export const FieldEditorDropdown = (props: IFieldEditorDropdownProps) => {
           <div
             {...layerProps}
             className={cn(
-              "hidden min-w-[220px] overflow-hidden rounded-sm bg-white p-1 shadow-md dark:bg-black",
+              "hidden min-w-[220px] overflow-hidden rounded-sm  bg-popover p-1 shadow-md ",
               isOpen && "block"
             )}
             onMouseMoveCapture={(e) => e.stopPropagation()}
