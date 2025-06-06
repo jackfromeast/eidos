@@ -1,12 +1,20 @@
 import type { Config } from "tailwindcss"
 import themeRawCode from "./theme-raw.css?raw"
 
-export const
-  getIndexHtml = (props: {
-    theme: string, importMap: string, cssLoaderScript: string, sdkInjectScriptContent: string, envString: string, twConfig: Partial<Config>, compiledCode: string, defaultPropsString: string
-  }) => {
-    const { theme, importMap, cssLoaderScript, sdkInjectScriptContent, envString, twConfig, compiledCode, defaultPropsString } = props
-    return `<html class="${theme}">
+export const getIndexHtml = (props: {
+  theme: string,
+  importMap: string,
+  cssLoaderScript: string,
+  sdkInjectScriptContent: string,
+  envString: string,
+  twConfig: Partial<Config>,
+  compiledCode: string,
+  defaultPropsString: string,
+  serverSideProps: any
+}) => {
+  const { theme, importMap, cssLoaderScript, sdkInjectScriptContent, envString, twConfig, compiledCode, defaultPropsString, serverSideProps } = props
+
+  return `<html class="${theme}">
       <head>
         ${importMap}
         <script src="/tailwind-raw.js"></script>
@@ -18,6 +26,7 @@ export const
             }
         </script>
         <script>
+          window.__serverSideProps = ${JSON.stringify(serverSideProps)};
           window.process = {
             env: ${envString}
           };
@@ -96,4 +105,4 @@ export const
       </body>
     </html>
     `
-  }
+}

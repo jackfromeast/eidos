@@ -1,18 +1,16 @@
 import { log } from 'electron-log';
 import { getOrSetDataSpace } from '../../data-space'; // Assuming data-space.ts is in the parent directory
-import { generateImportMap, getAllLibs, makeSdkInjectScript, twConfig } from './helper';
-import { getIndexHtml } from './ext-html';
 
-import tailwindRaw from './js/tailwind-raw.js?raw'
-import appWrapperRaw from './js/app-wrapper.js?raw'
-import sw from './js/sw.js?raw'
+import appWrapperRaw from './js/app-wrapper.js?raw';
+import sw from './js/sw.js?raw';
+import tailwindRaw from './js/tailwind-raw.js?raw';
 
 import fs from 'fs';
 import path from 'path';
+import { ServerBlock } from './server-block';
 
 // curl http://287c3686-f1e1-4b10-965e-2daa35a422fc.ext.25-w19.eidos.localhost:13127/
 // Middleware to intercept <extensionId>.ext.<spaceId>.eidos.localhost requests
-
 
 // server static files from dist/compiled-ui at path /ui
 export const interceptExtensionRequest = (dist: string, port: number) => async (c: any, next: any) => {
@@ -60,14 +58,6 @@ export const interceptExtensionRequest = (dist: string, port: number) => async (
         try {
             const dataSpace = await getOrSetDataSpace(spaceId);
             const extension = await dataSpace.script.get(extensionId);
-            //     log('Successfully got dataSpace for:', spaceId, 'DB Name:', dataSpace.dbName);
-            const theme = 'light'
-            const start = performance.now()
-            const sdkInjectScriptContent = makeSdkInjectScript({
-                space: spaceId,
-                bindings: extension?.bindings,
-            })
-            const code = extension?.ts_code || ""
             const compiledCode = extension?.code || ""
 
             if (url.pathname.startsWith('/app.js')) {
@@ -75,36 +65,11 @@ export const interceptExtensionRequest = (dist: string, port: number) => async (
                     headers
                 });
             }
-
-            const { thirdPartyLibs, uiLibs, cssLibs } = getAllLibs(code)
-            // // preload some libs
-            thirdPartyLibs.push(
-                "@radix-ui/react-icons",
-                "@radix-ui/react-toast",
-                "class-variance-authority",
-                "lucide-react"
-            )
-            uiLibs.push("toast", "toaster", "use-toast")
-            const envString = extension?.env_map ? JSON.stringify(extension.env_map) : "{}"
-            const defaultPropsString = JSON.stringify({})
-            const { importMapScript, cssLoaderScript } = await generateImportMap(thirdPartyLibs, uiLibs, cssLibs)
-            // // Placeholder for BlockRenderer server-side logic
-            const html = getIndexHtml({
-                theme,
-                importMap: importMapScript,
-                cssLoaderScript,
-                sdkInjectScriptContent,
-                envString,
-                twConfig,
-                compiledCode,
-                defaultPropsString
-            })
-
-            const end = performance.now()
-            console.log(`Time taken: ${end - start} milliseconds`)
+            const serverBlock = new ServerBlock()
+            const html = await serverBlock.run(spaceId, extension, url.toString())
             const htmlResponseHeaders = new Headers();
-            // Allow this page to frame content from any http://localhost:* origin
-            htmlResponseHeaders.append('Content-Security-Policy', "frame-src 'self' http://localhost:*;");
+            // Allow this page to frame content from any http://localhost:* origin and any http://*.eidos.localhost:* origin and any eidos://* origin
+            htmlResponseHeaders.append('Content-Security-Policy', "frame-src 'self' http://localhost:* http://*.eidos.localhost:* eidos://*;");
             // It's also good practice to set COOP
             htmlResponseHeaders.append('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
             // Cross-Origin-Resource-Policy: cross-origin

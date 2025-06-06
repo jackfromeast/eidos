@@ -5,7 +5,9 @@ import { Toaster } from "@/components/ui/toaster"
 
 let appRootInstance = null
 let AppComponentRef = null
-let currentProps = {}
+let currentProps = {
+  ...(window.__serverSideProps || {}),
+}
 
 try {
   if (window.name) {
@@ -27,7 +29,11 @@ try {
       })
       return props
     }
-    currentProps = deserializePropsFromUrl(new URL(window.location.href))
+
+    currentProps = {
+      ...(JSON.parse(window.__serverSideProps) || {}),
+      ...deserializePropsFromUrl(new URL(window.location.href)),
+    }
   }
 } catch (err) {
   console.error("Error parsing props:", err)
