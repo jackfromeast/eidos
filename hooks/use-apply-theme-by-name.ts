@@ -3,8 +3,7 @@ import {
     parseCSSVariables,
     setThemeVariables
 } from '@/lib/web/theme'
-import boldTech from "@/styles/themes/bold-tech.css?raw"
-import cyberpunk from "@/styles/themes/cyberpunk.css?raw"
+import retroArcade from "@/styles/themes/retro-arcade.css?raw"
 import defaultTheme from "@/styles/themes/default.css?raw"
 import { useTheme } from "next-themes"
 import { useCallback, useEffect } from "react"
@@ -16,12 +15,8 @@ export const presetThemes = [
         css: defaultTheme,
     },
     {
-        name: "Cyberpunk",
-        css: cyberpunk,
-    },
-    {
-        name: "Bold Tech",
-        css: boldTech,
+        name: "Retro Arcade",
+        css: retroArcade,
     },
 ]
 
