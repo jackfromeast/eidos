@@ -335,9 +335,14 @@ export const useSqlite = (dbName?: string) => {
 
   const createExtNode = async (ext_node_type: string, parent_id?: string) => {
     if (!sqlWorker) return
-    const node = await sqlWorker.createExtNode(ext_node_type, parent_id)
-    node && addNode(node)
-    return node?.id
+    const nodeId = await sqlWorker.createExtNode(ext_node_type, parent_id)
+    nodeId && addNode({
+      id: nodeId,
+      name: "",
+      type: `ext__${ext_node_type}`,
+      parent_id,
+    })
+    return nodeId
   }
 
   // create table with default template

@@ -45,6 +45,7 @@ export const CreateNodeTrigger = ({ parent_id }: { parent_id?: string }) => {
     if (!extNode) return
     console.log("creating ", extNode)
     const extNodeId = await createExtNode(extNode.ext_node_type, parent_id)
+    console.log("extNodeId", extNodeId)
     if (!extNodeId) return
     goto(space, extNodeId)
   }

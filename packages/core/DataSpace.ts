@@ -703,11 +703,10 @@ export class DataSpace {
     this.blockUIMsg(null)
   }
 
-  public async createExtNode(ext_node_type: string, parent_id?: string): Promise<ITreeNode | null> {
+  public async createExtNode(ext_node_type: string, parent_id?: string): Promise<string> {
     const extNodeId = uuidv7().split("-").join("")
-    let extNode: ITreeNode | null = null
     await this.db.transaction(async (db) => {
-      extNode = await this.addTreeNode({
+      await this.addTreeNode({
         id: extNodeId,
         name: '',
         type: `ext__${ext_node_type}`,
@@ -718,7 +717,7 @@ export class DataSpace {
         type: ext_node_type,
       })
     })
-    return extNode
+    return extNodeId
   }
 
   public async permanentlyDeleteExtNode(nodeId: string) {
