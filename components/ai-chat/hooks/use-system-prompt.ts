@@ -78,7 +78,8 @@ export const useAdditionalData = (
   </attached_docs>
   </additional_data>
   <use_info>
-  <current_node id="${currentNode?.id}" name="${currentNode?.name}" type="${currentNode?.type}" />
+${currentNode ? ` <current_node id="${currentNode?.id}" name="${currentNode?.name}" type="${currentNode?.type}" />` : ""
+            }
   <current_space id="${space}" name="${space}" />
   </use_info>
   `

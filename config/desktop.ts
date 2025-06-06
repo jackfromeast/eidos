@@ -67,6 +67,7 @@ const desktopConfig: UserConfig = mergeConfig(sharedConfig, {
               ],
               external: [
                 '@eidos.space/better-sqlite3',
+                '@oxc-parser/wasm',
               ]
             },
           },
