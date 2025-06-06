@@ -133,7 +133,10 @@ export const getDynamicPrompt = (bindings: IExtension["bindings"]) => {
       return `${key}: TableManager;`
     })
     .join("\n")
-  const replaced = eidosTypes.replace(replaceText, replaceText + "\n" + bindingText)
+  let replaced = eidosTypes.replace(replaceText, replaceText + "\n" + bindingText)
+  replaced += `
+  declare const eidos: import("@eidos.space/types").Eidos;
+  `
   return replaced
 }
 
