@@ -73,7 +73,13 @@ export const CodeEditor = forwardRef(
     const monaco = useMonaco()
     const [code, setCode] = useState<string | undefined>(value)
     const editorRef = useRef<monaco.editor.IStandaloneCodeEditor>()
-    const { scriptCodeMap, setScriptCodeMap, setActiveTab, pendingVersionUpdateMap, setPendingVersionUpdate } = useEditorStore()
+    const {
+      scriptCodeMap,
+      setScriptCodeMap,
+      setActiveTab,
+      pendingVersionUpdateMap,
+      setPendingVersionUpdate,
+    } = useEditorStore()
 
     const toApplyCode = scriptId ? scriptCodeMap[scriptId] : undefined
 
@@ -133,10 +139,8 @@ export const CodeEditor = forwardRef(
     useEffect(() => {
       if (monaco && language !== "markdown") {
         if (language === "python") {
-          // Python语言配置
           monaco.languages.register({ id: "python" })
           monaco.languages.setMonarchTokensProvider("python", {
-            // 基本的Python语法高亮规则
             keywords: [
               "False",
               "None",
@@ -195,9 +199,8 @@ export const CodeEditor = forwardRef(
         }
 
         if (language === "javascript") {
-          // 修改 JavaScript 的诊断选项
           monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
-            noSemanticValidation: false, // 改为 false 以启用语义验证
+            noSemanticValidation: false,
             noSyntaxValidation: false,
           })
 
@@ -212,7 +215,7 @@ export const CodeEditor = forwardRef(
           })
 
           monaco.languages.typescript.javascriptDefaults.addExtraLib(
-            `${dynamicPrompt}\ndeclare const eidos: import("@eidos.space/types").Eidos;`,
+            dynamicPrompt,
             "ts:filename/eidos.d.ts"
           )
           monaco.languages.typescript.javascriptDefaults.addExtraLib(
@@ -221,9 +224,8 @@ export const CodeEditor = forwardRef(
           )
         }
         if (language === "typescript" || language === "typescriptreact") {
-          // 修改 TypeScript 的诊断选项
           monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
-            noSemanticValidation: false, // 改为 false 以启用语义验证
+            noSemanticValidation: false,
             noSyntaxValidation: false,
           })
 
@@ -242,12 +244,11 @@ export const CodeEditor = forwardRef(
                 }
               : {}
 
-          // 添加更多编译器选项
           monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
             target: monaco.languages.typescript.ScriptTarget.ESNext,
             allowNonTsExtensions: true,
-            strict: true, // 启用严格模式
-            noImplicitAny: false, // 允许隐式的 any 类型
+            strict: true,
+            noImplicitAny: false,
             ...tsxConfig,
           })
 
@@ -258,7 +259,7 @@ export const CodeEditor = forwardRef(
             )
           }
           monaco.languages.typescript.typescriptDefaults.addExtraLib(
-            `${dynamicPrompt}\ndeclare const eidos: import("@eidos.space/types").Eidos;`,
+            dynamicPrompt,
             "ts:filename/eidos.d.ts"
           )
           monaco.languages.typescript.typescriptDefaults.addExtraLib(
@@ -293,7 +294,15 @@ export const CodeEditor = forwardRef(
         setPendingVersionUpdate(scriptId, null)
         setActiveTab("preview")
       }
-    }, [toApplyCode, handleSave, scriptId, setScriptCodeMap, setActiveTab, pendingVersionUpdateMap, setPendingVersionUpdate])
+    }, [
+      toApplyCode,
+      handleSave,
+      scriptId,
+      setScriptCodeMap,
+      setActiveTab,
+      pendingVersionUpdateMap,
+      setPendingVersionUpdate,
+    ])
 
     const handleRejectChanges = useCallback(() => {
       if (scriptId) {
@@ -308,7 +317,7 @@ export const CodeEditor = forwardRef(
           {`
             .monaco-editor .monaco-editor-background,
             .monaco-editor .margin {
-              background-color: var(--custom-editor-background, ${theme === 'light' ? '#ffffff' : '#1e1e1e'}) !important;
+              background-color: var(--custom-editor-background, ${theme === "light" ? "#ffffff" : "#1e1e1e"}) !important;
             }
           `}
         </style>
