@@ -1,35 +1,14 @@
 import { getOrSetDataSpace } from "../../data-space";
 import { getIndexHtml } from "./ext-html";
 import { generateImportMap, getAllLibs, makeSdkInjectScript, twConfig } from "./helper";
-// import { generateImportMap, getAllLibs, makeSdkInjectScript, twConfig } from "./helper";
-import { IExtension } from "@/packages/core/meta-table/extension";
-import { DataSpace } from '@/packages/core/DataSpace';
-import vm from 'vm';
 import { extractFunction } from "@/lib/v3/extract-function";
-import defaultThemeCss from "@/styles/themes/default.css?raw"
-import retroArcadeCss from "@/styles/themes/retro-arcade.css?raw"
+import { DataSpace } from '@/packages/core/DataSpace';
+import { IExtension } from "@/packages/core/meta-table/extension";
+import vm from 'vm';
 
 
 import { ConfigManager, getConfigManager } from "@/apps/desktop/electron/config";
 
-
-export const runServerAction = async (code: string, dataSpace: DataSpace, url: string) => {
-    const sandbox = {
-        console: { log: console.log },
-        context: {
-            currentSpace: dataSpace,
-            request: {
-                url,
-            },
-        },
-        URL: URL,
-    };
-    vm.createContext(sandbox);
-    const res = await vm.runInNewContext(code, sandbox, {
-        timeout: 3000,
-    });
-    return res
-}
 
 export class ServerBlock {
     private configManager: ConfigManager
@@ -38,18 +17,45 @@ export class ServerBlock {
         this.configManager = getConfigManager()
     }
 
+    runServerAction = async (code: string, dataSpace: DataSpace, url: string) => {
+        const sandbox = {
+            console: { log: console.log },
+            context: {
+                currentSpace: dataSpace,
+                request: {
+                    url,
+                },
+            },
+            URL: URL,
+        };
+        vm.createContext(sandbox);
+        const res = await vm.runInNewContext(code, sandbox, {
+            timeout: 3000,
+        });
+        return res
+    }
+
     async handleServerAction(code: string, dataSpace: DataSpace, url: string) {
         const serverActionFunctionRawCode = extractFunction(code, 'getServerSideProps')
         if (serverActionFunctionRawCode) {
             const serverActionCode = `(${serverActionFunctionRawCode})(context)`
             try {
-                const res = await runServerAction(serverActionCode, dataSpace, url)
+                const res = await this.runServerAction(serverActionCode, dataSpace, url)
                 return res
             } catch (error) {
                 console.error("Error running server action", error)
             }
         }
         return null
+    }
+
+    getThemeRawCss(themeName: string) {
+        const allThemes = this.configManager.get('theme').customThemes
+        const theme = allThemes.find((theme) => theme.name === themeName)
+        if (theme) {
+            return theme.css
+        }
+        return ''
     }
 
     async run(spaceId: string, extension: IExtension | null, url: string) {
@@ -79,7 +85,7 @@ export class ServerBlock {
         const defaultPropsString = JSON.stringify({})
         const { importMapScript, cssLoaderScript } = await generateImportMap(thirdPartyLibs, uiLibs, cssLibs)
         // // Placeholder for BlockRenderer server-side logic
-        const themeRawCode = this.configManager.get('theme').currentThemeName === 'Default' ? defaultThemeCss : retroArcadeCss
+        const themeRawCode = this.getThemeRawCss(theme)
         const html = getIndexHtml({
             theme,
             importMap: importMapScript,
