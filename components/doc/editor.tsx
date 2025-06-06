@@ -20,8 +20,9 @@ import { ExtBlock } from "./hooks/use-ext-blocks"
 import { useEditorStore } from "./hooks/useEditorContext"
 import { getAllNodes } from "./nodes"
 import { AllPlugins } from "./plugins"
-import { EidosAutoLoadSaveFocusPlugin } from "./plugins/AutoLoadSaveFocusPlugin"
+import { AutoLoadSavePlugin } from "./plugins/AutoLoadSavePlugin"
 import { DraggableBlockPlugin } from "./plugins/DraggableBlockPlugin"
+import { EditorFocusPlugin } from "./plugins/EditorFocusPlugin"
 import FloatingTextFormatToolbarPlugin from "./plugins/FloatingTextFormatToolbarPlugin"
 import { SafeBottomPaddingPlugin } from "./plugins/SafeBottomPaddingPlugin"
 import { SelectionPlugin } from "./plugins/SelectionPlugin"
@@ -123,10 +124,14 @@ export function InnerEditor(props: EditorProps) {
             {props.autoFocus && <AutoFocusPlugin />}
             {props.docId && (
               <>
-                <EidosAutoLoadSaveFocusPlugin
+                <AutoLoadSavePlugin
                   docId={props.docId}
                   isEditable={props.isEditable}
                   disableManuallySave={props.disableManuallySave}
+                />
+                <EditorFocusPlugin
+                  isEditable={props.isEditable}
+                  disableJumpToTitle
                 />
               </>
             )}

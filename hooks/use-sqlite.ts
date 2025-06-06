@@ -10,7 +10,7 @@ import { ITreeNode } from "@/lib/store/ITreeNode"
 import { IView } from "@/lib/store/IView"
 import { useAppRuntimeStore } from "@/lib/store/runtime-store"
 import { getRawTableNameById, uuidv7 } from "@/lib/utils"
-import { DefaultState } from "@/components/doc/plugins/AutoLoadSaveFocusPlugin"
+import { DefaultState } from "@/components/doc/plugins/AutoLoadSavePlugin"
 import { createTemplateTableSql } from "@/components/table/views/grid/helper"
 
 import { IDataStore, IField } from "@/lib/store/interface"
