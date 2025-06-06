@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next"
 
 import { isDesktopMode } from "@/lib/env"
 import { useAppRuntimeStore } from "@/lib/store/runtime-store"
+import { isDayPageId } from "@/lib/utils"
 import { useAPIAgent } from "@/hooks/use-api-agent"
 import { useCurrentNode } from "@/hooks/use-current-node"
 import { useNodeTree } from "@/hooks/use-node-tree"
@@ -66,42 +67,44 @@ export const NavStatus = () => {
           )}
         </div>
       )}
-      {currentNode && (
-        <>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                {currentNode?.is_pinned ? (
-                  <Button
-                    size="xs"
-                    variant="ghost"
-                    className="rounded-b-none relative"
-                    onClick={() => unpin(currentNode.id)}
-                  >
-                    <PinOffIcon className="h-5 w-5" />
-                  </Button>
-                ) : (
-                  <Button
-                    size="xs"
-                    variant="ghost"
-                    className="rounded-b-none relative"
-                    onClick={() => pin(currentNode.id)}
-                  >
-                    <PinIcon className="h-5 w-5" />
-                  </Button>
-                )}
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>
-                  {currentNode?.is_pinned
-                    ? t("nav.status.clickToUnpin")
-                    : t("nav.status.clickToPin")}
-                </p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </>
-      )}
+      {currentNode &&
+        currentNode.type === "doc" &&
+        !isDayPageId(currentNode.id) && (
+          <>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  {currentNode?.is_pinned ? (
+                    <Button
+                      size="xs"
+                      variant="ghost"
+                      className="rounded-b-none relative"
+                      onClick={() => unpin(currentNode.id)}
+                    >
+                      <PinOffIcon className="h-5 w-5" />
+                    </Button>
+                  ) : (
+                    <Button
+                      size="xs"
+                      variant="ghost"
+                      className="rounded-b-none relative"
+                      onClick={() => pin(currentNode.id)}
+                    >
+                      <PinIcon className="h-5 w-5" />
+                    </Button>
+                  )}
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>
+                    {currentNode?.is_pinned
+                      ? t("nav.status.clickToUnpin")
+                      : t("nav.status.clickToPin")}
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </>
+        )}
       {runningCommand && (
         <TooltipProvider>
           <Tooltip>
