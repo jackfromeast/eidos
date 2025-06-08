@@ -34,6 +34,7 @@ export enum MsgType {
   SetTheme = "SetTheme",
   ListThemes = "ListThemes",
   SetCurrentTheme = "SetCurrentTheme",
+  ApplyTheme = "ApplyTheme",
 }
 
 export enum MainServiceWorkerMsgType {

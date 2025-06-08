@@ -202,7 +202,8 @@ declare module "packages/lib/const" {
         GetTheme = "GetTheme",
         SetTheme = "SetTheme",
         ListThemes = "ListThemes",
-        SetCurrentTheme = "SetCurrentTheme"
+        SetCurrentTheme = "SetCurrentTheme",
+        ApplyTheme = "ApplyTheme"
     }
     export enum MainServiceWorkerMsgType {
         SetData = "SetData"
@@ -1290,6 +1291,7 @@ declare module "packages/lib/store/theme-store" {
         getCustomTheme: (name: string) => CustomTheme | undefined;
         listThemes: () => CustomTheme[];
         setCustomTheme: (name: string, css: string) => void;
+        applyTheme: (name: string, css: string) => void;
     }
     export const useThemeStore: import("zustand").UseBoundStore<Omit<import("zustand").StoreApi<ThemeState>, "persist"> & {
         persist: {
@@ -3100,6 +3102,7 @@ declare module "packages/core/sdk/theme-manager" {
         getTheme(name: string): Promise<any>;
         setTheme(name: string, css: string): Promise<void>;
         listThemes(): Promise<any>;
+        applyTheme(name: string, css: string): Promise<void>;
         setCurrentTheme(name: string): Promise<void>;
     }
 }

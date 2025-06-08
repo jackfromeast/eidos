@@ -21,6 +21,10 @@ export class ThemeManager {
         return themes
     }
 
+    async applyTheme(name: string, css: string) {
+        await this.dataSpace.callRenderer?.(MsgType.ApplyTheme, { name, css })
+    }
+
     async setCurrentTheme(name: string) {
         await this.dataSpace.callRenderer?.(MsgType.SetCurrentTheme, name)
     }

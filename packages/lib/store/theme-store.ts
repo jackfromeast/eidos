@@ -17,6 +17,7 @@ interface ThemeState {
   getCustomTheme: (name: string) => CustomTheme | undefined
   listThemes: () => CustomTheme[]
   setCustomTheme: (name: string, css: string) => void
+  applyTheme: (name: string, css: string) => void
 }
 
 const defaultThemeState = {
@@ -74,6 +75,10 @@ export const useThemeStore = create<ThemeState>()(
         } else {
           set({ customThemes: [...customThemes, { name, css }] })
         }
+      },
+      applyTheme: (name: string, css: string) => {
+        get().setCustomTheme(name, css)
+        get().setCurrentThemeName(name)
       }
     }),
     {

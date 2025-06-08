@@ -29,7 +29,7 @@ export const useWorker = () => {
     setBlockUIData,
     setEmbeddingModeLoaded,
   } = useAppRuntimeStore()
-  const { setCurrentThemeName, listThemes, setCustomTheme, getCustomTheme } = useThemeStore()
+  const { setCurrentThemeName, listThemes, setCustomTheme, getCustomTheme, applyTheme } = useThemeStore()
 
   const { toast } = useToast()
   const initWorker = useCallback(() => {
@@ -92,6 +92,9 @@ export const useWorker = () => {
           break
         case MsgType.SetCurrentTheme:
           res = setCurrentThemeName(data)
+          break
+        case MsgType.ApplyTheme:
+          res = applyTheme(data.name, data.css)
           break
         default:
           break
