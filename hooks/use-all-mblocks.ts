@@ -59,7 +59,7 @@ export const useSyncMblocks = () => {
             const { type, payload } = ev.data
             if (type === EidosDataEventChannelMsgType.MetaTableUpdateSignalType) {
                 const { table, _new, _old, type: updateType } = payload
-                if (table !== ScriptTableName && _old.type !== "m_block") return
+                if (table !== ScriptTableName || (_old?.type !== "m_block" || _new?.type !== "m_block")) return
 
                 // when data is updated, we need to reload the data from the database. it's simple but not efficient.
                 // we should use a more efficient way to update the data.

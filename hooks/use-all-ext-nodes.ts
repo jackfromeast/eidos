@@ -48,7 +48,7 @@ export const useSyncExtNodes = () => {
             const { type, payload } = ev.data
             if (type === EidosDataEventChannelMsgType.MetaTableUpdateSignalType) {
                 const { table, _new, _old, type: updateType } = payload
-                if (table !== ScriptTableName || _old.type !== "ext_node") return
+                if (table !== ScriptTableName || (_old?.type !== "ext_node" || _new?.type !== "ext_node")) return
 
                 switch (updateType) {
                     case DataUpdateSignalType.Insert:
