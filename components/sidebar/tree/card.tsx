@@ -196,22 +196,39 @@ export const Card: FC<CardProps> = ({
     canDrag: !isInkServiceMode,
   })
 
-  // Add native HTML5 drag functionality for AI input editor
-  const handleDragStart = (event: React.DragEvent) => {
-    // Only pass the node ID, keep it simple
-    event.dataTransfer.setData("text/plain", node.id)
-    event.dataTransfer.effectAllowed = "copy"
+  // This useEffect adds native drag-and-drop support to coexist with react-dnd.
+  // react-dnd uses its own event handling, but doesn't set the native dataTransfer,
+  // which is needed for dropping outside of the react-dnd context (e.g., an external editor).
+  // By using addEventListener, we can add our own logic without overwriting react-dnd's handlers.
+  useEffect(() => {
+    const element = ref.current
+    if (!element) {
+      return
+    }
 
-    console.log("Native drag started for node:", node.name, node.id)
+    const handleDragStart = (event: DragEvent) => {
+      // We must not stop propagation, so both react-dnd and native handlers can run.
+      event.dataTransfer?.setData("text/plain", node.id)
+      if (event.dataTransfer) {
+        event.dataTransfer.effectAllowed = "copy"
+      }
+      console.log("Native drag started for node:", node.name, node.id)
+    }
 
-    // Don't prevent default to allow both native and react-dnd to work
-  }
+    const handleDragEnd = () => {
+      console.log("Native drag ended for node:", node.name)
+    }
 
-  const handleDragEnd = (event: React.DragEvent) => {
-    // This ensures proper cleanup after native drag operations
-    console.log("Native drag ended for node:", node.name)
-    event.dataTransfer.clearData()
-  }
+    // react-dnd's `drag` ref will set `draggable=true` on this element.
+    // We're just adding our listeners to the element.
+    element.addEventListener("dragstart", handleDragStart)
+    element.addEventListener("dragend", handleDragEnd)
+
+    return () => {
+      element.removeEventListener("dragstart", handleDragStart)
+      element.removeEventListener("dragend", handleDragEnd)
+    }
+  }, [node.id, node.name])
 
   // const opacity = isDragging ? 0 : 1
   useEffect(() => {
@@ -236,9 +253,6 @@ export const Card: FC<CardProps> = ({
         ref={ref}
         data-handler-id={handlerId}
         className={cn("flex flex-col gap-1")}
-        draggable={true}
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
       >
         <div className={cn("group flex w-full", className)}>
           <NodeItem

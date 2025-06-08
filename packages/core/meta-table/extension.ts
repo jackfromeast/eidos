@@ -133,7 +133,7 @@ export class ExtensionTable
     await this.dataSpace.db.transaction(async () => {
       await this.dataSpace.exec2(`DELETE FROM ${this.name} WHERE id = ?`, [id])
       const chatIds = await this.dataSpace.chat.getChatIdsByProjectId(id)
-      await Promise.all(chatIds.map(chatId => this.dataSpace.chat.delete(chatId)))
+      await Promise.all(chatIds.map(chatId => this.dataSpace.chat.del(chatId)))
     })
     return true
   }

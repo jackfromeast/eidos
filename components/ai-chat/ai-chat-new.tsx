@@ -1,22 +1,22 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { IEmbedding } from "@/packages/core/meta-table/embedding"
 import { useChat } from "ai/react"
 import { Paintbrush, PaperclipIcon, PauseIcon } from "lucide-react"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useWindowSize } from "usehooks-ts"
 
-import { useExperimentConfigStore } from "@/apps/web-app/settings/experiment/store"
-import { Button } from "@/components/ui/button"
-import { toast } from "@/components/ui/use-toast"
+import { EIDOS_CHAT_PROJECT_ID } from "@/lib/const"
+import { ITreeNode } from "@/lib/store/ITreeNode"
+import { useAppStore } from "@/lib/store/app-store"
 import { useAiConfig } from "@/hooks/use-ai-config"
 import { useAIFunctions } from "@/hooks/use-ai-functions"
 import { useAllPrompts } from "@/hooks/use-all-prompts"
 import { useAllTools } from "@/hooks/use-all-tools"
 import { useCurrentExtension, useCurrentNode } from "@/hooks/use-current-node"
 import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
-import { EIDOS_CHAT_PROJECT_ID } from "@/lib/const"
-import { ITreeNode } from "@/lib/store/ITreeNode"
-import { useAppStore } from "@/lib/store/app-store"
+import { Button } from "@/components/ui/button"
+import { toast } from "@/components/ui/use-toast"
+import { useExperimentConfigStore } from "@/apps/web-app/settings/experiment/store"
 
 import { UIBlock } from "../remix-chat/components/block"
 import {
@@ -31,7 +31,7 @@ import { AIModelSelect } from "./ai-chat-model-select"
 import { AIChatPromptSelect } from "./ai-chat-prompt-select"
 import { AIContextNodes } from "./ai-context-nodes"
 import { AIInputEditor, AIInputEditorRef } from "./ai-input-editor"
-import { useAIChatData } from "./hooks/use-ai-chat-history"
+import { useAIChatData } from "./hooks/use-ai-chat-data"
 import { useAttachments } from "./hooks/use-attachments"
 import { useSystemPrompt } from "./hooks/use-system-prompt"
 import { useAIChatStore } from "./store"
@@ -63,8 +63,7 @@ export default function Chat() {
     // contextEmbeddings
   )
 
-  const { chatId, chatMessages, clearChatMessages, deleteMessage } =
-    useAIChatData()
+  const { chatId, chatMessages, clearChatMessages } = useAIChatData()
 
   const { aiModel, setAIModel } = useAppStore()
   const { space } = useCurrentPathInfo()

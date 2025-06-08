@@ -75,5 +75,6 @@ export const useExtensionById = (id?: string) => {
     }
     fetchScript()
   }, [sqlite, id])
+  if (!id) return null
   return script
 }

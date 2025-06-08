@@ -12,12 +12,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-import { useAIChatData } from "./hooks/use-ai-chat-history"
+import { useAIChatData } from "./hooks/use-ai-chat-data"
 
 export function AIChatHeader() {
   const { t } = useTranslation()
 
-  const { chatId, sortedChats, createNewChat, switchChat, deleteChat } =
+  const { chatId, chats, createNewChat, switchChat, deleteChat } =
     useAIChatData()
 
   const getChatTitle = (
@@ -39,12 +39,12 @@ export function AIChatHeader() {
           align="end"
           className="w-[300px] max-h-[400px] overflow-y-auto"
         >
-          {sortedChats.length === 0 ? (
+          {chats.length === 0 ? (
             <div className="p-4 text-center text-muted-foreground">
               {t("aiChat.noChats", "No chat history")}
             </div>
           ) : (
-            sortedChats.map(({ id, createdAt }, index) => (
+            chats.map(({ id, created_at }, index) => (
               <DropdownMenuItem
                 key={id}
                 className={cn(
@@ -59,18 +59,18 @@ export function AIChatHeader() {
                   <MessageSquare className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                   <div className="min-w-0 flex-1">
                     <div className="truncate">
-                      {getChatTitle(sortedChats[index], index)}
+                      {getChatTitle(chats[index], index)}
                     </div>
-                    {createdAt.getTime() > 0 && (
+                    {new Date(created_at + "Z").getTime() > 0 && (
                       <div className="text-xs text-muted-foreground truncate">
-                        {formatDistanceToNow(createdAt, {
+                        {formatDistanceToNow(new Date(created_at + "Z"), {
                           addSuffix: true,
                         })}
                       </div>
                     )}
                   </div>
                 </div>
-                {sortedChats.length > 1 && (
+                {chats.length > 1 && (
                   <Button
                     variant="ghost"
                     size="xs"
