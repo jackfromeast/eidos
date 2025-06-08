@@ -65,7 +65,7 @@ let processedContent = outputLines.join('\n')
 // Apply the original replacement (ensure it's still needed and correct)
 processedContent = processedContent.replace(
   // packages/worker/web-worker/sdk/index
-  /"packages\/worker\/web-worker\/sdk\/index"/g,
+  /"packages\/core\/sdk\/index"/g,
   '"@eidos.space/types"'
 )
 

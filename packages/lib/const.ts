@@ -29,6 +29,11 @@ export enum MsgType {
 
   // table related msg
   HighlightRow = "HighlightRow",
+
+  GetTheme = "GetTheme",
+  SetTheme = "SetTheme",
+  ListThemes = "ListThemes",
+  SetCurrentTheme = "SetCurrentTheme",
 }
 
 export enum MainServiceWorkerMsgType {

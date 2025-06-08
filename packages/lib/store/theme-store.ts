@@ -15,6 +15,8 @@ interface ThemeState {
   addCustomTheme: (theme: CustomTheme) => void
   removeCustomTheme: (name: string) => void
   getCustomTheme: (name: string) => CustomTheme | undefined
+  listThemes: () => CustomTheme[]
+  setCustomTheme: (name: string, css: string) => void
 }
 
 const defaultThemeState = {
@@ -56,6 +58,22 @@ export const useThemeStore = create<ThemeState>()(
       getCustomTheme: (name: string) => {
         const { customThemes } = get()
         return customThemes.find(theme => theme.name === name)
+      },
+      listThemes: () => {
+        const { customThemes } = get()
+        console.log("listThemes", customThemes)
+        return customThemes
+      },
+      setCustomTheme: (name: string, css: string) => {
+        const { customThemes } = get()
+        const existingIndex = customThemes.findIndex(t => t.name === name)
+        if (existingIndex !== -1) {
+          const updatedThemes = [...customThemes]
+          updatedThemes[existingIndex] = { name, css }
+          set({ customThemes: updatedThemes })
+        } else {
+          set({ customThemes: [...customThemes, { name, css }] })
+        }
       }
     }),
     {

@@ -1,9 +1,10 @@
 /// <reference types="react" resolution-mode="require"/>
 /// <reference types="node" />
 /// <reference types="node" />
+/// <reference types="node" />
 declare module "packages/lib/env" {
     export const logger: Console;
-    export const EIDOS_VERSION = "0.19.0";
+    export const EIDOS_VERSION = "0.20.0";
     export const isDevMode: boolean;
     export const isSelfHosted: boolean;
     export const isInkServiceMode: boolean;
@@ -197,7 +198,11 @@ declare module "packages/lib/const" {
         ConvertHtml2State = "ConvertHtml2State",
         ConvertEmail2State = "ConvertEmail2State",
         GetDocMarkdown = "GetDocMarkdown",
-        HighlightRow = "HighlightRow"
+        HighlightRow = "HighlightRow",
+        GetTheme = "GetTheme",
+        SetTheme = "SetTheme",
+        ListThemes = "ListThemes",
+        SetCurrentTheme = "SetCurrentTheme"
     }
     export enum MainServiceWorkerMsgType {
         SetData = "SetData"
@@ -729,9 +734,9 @@ declare module "packages/lib/sqlite/sql-merge-table-with-new-columns" {
         sql: string;
     };
 }
-declare module "packages/worker/web-worker/sdk/index-manager" {
-    import { DataSpace } from "packages/worker/web-worker/DataSpace";
-    import { TableManager } from "packages/worker/web-worker/sdk/table";
+declare module "packages/core/sdk/index-manager" {
+    import { DataSpace } from "packages/core/DataSpace";
+    import { TableManager } from "packages/core/sdk/table";
     export class IndexManager {
         private table;
         dataSpace: DataSpace;
@@ -885,8 +890,8 @@ declare module "packages/lib/fields/date" {
         };
     }
 }
-declare module "packages/worker/web-worker/meta-table/base" {
-    import { DataSpace } from "packages/worker/web-worker/DataSpace";
+declare module "packages/core/meta-table/base" {
+    import { DataSpace } from "packages/core/DataSpace";
     export interface MetaTable<T> {
         add(data: T): Promise<T>;
         get(id: string): Promise<T | null>;
@@ -927,9 +932,9 @@ declare module "packages/worker/web-worker/meta-table/base" {
         }): Promise<T[]>;
     }
 }
-declare module "packages/worker/web-worker/meta-table/file" {
+declare module "packages/core/meta-table/file" {
     import { FileSystemType } from "packages/lib/storage/eidos-file-system";
-    import { BaseTable, BaseTableImpl } from "packages/worker/web-worker/meta-table/base";
+    import { BaseTable, BaseTableImpl } from "packages/core/meta-table/base";
     export interface IFile {
         id: string;
         name: string;
@@ -1045,9 +1050,9 @@ declare module "packages/lib/sqlite/sql-meta-table-trigger" {
      */
     export function createUpdateTriggerForFields(tableName: string, fieldNames: string[]): string;
 }
-declare module "packages/worker/web-worker/meta-table/extension" {
+declare module "packages/core/meta-table/extension" {
     import { JsonSchema7ObjectType } from "zod-to-json-schema";
-    import { BaseTable, BaseTableImpl } from "packages/worker/web-worker/meta-table/base";
+    import { BaseTable, BaseTableImpl } from "packages/core/meta-table/base";
     export type ExtensionStatus = "all" | "enabled" | "disabled";
     export interface ICommand {
         name: string;
@@ -1123,7 +1128,7 @@ declare module "packages/lib/store/runtime-store" {
     /**
      * state store for runtime, for cross component communication
      */
-    import { IFile } from "packages/worker/web-worker/meta-table/file";
+    import { IFile } from "packages/core/meta-table/file";
     interface AppRuntimeState {
         isCmdkOpen: boolean;
         setCmdkOpen: (isCmdkOpen: boolean) => void;
@@ -1151,197 +1156,6 @@ declare module "packages/lib/store/runtime-store" {
         setRunningCommand: (runningCommand: string | null) => void;
     }
     export const useAppRuntimeStore: import("zustand").UseBoundStore<import("zustand").StoreApi<AppRuntimeState>>;
-}
-declare module "packages/lib/v3/cache" {
-    function generateCacheKey(code: string): string;
-    function hasCache(key: string): boolean;
-    function getCache(key: string): any;
-    function setCache(key: string, compiledCode: any): void;
-    function clearExpiredCache(): void;
-    export { generateCacheKey, hasCache, getCache, setCache, clearExpiredCache };
-}
-declare module "packages/lib/v3/esbuild" {
-    export const initializeCompiler: () => Promise<void>;
-    export const transform: (input: string | Uint8Array, options?: import("esbuild-wasm").SameShape<import("esbuild-wasm").TransformOptions, import("esbuild-wasm").TransformOptions>) => Promise<import("esbuild-wasm").TransformResult<import("esbuild-wasm").TransformOptions>>;
-}
-declare module "packages/lib/v3/compiler" {
-    interface CompileOptions {
-        uiLibCode?: string;
-    }
-    interface CompileResult {
-        code: string;
-        error: string | null;
-    }
-    export const compileCode: (sourceCode: string, options?: CompileOptions) => Promise<CompileResult>;
-    export function getImportsFromCode(code: string): any[];
-    export function generateImportMap(thirdPartyLibs: string[], uiLibs: string[]): Promise<{
-        importMap: string;
-        cleanup: () => void;
-    }>;
-    export function getAllLibs(code: string, processedComponents?: Set<string>): {
-        thirdPartyLibs: any[];
-        uiLibs: any[];
-    };
-}
-declare module "packages/lib/python/worker" {
-    export const getPythonWorker: () => Worker;
-}
-declare module "packages/lib/store/theme-store" {
-    export interface CustomTheme {
-        name: string;
-        css: string;
-    }
-    interface ThemeState {
-        currentThemeName: string;
-        customThemes: CustomTheme[];
-        setCurrentThemeName: (name: string) => void;
-        addCustomTheme: (theme: CustomTheme) => void;
-        removeCustomTheme: (name: string) => void;
-        getCustomTheme: (name: string) => CustomTheme | undefined;
-    }
-    export const useThemeStore: import("zustand").UseBoundStore<Omit<import("zustand").StoreApi<ThemeState>, "persist"> & {
-        persist: {
-            setOptions: (options: Partial<import("zustand/middleware").PersistOptions<ThemeState, ThemeState>>) => void;
-            clearStorage: () => void;
-            rehydrate: () => void | Promise<void>;
-            hasHydrated: () => boolean;
-            onHydrate: (fn: (state: ThemeState) => void) => () => void;
-            onFinishHydration: (fn: (state: ThemeState) => void) => () => void;
-            getOptions: () => Partial<import("zustand/middleware").PersistOptions<ThemeState, ThemeState>>;
-        };
-    }>;
-}
-declare module "packages/lib/web/theme" {
-    export type ThemeVariables = {
-        background: string;
-        foreground: string;
-        muted: string;
-        'muted-foreground': string;
-        popover: string;
-        'popover-foreground': string;
-        border: string;
-        input: string;
-        card: string;
-        'card-foreground': string;
-        primary: string;
-        'primary-foreground': string;
-        secondary: string;
-        'secondary-foreground': string;
-        accent: string;
-        'accent-foreground': string;
-        destructive: string;
-        'destructive-foreground': string;
-        ring: string;
-        radius: string;
-        [key: string]: string;
-    };
-    export type ExtendedThemeVariables = ThemeVariables & {
-        'chart-1': string;
-        'chart-2': string;
-        'chart-3': string;
-        'chart-4': string;
-        'chart-5': string;
-        'sidebar': string;
-        'sidebar-foreground': string;
-        'sidebar-primary': string;
-        'sidebar-primary-foreground': string;
-        'sidebar-accent': string;
-        'sidebar-accent-foreground': string;
-        'sidebar-border': string;
-        'sidebar-ring': string;
-        'font-sans': string;
-        'font-serif': string;
-        'font-mono': string;
-        'shadow-2xs': string;
-        'shadow-xs': string;
-        'shadow-sm': string;
-        'shadow': string;
-        'shadow-md': string;
-        'shadow-lg': string;
-        'shadow-xl': string;
-        'shadow-2xl': string;
-        'tracking-normal': string;
-    };
-    /**
-     * Set a single CSS variable in :root
-     * @param name CSS variable name (without -- prefix)
-     * @param value CSS variable value
-     */
-    export function setCSSVariable(name: string, value: string): void;
-    /**
-     * Set multiple CSS variables at once
-     * @param variables Object containing variable names and values
-     */
-    export function setThemeVariables(variables: Partial<ThemeVariables>): void;
-    /**
-     * Get the current value of a CSS variable
-     * @param name CSS variable name (without -- prefix)
-     * @returns The current value of the CSS variable
-     */
-    export function getCSSVariable(name: string): string;
-    /**
-     * Get all current theme variables
-     * @returns Object containing all theme variables and their values
-     */
-    export function getAllThemeVariables(): ThemeVariables;
-    export const defaultTheme: ThemeVariables;
-    /**
-     * Parse and set CSS variables from a theme configuration
-     * @param theme Theme configuration object
-     * @param selector CSS selector to apply the theme to (default: ':root')
-     */
-    export function setThemeConfig(theme: Partial<ExtendedThemeVariables>, selector?: string): void;
-    export function parseCSSVariables(css: string): Record<string, string>;
-    export const getThemeVariables: (rawCss: string, isDarkMode: boolean) => Record<string, string>;
-}
-declare module "packages/lib/types/aggregate-item" {
-    export interface AggregateItem {
-        column: string;
-        function: "sum" | "avg" | "count" | "min" | "max" | "count_distinct";
-        alias?: string;
-    }
-}
-declare module "packages/lib/sqlite/sql-aggregate-parser" {
-    import { AggregateItem } from "packages/lib/types/aggregate-item";
-    export const transformAggregateItems2SqlString: (sql: string, aggregateItems: AggregateItem[], groupByColumns?: string[], selectedFields?: string[]) => string;
-}
-declare module "packages/worker/web-worker/meta-table/embedding" {
-    import { BaseTable, BaseTableImpl } from "packages/worker/web-worker/meta-table/base";
-    export interface IEmbedding {
-        id: string;
-        embedding: string;
-        model: string;
-        raw_content: string;
-        source_type: "doc" | "table" | "file";
-        source: string;
-    }
-    export class EmbeddingTable extends BaseTableImpl implements BaseTable<IEmbedding> {
-        name: string;
-        createTableSql: string;
-        add(data: IEmbedding): Promise<IEmbedding>;
-        get(id: string): Promise<IEmbedding | null>;
-        set(id: string, data: Partial<IEmbedding>): Promise<boolean>;
-        del(id: string): Promise<boolean>;
-    }
-}
-declare module "packages/lib/embedding/worker" {
-    export const getEmbeddingWorker: () => Worker;
-    export const embeddingTexts: (texts: string[]) => Promise<unknown>;
-}
-declare module "packages/lib/ai/llm_vendors/base" {
-    export abstract class LLMBaseVendor {
-        abstract name: string;
-        abstract embedding(text: string[], model: string): Promise<number[][]>;
-    }
-}
-declare module "packages/lib/ai/llm_vendors/bge" {
-    import { LLMBaseVendor } from "packages/lib/ai/llm_vendors/base";
-    export class BGEM3 implements LLMBaseVendor {
-        name: string;
-        _embedding?: (text: string[]) => Promise<number[][]>;
-        constructor(embedding?: (text: string[]) => Promise<number[][]>);
-        embedding(text: string[], model: string): Promise<number[][]>;
-    }
 }
 declare module "packages/lib/ai/helper" {
     export type LLMProviderType = "openai" | "google" | "deepseek" | "groq" | "xai" | "openrouter" | "anthropic" | "azure" | "amazon-bedrock" | "deepinfra" | "mistral" | "togetherai" | "cohere" | "fireworks" | "cerebras" | "perplexity" | "ollama" | "openai-compatible";
@@ -1448,6 +1262,213 @@ declare module "packages/lib/ai/config" {
     }>;
     export type AIFormValues = z.infer<typeof aiFormSchema>;
 }
+declare module "packages/lib/storage/backend-sync" {
+    import { StateStorage } from "zustand/middleware";
+    interface BackendSyncStorageOptions<T> {
+        backendConfigKey: string;
+        getBackendState: (state: T) => any;
+        defaultBackendState: any;
+    }
+    /**
+     * Creates a custom zustand storage object that syncs with both a primary storage (IndexedDB) and a backend config.
+     * @param options - Configuration for backend synchronization.
+     * @returns A zustand StateStorage object.
+     */
+    export function createBackendSyncStorage<T>(options: BackendSyncStorageOptions<T>): StateStorage;
+}
+declare module "packages/lib/store/theme-store" {
+    export interface CustomTheme {
+        name: string;
+        css: string;
+    }
+    interface ThemeState {
+        currentThemeName: string;
+        customThemes: CustomTheme[];
+        setCurrentThemeName: (name: string) => void;
+        addCustomTheme: (theme: CustomTheme) => void;
+        removeCustomTheme: (name: string) => void;
+        getCustomTheme: (name: string) => CustomTheme | undefined;
+        listThemes: () => CustomTheme[];
+        setCustomTheme: (name: string, css: string) => void;
+    }
+    export const useThemeStore: import("zustand").UseBoundStore<Omit<import("zustand").StoreApi<ThemeState>, "persist"> & {
+        persist: {
+            setOptions: (options: Partial<import("zustand/middleware").PersistOptions<ThemeState, unknown>>) => void;
+            clearStorage: () => void;
+            rehydrate: () => void | Promise<void>;
+            hasHydrated: () => boolean;
+            onHydrate: (fn: (state: ThemeState) => void) => () => void;
+            onFinishHydration: (fn: (state: ThemeState) => void) => () => void;
+            getOptions: () => Partial<import("zustand/middleware").PersistOptions<ThemeState, unknown>>;
+        };
+    }>;
+}
+declare module "packages/lib/v3/cache" {
+    function generateCacheKey(code: string): string;
+    function hasCache(key: string): boolean;
+    function getCache(key: string): any;
+    function setCache(key: string, compiledCode: any): void;
+    function clearExpiredCache(): void;
+    export { generateCacheKey, hasCache, getCache, setCache, clearExpiredCache };
+}
+declare module "packages/lib/v3/esbuild" {
+    export const initializeCompiler: () => Promise<void>;
+    export const transform: (input: string | Uint8Array, options?: import("esbuild-wasm").SameShape<import("esbuild-wasm").TransformOptions, import("esbuild-wasm").TransformOptions>) => Promise<import("esbuild-wasm").TransformResult<import("esbuild-wasm").TransformOptions>>;
+}
+declare module "packages/lib/v3/compiler" {
+    interface CompileOptions {
+        uiLibCode?: string;
+    }
+    interface CompileResult {
+        code: string;
+        error: string | null;
+    }
+    export const compileCode: (sourceCode: string, options?: CompileOptions) => Promise<CompileResult>;
+    export function getImportsFromCode(code: string): any[];
+    export function generateImportMap(thirdPartyLibs: string[], uiLibs: string[]): Promise<{
+        importMap: string;
+        cleanup: () => void;
+    }>;
+    export function getAllLibs(code: string, processedComponents?: Set<string>): {
+        thirdPartyLibs: any[];
+        uiLibs: any[];
+    };
+}
+declare module "packages/lib/web/theme" {
+    export type ThemeVariables = {
+        background: string;
+        foreground: string;
+        muted: string;
+        'muted-foreground': string;
+        popover: string;
+        'popover-foreground': string;
+        border: string;
+        input: string;
+        card: string;
+        'card-foreground': string;
+        primary: string;
+        'primary-foreground': string;
+        secondary: string;
+        'secondary-foreground': string;
+        accent: string;
+        'accent-foreground': string;
+        destructive: string;
+        'destructive-foreground': string;
+        ring: string;
+        radius: string;
+        [key: string]: string;
+    };
+    export type ExtendedThemeVariables = ThemeVariables & {
+        'chart-1': string;
+        'chart-2': string;
+        'chart-3': string;
+        'chart-4': string;
+        'chart-5': string;
+        'sidebar': string;
+        'sidebar-foreground': string;
+        'sidebar-primary': string;
+        'sidebar-primary-foreground': string;
+        'sidebar-accent': string;
+        'sidebar-accent-foreground': string;
+        'sidebar-border': string;
+        'sidebar-ring': string;
+        'font-sans': string;
+        'font-serif': string;
+        'font-mono': string;
+        'shadow-2xs': string;
+        'shadow-xs': string;
+        'shadow-sm': string;
+        'shadow': string;
+        'shadow-md': string;
+        'shadow-lg': string;
+        'shadow-xl': string;
+        'shadow-2xl': string;
+        'tracking-normal': string;
+    };
+    /**
+     * Set a single CSS variable in :root
+     * @param name CSS variable name (without -- prefix)
+     * @param value CSS variable value
+     */
+    export function setCSSVariable(name: string, value: string): void;
+    /**
+     * Set multiple CSS variables at once
+     * @param variables Object containing variable names and values
+     */
+    export function setThemeVariables(variables: Partial<ThemeVariables>): void;
+    /**
+     * Get the current value of a CSS variable
+     * @param name CSS variable name (without -- prefix)
+     * @returns The current value of the CSS variable
+     */
+    export function getCSSVariable(name: string): string;
+    /**
+     * Get all current theme variables
+     * @returns Object containing all theme variables and their values
+     */
+    export function getAllThemeVariables(): ThemeVariables;
+    export const defaultTheme: ThemeVariables;
+    /**
+     * Parse and set CSS variables from a theme configuration
+     * @param theme Theme configuration object
+     * @param selector CSS selector to apply the theme to (default: ':root')
+     */
+    export function setThemeConfig(theme: Partial<ExtendedThemeVariables>, selector?: string): void;
+    export function parseCSSVariables(css: string): Record<string, string>;
+    export const getThemeVariables: (rawCss: string, isDarkMode: boolean) => Record<string, string>;
+}
+declare module "packages/lib/python/worker" {
+    export const getPythonWorker: () => Worker;
+}
+declare module "packages/lib/types/aggregate-item" {
+    export interface AggregateItem {
+        column: string;
+        function: "sum" | "avg" | "count" | "min" | "max" | "count_distinct";
+        alias?: string;
+    }
+}
+declare module "packages/lib/sqlite/sql-aggregate-parser" {
+    import { AggregateItem } from "packages/lib/types/aggregate-item";
+    export const transformAggregateItems2SqlString: (sql: string, aggregateItems: AggregateItem[], groupByColumns?: string[], selectedFields?: string[]) => string;
+}
+declare module "packages/core/meta-table/embedding" {
+    import { BaseTable, BaseTableImpl } from "packages/core/meta-table/base";
+    export interface IEmbedding {
+        id: string;
+        embedding: string;
+        model: string;
+        raw_content: string;
+        source_type: "doc" | "table" | "file";
+        source: string;
+    }
+    export class EmbeddingTable extends BaseTableImpl implements BaseTable<IEmbedding> {
+        name: string;
+        createTableSql: string;
+        add(data: IEmbedding): Promise<IEmbedding>;
+        get(id: string): Promise<IEmbedding | null>;
+        set(id: string, data: Partial<IEmbedding>): Promise<boolean>;
+        del(id: string): Promise<boolean>;
+    }
+}
+declare module "packages/lib/embedding/worker" {
+    export const getEmbeddingWorker: () => Worker;
+    export const embeddingTexts: (texts: string[]) => Promise<unknown>;
+}
+declare module "packages/lib/ai/llm_vendors/base" {
+    export abstract class LLMBaseVendor {
+        abstract name: string;
+        abstract embedding(text: string[], model: string): Promise<number[][]>;
+    }
+}
+declare module "packages/lib/ai/llm_vendors/bge" {
+    import { LLMBaseVendor } from "packages/lib/ai/llm_vendors/base";
+    export class BGEM3 implements LLMBaseVendor {
+        name: string;
+        _embedding?: (text: string[]) => Promise<number[][]>;
+        constructor(embedding?: (text: string[]) => Promise<number[][]>);
+        embedding(text: string[], model: string): Promise<number[][]>;
+    }
+}
 declare module "packages/lib/ai/doc_loader/base" {
     export abstract class BaseLoader {
         abstract load(docId: string): Promise<{
@@ -1457,7 +1478,7 @@ declare module "packages/lib/ai/doc_loader/base" {
     }
 }
 declare module "packages/lib/ai/doc_loader/doc" {
-    import { DataSpace } from "packages/worker/web-worker/DataSpace";
+    import { DataSpace } from "packages/core/DataSpace";
     import { BaseLoader } from "packages/lib/ai/doc_loader/base";
     export class DocLoader implements BaseLoader {
         private dataSpace;
@@ -1641,7 +1662,7 @@ declare module "packages/lib/sqlite/channel/webrtc" {
     }
 }
 declare module "packages/lib/sqlite/channel/index" {
-    import { DataSpace } from "packages/worker/web-worker/DataSpace";
+    import { DataSpace } from "packages/core/DataSpace";
     import { DataConnection } from "peerjs";
     import { ILocalSendData } from "packages/lib/sqlite/channel/local";
     import { ISqlite } from "packages/lib/sqlite/interface";
@@ -1691,11 +1712,11 @@ declare module "packages/lib/sqlite/sql-alter-column-type" {
      */
     export const alterColumnType: (tableName: string, columnName: string, newType: "TEXT" | "REAL" | "INT") => string;
 }
-declare module "packages/worker/web-worker/meta-table/column" {
+declare module "packages/core/meta-table/column" {
     import { FieldType } from "packages/lib/fields/const";
     import { IField } from "packages/lib/store/interface";
     import { BaseServerDatabase } from "packages/lib/sqlite/interface";
-    import { BaseTable, BaseTableImpl } from "packages/worker/web-worker/meta-table/base";
+    import { BaseTable, BaseTableImpl } from "packages/core/meta-table/base";
     /**
      * define
      * 1. column: a real column in table
@@ -2079,9 +2100,9 @@ declare module "packages/lib/fields/number" {
         };
     }
 }
-declare module "packages/worker/web-worker/sdk/service/text" {
-    import { DataSpace } from "packages/worker/web-worker/DataSpace";
-    import { TableManager } from "packages/worker/web-worker/sdk/table";
+declare module "packages/core/sdk/service/text" {
+    import { DataSpace } from "packages/core/DataSpace";
+    import { TableManager } from "packages/core/sdk/table";
     import { IField } from "packages/lib/store/interface";
     import { TextProperty } from "packages/lib/fields/text";
     export interface IVecMeta {
@@ -2277,10 +2298,10 @@ declare module "packages/worker/web-worker/store" {
         currentCallUserId: string | null;
     };
 }
-declare module "packages/worker/web-worker/sdk/rows" {
+declare module "packages/core/sdk/rows" {
     import type { IField } from "packages/lib/store/interface";
-    import { DataSpace } from "packages/worker/web-worker/DataSpace";
-    import { TableManager } from "packages/worker/web-worker/sdk/table";
+    import { DataSpace } from "packages/core/DataSpace";
+    import { TableManager } from "packages/core/sdk/table";
     export class RowsManager {
         private table;
         dataSpace: DataSpace;
@@ -2367,12 +2388,12 @@ declare module "packages/worker/web-worker/sdk/rows" {
         highlight(id: string): Promise<void>;
     }
 }
-declare module "packages/worker/web-worker/sdk/service/link" {
+declare module "packages/core/sdk/service/link" {
     import { FieldType } from "packages/lib/fields/const";
     import { ILinkProperty } from "packages/lib/fields/link";
     import { IField } from "packages/lib/store/interface";
-    import { DataSpace, EidosDatabase } from "packages/worker/web-worker/DataSpace";
-    import { TableManager } from "packages/worker/web-worker/sdk/table";
+    import { DataSpace, EidosDatabase } from "packages/core/DataSpace";
+    import { TableManager } from "packages/core/sdk/table";
     interface IRelation {
         self: string;
         ref: string;
@@ -2441,11 +2462,11 @@ declare module "packages/worker/web-worker/sdk/service/link" {
         beforeDeleteColumn(tableName: string, columnName: string, db?: import("@/lib/sqlite/interface").BaseServerDatabase): Promise<void>;
     }
 }
-declare module "packages/worker/web-worker/sdk/service/lookup" {
+declare module "packages/core/sdk/service/lookup" {
     import { ILookupContext, ILookupProperty } from "packages/lib/fields/lookup";
     import { IField } from "packages/lib/store/interface";
-    import { DataSpace } from "packages/worker/web-worker/DataSpace";
-    import { TableManager } from "packages/worker/web-worker/sdk/table";
+    import { DataSpace } from "packages/core/DataSpace";
+    import { TableManager } from "packages/core/sdk/table";
     import { BaseServerDatabase } from "packages/lib/sqlite/interface";
     export class LookupFieldService {
         private table;
@@ -2486,11 +2507,11 @@ declare module "packages/worker/web-worker/sdk/service/lookup" {
         }) => Promise<void>;
     }
 }
-declare module "packages/worker/web-worker/sdk/service/multi-select" {
+declare module "packages/core/sdk/service/multi-select" {
     import { SelectProperty } from "packages/lib/fields/select";
     import { IField } from "packages/lib/store/interface";
-    import { DataSpace } from "packages/worker/web-worker/DataSpace";
-    import { TableManager } from "packages/worker/web-worker/sdk/table";
+    import { DataSpace } from "packages/core/DataSpace";
+    import { TableManager } from "packages/core/sdk/table";
     export class MultiSelectFieldService {
         private table;
         dataSpace: DataSpace;
@@ -2503,11 +2524,11 @@ declare module "packages/worker/web-worker/sdk/service/multi-select" {
         deleteSelectOption: (field: IField<SelectProperty>, option: string) => Promise<void>;
     }
 }
-declare module "packages/worker/web-worker/sdk/service/select" {
+declare module "packages/core/sdk/service/select" {
     import { SelectProperty } from "packages/lib/fields/select";
     import { IField } from "packages/lib/store/interface";
-    import { DataSpace } from "packages/worker/web-worker/DataSpace";
-    import { TableManager } from "packages/worker/web-worker/sdk/table";
+    import { DataSpace } from "packages/core/DataSpace";
+    import { TableManager } from "packages/core/sdk/table";
     export class SelectFieldService {
         private table;
         dataSpace: DataSpace;
@@ -2526,14 +2547,14 @@ declare module "packages/worker/web-worker/sdk/service/select" {
         }[]>;
     }
 }
-declare module "packages/worker/web-worker/sdk/service/index" {
-    import { DataSpace } from "packages/worker/web-worker/DataSpace";
-    import { TableManager } from "packages/worker/web-worker/sdk/table";
-    import { LinkFieldService } from "packages/worker/web-worker/sdk/service/link";
-    import { LookupFieldService } from "packages/worker/web-worker/sdk/service/lookup";
-    import { MultiSelectFieldService } from "packages/worker/web-worker/sdk/service/multi-select";
-    import { SelectFieldService } from "packages/worker/web-worker/sdk/service/select";
-    import { TextFieldService } from "packages/worker/web-worker/sdk/service/text";
+declare module "packages/core/sdk/service/index" {
+    import { DataSpace } from "packages/core/DataSpace";
+    import { TableManager } from "packages/core/sdk/table";
+    import { LinkFieldService } from "packages/core/sdk/service/link";
+    import { LookupFieldService } from "packages/core/sdk/service/lookup";
+    import { MultiSelectFieldService } from "packages/core/sdk/service/multi-select";
+    import { SelectFieldService } from "packages/core/sdk/service/select";
+    import { TextFieldService } from "packages/core/sdk/service/text";
     export class FieldsManager {
         private table;
         dataSpace: DataSpace;
@@ -2546,8 +2567,8 @@ declare module "packages/worker/web-worker/sdk/service/index" {
         get text(): TextFieldService;
     }
 }
-declare module "packages/worker/web-worker/sdk/service/compute" {
-    import { DataSpace } from "packages/worker/web-worker/DataSpace";
+declare module "packages/core/sdk/service/compute" {
+    import { DataSpace } from "packages/core/DataSpace";
     export class ComputeService {
         private dataSpace;
         constructor(dataSpace: DataSpace);
@@ -2562,13 +2583,13 @@ declare module "packages/worker/web-worker/sdk/service/compute" {
         }) => Promise<void>;
     }
 }
-declare module "packages/worker/web-worker/sdk/table" {
+declare module "packages/core/sdk/table" {
     import { IView } from "packages/lib/store/IView";
-    import { DataSpace, EidosDatabase } from "packages/worker/web-worker/DataSpace";
-    import { IndexManager } from "packages/worker/web-worker/sdk/index-manager";
-    import { RowsManager } from "packages/worker/web-worker/sdk/rows";
-    import { FieldsManager } from "packages/worker/web-worker/sdk/service/index";
-    import { ComputeService } from "packages/worker/web-worker/sdk/service/compute";
+    import { DataSpace, EidosDatabase } from "packages/core/DataSpace";
+    import { IndexManager } from "packages/core/sdk/index-manager";
+    import { RowsManager } from "packages/core/sdk/rows";
+    import { FieldsManager } from "packages/core/sdk/service/index";
+    import { ComputeService } from "packages/core/sdk/service/compute";
     import { FieldType } from "packages/lib/fields/const";
     interface ITable {
         id: string;
@@ -2599,8 +2620,8 @@ declare module "packages/worker/web-worker/sdk/table" {
         };
     }
 }
-declare module "packages/worker/web-worker/data-pipeline/DataChangeEventHandler" {
-    import { DataSpace } from "packages/worker/web-worker/DataSpace";
+declare module "packages/core/data-pipeline/DataChangeEventHandler" {
+    import { DataSpace } from "packages/core/DataSpace";
     export class DataChangeEventHandler {
         private dataSpace;
         constructor(dataSpace: DataSpace);
@@ -2615,8 +2636,8 @@ declare module "packages/worker/web-worker/data-pipeline/DataChangeEventHandler"
         }>;
     }
 }
-declare module "packages/worker/web-worker/data-pipeline/DataChangeTrigger" {
-    import { DataSpace } from "packages/worker/web-worker/DataSpace";
+declare module "packages/core/data-pipeline/DataChangeTrigger" {
+    import { DataSpace } from "packages/core/DataSpace";
     type IRegisterTrigger = {
         update: string;
         insert: string;
@@ -2632,8 +2653,8 @@ declare module "packages/worker/web-worker/data-pipeline/DataChangeTrigger" {
         setTrigger(dataspace: DataSpace, tableName: string, collist: any[], toDeleteColumns?: string[]): Promise<void>;
     }
 }
-declare module "packages/worker/web-worker/data-pipeline/LinkRelationUpdater" {
-    import { DataSpace } from "packages/worker/web-worker/DataSpace";
+declare module "packages/core/data-pipeline/LinkRelationUpdater" {
+    import { DataSpace } from "packages/core/DataSpace";
     export class LinkRelationUpdater {
         private dataSpace;
         needUpdateCell: Record<string, Record<string, Set<string>>>;
@@ -2642,8 +2663,8 @@ declare module "packages/worker/web-worker/data-pipeline/LinkRelationUpdater" {
         addCell: (tableName: string, tableColumnName: string, rowId: string) => void;
     }
 }
-declare module "packages/worker/web-worker/data-pipeline/TableFullTextSearch" {
-    import { DataSpace } from "packages/worker/web-worker/DataSpace";
+declare module "packages/core/data-pipeline/TableFullTextSearch" {
+    import { DataSpace } from "packages/core/DataSpace";
     export class TableFullTextSearch {
         private dataspace;
         private enableFTS;
@@ -2668,8 +2689,8 @@ declare module "packages/worker/web-worker/data-pipeline/TableFullTextSearch" {
         rebuildFTS(tableName: string): Promise<void>;
     }
 }
-declare module "packages/worker/web-worker/data-pipeline/UndoRedo" {
-    import { DataSpace } from "packages/worker/web-worker/DataSpace";
+declare module "packages/core/data-pipeline/UndoRedo" {
+    import { DataSpace } from "packages/core/DataSpace";
     interface StackEntry {
         begin: number;
         end: number;
@@ -2705,8 +2726,8 @@ declare module "packages/worker/web-worker/data-pipeline/UndoRedo" {
         private _step;
     }
 }
-declare module "packages/worker/web-worker/db-migrator/DbMigrator" {
-    import { DataSpace } from "packages/worker/web-worker/DataSpace";
+declare module "packages/core/db-migrator/DbMigrator" {
+    import { DataSpace } from "packages/core/DataSpace";
     /**
      * auto migrate db schema when db schema changed
      */
@@ -2723,11 +2744,11 @@ declare module "packages/worker/web-worker/db-migrator/DbMigrator" {
         private cleanDraftDb;
     }
 }
-declare module "packages/worker/web-worker/helper" {
+declare module "packages/core/helper" {
     export function timeit(threshold: number): (target: any, propertyKey: string, descriptor: PropertyDescriptor) => PropertyDescriptor;
 }
-declare module "packages/worker/web-worker/import-and-export/base" {
-    import { DataSpace } from "packages/worker/web-worker/DataSpace";
+declare module "packages/core/import-and-export/base" {
+    import { DataSpace } from "packages/core/DataSpace";
     export abstract class BaseImportAndExport {
         abstract import(textFileLike: {
             name: string;
@@ -2736,9 +2757,9 @@ declare module "packages/worker/web-worker/import-and-export/base" {
         abstract export(nodeId: string, dataSpace: DataSpace): Promise<string>;
     }
 }
-declare module "packages/worker/web-worker/import-and-export/csv" {
-    import { DataSpace } from "packages/worker/web-worker/DataSpace";
-    import { BaseImportAndExport } from "packages/worker/web-worker/import-and-export/base";
+declare module "packages/core/import-and-export/csv" {
+    import { DataSpace } from "packages/core/DataSpace";
+    import { BaseImportAndExport } from "packages/core/import-and-export/base";
     export class CsvImportAndExport extends BaseImportAndExport {
         useWal: boolean;
         constructor({ useWal }: {
@@ -2754,9 +2775,9 @@ declare module "packages/worker/web-worker/import-and-export/csv" {
         export(nodeId: string, dataSpace: DataSpace): Promise<string>;
     }
 }
-declare module "packages/worker/web-worker/import-and-export/markdown" {
-    import { DataSpace } from "packages/worker/web-worker/DataSpace";
-    import { BaseImportAndExport } from "packages/worker/web-worker/import-and-export/base";
+declare module "packages/core/import-and-export/markdown" {
+    import { DataSpace } from "packages/core/DataSpace";
+    import { BaseImportAndExport } from "packages/core/import-and-export/base";
     export class MarkdownImportAndExport extends BaseImportAndExport {
         import(file: {
             name: string;
@@ -2765,8 +2786,8 @@ declare module "packages/worker/web-worker/import-and-export/markdown" {
         export(nodeId: string, dataSpace: DataSpace): Promise<string>;
     }
 }
-declare module "packages/worker/web-worker/meta-table/action" {
-    import { BaseTable, BaseTableImpl } from "packages/worker/web-worker/meta-table/base";
+declare module "packages/core/meta-table/action" {
+    import { BaseTable, BaseTableImpl } from "packages/core/meta-table/base";
     type ParamType = "string" | "number" | "boolean";
     interface IFunction {
         name: string;
@@ -2793,8 +2814,25 @@ declare module "packages/worker/web-worker/meta-table/action" {
         del(id: string): Promise<boolean>;
     }
 }
-declare module "packages/worker/web-worker/meta-table/chat" {
-    import { BaseTable, BaseTableImpl } from "packages/worker/web-worker/meta-table/base";
+declare module "packages/core/meta-table/message" {
+    import { BaseTable, BaseTableImpl } from "packages/core/meta-table/base";
+    export type ChatMessage = {
+        id: string;
+        chat_id: string;
+        role: string;
+        content: string;
+        created_at?: string;
+    };
+    export class MessageTable extends BaseTableImpl<ChatMessage> implements BaseTable<ChatMessage> {
+        name: string;
+        createTableSql: string;
+        deleteMessagesByChatId(chatId: string): Promise<void>;
+        clearMessages(chatId: string): Promise<void>;
+    }
+}
+declare module "packages/core/meta-table/chat" {
+    import { BaseTable, BaseTableImpl } from "packages/core/meta-table/base";
+    import { ChatMessage } from "packages/core/meta-table/message";
     export type Chat = {
         id: string;
         created_at: string;
@@ -2806,13 +2844,17 @@ declare module "packages/worker/web-worker/meta-table/chat" {
         name: string;
         createTableSql: string;
         getChatIdsByProjectId(projectId: string): Promise<string[]>;
-        delete(chatId: string): Promise<void>;
+        getChatsByProjectId(projectId: string): Promise<Chat[]>;
+        getChatById(chatId: string): Promise<Chat & {
+            messages: ChatMessage[];
+        } | null>;
+        del(chatId: string): Promise<boolean>;
     }
 }
-declare module "packages/worker/web-worker/meta-table/doc" {
+declare module "packages/core/meta-table/doc" {
     import { Email } from "postal-mime";
     import { MsgType } from "packages/lib/const";
-    import { BaseTable, BaseTableImpl } from "packages/worker/web-worker/meta-table/base";
+    import { BaseTable, BaseTableImpl } from "packages/core/meta-table/base";
     export interface IDoc {
         id: string;
         content: string;
@@ -2881,25 +2923,9 @@ declare module "packages/worker/web-worker/meta-table/doc" {
         }>;
     }
 }
-declare module "packages/worker/web-worker/meta-table/message" {
-    import { BaseTable, BaseTableImpl } from "packages/worker/web-worker/meta-table/base";
-    export type ChatMessage = {
-        id: string;
-        chat_id: string;
-        role: string;
-        content: string;
-        created_at?: string;
-    };
-    export class MessageTable extends BaseTableImpl<ChatMessage> implements BaseTable<ChatMessage> {
-        name: string;
-        createTableSql: string;
-        deleteMessagesByChatId(chatId: string): Promise<void>;
-        clearMessages(chatId: string): Promise<void>;
-    }
-}
-declare module "packages/worker/web-worker/meta-table/reference" {
+declare module "packages/core/meta-table/reference" {
     import { IField } from "packages/lib/store/interface";
-    import { BaseTable, BaseTableImpl } from "packages/worker/web-worker/meta-table/base";
+    import { BaseTable, BaseTableImpl } from "packages/core/meta-table/base";
     export interface IReference {
         self: string;
         ref: string;
@@ -2921,9 +2947,9 @@ declare module "packages/worker/web-worker/meta-table/reference" {
         getEffectedFields: (table_name: string, table_column_name: string) => Promise<IField[]>;
     }
 }
-declare module "packages/worker/web-worker/meta-table/tree" {
+declare module "packages/core/meta-table/tree" {
     import { ITreeNode } from "packages/lib/store/ITreeNode";
-    import { BaseTable, BaseTableImpl } from "packages/worker/web-worker/meta-table/base";
+    import { BaseTable, BaseTableImpl } from "packages/core/meta-table/base";
     export class TreeTable extends BaseTableImpl implements BaseTable<ITreeNode> {
         name: string;
         createTableSql: string;
@@ -2955,9 +2981,9 @@ declare module "packages/worker/web-worker/meta-table/tree" {
         }): Promise<number>;
     }
 }
-declare module "packages/worker/web-worker/meta-table/view" {
+declare module "packages/core/meta-table/view" {
     import { IView, ViewTypeEnum } from "packages/lib/store/IView";
-    import { BaseTable, BaseTableImpl } from "packages/worker/web-worker/meta-table/base";
+    import { BaseTable, BaseTableImpl } from "packages/core/meta-table/base";
     export class ViewTable extends BaseTableImpl implements BaseTable<IView> {
         name: string;
         createTableSql: string;
@@ -2998,7 +3024,7 @@ declare module "packages/worker/web-worker/meta-table/view" {
         private checkAndReorderIfNeeded;
     }
 }
-declare module "packages/worker/web-worker/udf/index" {
+declare module "packages/core/udf/index" {
     export const withSqlite3AllUDF: (bc: {
         postMessage: (data: any) => void;
     }) => {
@@ -3012,8 +3038,8 @@ declare module "packages/worker/web-worker/udf/index" {
         }[];
     };
 }
-declare module "packages/worker/web-worker/data-pipeline/TableSemanticSearch" {
-    import { DataSpace } from "packages/worker/web-worker/DataSpace";
+declare module "packages/core/data-pipeline/TableSemanticSearch" {
+    import { DataSpace } from "packages/core/DataSpace";
     export class TableSemanticSearch {
         private readonly dataspace;
         constructor(dataspace: DataSpace);
@@ -3035,9 +3061,9 @@ declare module "packages/worker/web-worker/data-pipeline/TableSemanticSearch" {
         }>;
     }
 }
-declare module "packages/worker/web-worker/meta-table/extnode" {
-    import { BaseTable, BaseTableImpl } from "packages/worker/web-worker/meta-table/base";
-    import { DataSpace } from "packages/worker/web-worker/DataSpace";
+declare module "packages/core/meta-table/extnode" {
+    import { BaseTable, BaseTableImpl } from "packages/core/meta-table/base";
+    import { DataSpace } from "packages/core/DataSpace";
     export interface IExtNode {
         id: string;
         blob?: Buffer;
@@ -3066,7 +3092,18 @@ declare module "packages/worker/web-worker/meta-table/extnode" {
         deleteExtNode(id: string): Promise<boolean>;
     }
 }
-declare module "packages/worker/web-worker/DataSpace" {
+declare module "packages/core/sdk/theme-manager" {
+    import { DataSpace } from "packages/core/DataSpace";
+    export class ThemeManager {
+        private dataSpace;
+        constructor(dataSpace: DataSpace);
+        getTheme(name: string): Promise<any>;
+        setTheme(name: string, css: string): Promise<void>;
+        listThemes(): Promise<any>;
+        setCurrentTheme(name: string): Promise<void>;
+    }
+}
+declare module "packages/core/DataSpace" {
     import { FieldType } from "packages/lib/fields/const";
     import { EidosFileSystemManager, FileSystemType } from "packages/lib/storage/eidos-file-system";
     import { ITreeNode } from "packages/lib/store/ITreeNode";
@@ -3074,26 +3111,27 @@ declare module "packages/worker/web-worker/DataSpace" {
     import { IField } from "packages/lib/store/interface";
     import { BaseServerDatabase } from "packages/lib/sqlite/interface";
     import { Email } from "postal-mime";
-    import { DataChangeEventHandler } from "packages/worker/web-worker/data-pipeline/DataChangeEventHandler";
-    import { DataChangeTrigger } from "packages/worker/web-worker/data-pipeline/DataChangeTrigger";
-    import { LinkRelationUpdater } from "packages/worker/web-worker/data-pipeline/LinkRelationUpdater";
-    import { TableFullTextSearch } from "packages/worker/web-worker/data-pipeline/TableFullTextSearch";
-    import { SQLiteUndoRedo } from "packages/worker/web-worker/data-pipeline/UndoRedo";
-    import { ActionTable } from "packages/worker/web-worker/meta-table/action";
-    import { BaseTable } from "packages/worker/web-worker/meta-table/base";
-    import { ChatTable } from "packages/worker/web-worker/meta-table/chat";
-    import { ColumnTable } from "packages/worker/web-worker/meta-table/column";
-    import { DocTable } from "packages/worker/web-worker/meta-table/doc";
-    import { EmbeddingTable, IEmbedding } from "packages/worker/web-worker/meta-table/embedding";
-    import { FileTable, IFile } from "packages/worker/web-worker/meta-table/file";
-    import { MessageTable } from "packages/worker/web-worker/meta-table/message";
-    import { ReferenceTable } from "packages/worker/web-worker/meta-table/reference";
-    import { IExtension, ExtensionStatus, ExtensionTable } from "packages/worker/web-worker/meta-table/extension";
-    import { TreeTable } from "packages/worker/web-worker/meta-table/tree";
-    import { ViewTable } from "packages/worker/web-worker/meta-table/view";
-    import { TableManager } from "packages/worker/web-worker/sdk/table";
-    import { TableSemanticSearch } from "packages/worker/web-worker/data-pipeline/TableSemanticSearch";
-    import { ExtNodeTable } from "packages/worker/web-worker/meta-table/extnode";
+    import { DataChangeEventHandler } from "packages/core/data-pipeline/DataChangeEventHandler";
+    import { DataChangeTrigger } from "packages/core/data-pipeline/DataChangeTrigger";
+    import { LinkRelationUpdater } from "packages/core/data-pipeline/LinkRelationUpdater";
+    import { TableFullTextSearch } from "packages/core/data-pipeline/TableFullTextSearch";
+    import { SQLiteUndoRedo } from "packages/core/data-pipeline/UndoRedo";
+    import { ActionTable } from "packages/core/meta-table/action";
+    import { BaseTable } from "packages/core/meta-table/base";
+    import { ChatTable } from "packages/core/meta-table/chat";
+    import { ColumnTable } from "packages/core/meta-table/column";
+    import { DocTable } from "packages/core/meta-table/doc";
+    import { EmbeddingTable, IEmbedding } from "packages/core/meta-table/embedding";
+    import { FileTable, IFile } from "packages/core/meta-table/file";
+    import { MessageTable } from "packages/core/meta-table/message";
+    import { ReferenceTable } from "packages/core/meta-table/reference";
+    import { IExtension, ExtensionStatus, ExtensionTable } from "packages/core/meta-table/extension";
+    import { TreeTable } from "packages/core/meta-table/tree";
+    import { ViewTable } from "packages/core/meta-table/view";
+    import { TableManager } from "packages/core/sdk/table";
+    import { TableSemanticSearch } from "packages/core/data-pipeline/TableSemanticSearch";
+    import { ExtNodeTable } from "packages/core/meta-table/extnode";
+    import { ThemeManager } from "packages/core/sdk/theme-manager";
     export type EidosTable = DocTable | ActionTable | ExtensionTable | TreeTable | ViewTable | ColumnTable | EmbeddingTable | FileTable;
     export type EidosDatabase = BaseServerDatabase;
     export class DataSpace {
@@ -3115,6 +3153,7 @@ declare module "packages/worker/web-worker/DataSpace" {
         message: MessageTable;
         file: FileTable;
         extNode: ExtNodeTable;
+        theme: ThemeManager;
         dataChangeTrigger: DataChangeTrigger;
         linkRelationUpdater: LinkRelationUpdater;
         allTables: BaseTable<any>[];
@@ -3282,7 +3321,8 @@ declare module "packages/worker/web-worker/DataSpace" {
         disableExtension(id: string): Promise<void>;
         rebuildIndex(refillNullMarkdown?: boolean): Promise<void>;
         rebuildFTS(tableId: string): Promise<void>;
-        createExtNode(ext_node_type: string, parent_id?: string): Promise<ITreeNode | null>;
+        createExtNode(ext_node_type: string, parent_id?: string): Promise<string>;
+        permanentlyDeleteExtNode(nodeId: string): Promise<void>;
         addDoc(docId: string, content: string, markdown: string, isDayPage?: boolean): Promise<void>;
         getDocBaseInfo(id: string): Promise<Partial<import("@/packages/core/meta-table/doc").IDoc>>;
         updateDoc(docId: string, content: string, markdown: string, _isDayPage?: boolean): Promise<void>;
@@ -3421,7 +3461,7 @@ declare module "packages/worker/web-worker/DataSpace" {
     }
 }
 declare module "@eidos.space/types" {
-    import { DataSpace } from "packages/worker/web-worker/DataSpace";
+    import { DataSpace } from "packages/core/DataSpace";
     export interface Eidos {
         space(spaceName: string): DataSpace;
         currentSpace: DataSpace;

@@ -49,6 +49,7 @@ import { TableManager } from "./sdk/table"
 import { withSqlite3AllUDF } from "./udf"
 import { TableSemanticSearch } from "./data-pipeline/TableSemanticSearch"
 import { ExtNodeTable } from "./meta-table/extnode"
+import { ThemeManager } from "./sdk/theme-manager"
 // import { QueueTable } from "./meta-table/queue"
 
 export type EidosTable =
@@ -86,6 +87,7 @@ export class DataSpace {
   message: MessageTable
   file: FileTable
   extNode: ExtNodeTable
+  theme: ThemeManager
   dataChangeTrigger: DataChangeTrigger
   linkRelationUpdater: LinkRelationUpdater
   allTables: BaseTable<any>[] = []
@@ -181,6 +183,7 @@ export class DataSpace {
     this.chat = new ChatTable(this)
     this.message = new MessageTable(this)
     this.extNode = new ExtNodeTable(this)
+    this.theme = new ThemeManager(this)
     // this.queue = new QueueTable(this)
     //
     this.allTables = [

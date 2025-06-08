@@ -43,7 +43,7 @@
   },
   "include": [
     "packages/lib/types/global.d.ts",
-    "packages/worker/web-worker/sdk/index.ts"
+    "packages/core/sdk/index.ts"
   ],
   "exclude": [
     "node_modules",

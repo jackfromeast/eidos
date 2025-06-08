@@ -1,14 +1,15 @@
 import React, { useCallback } from "react"
 
+import { Markdown } from "@/components/remix-chat/components/markdown"
+import { useToast } from "@/components/ui/use-toast"
+import { useSqlite } from "@/hooks/use-sqlite"
 import { EidosMessageChannelName, MsgType } from "@/lib/const"
 import { getEmbeddingWorker } from "@/lib/embedding/worker"
 import { isDesktopMode, isInkServiceMode } from "@/lib/env"
 import { getWorker } from "@/lib/sqlite/worker"
 import { useAppRuntimeStore } from "@/lib/store/runtime-store"
-import { useSqlite } from "@/hooks/use-sqlite"
-import { useToast } from "@/components/ui/use-toast"
-import { Markdown } from "@/components/remix-chat/components/markdown"
 
+import { useThemeStore } from "@/lib/store/theme-store"
 import {
   _convertEmail2State,
   _convertHtml2State,
@@ -28,6 +29,7 @@ export const useWorker = () => {
     setBlockUIData,
     setEmbeddingModeLoaded,
   } = useAppRuntimeStore()
+  const { setCurrentThemeName, listThemes, setCustomTheme, getCustomTheme } = useThemeStore()
 
   const { toast } = useToast()
   const initWorker = useCallback(() => {
@@ -41,6 +43,7 @@ export const useWorker = () => {
         setInitialized(true)
       }
       const { type, data } = event.data
+      console.log("handle", type, data)
       let res = null
       switch (type) {
         case MsgType.WebSocketConnected:
@@ -78,9 +81,22 @@ export const useWorker = () => {
         case MsgType.ConvertEmail2State:
           res = await _convertEmail2State(data.email, data.space, userId)
           break
+        case MsgType.GetTheme:
+          res = getCustomTheme(data)
+          break
+        case MsgType.SetTheme:
+          res = setCustomTheme(data.name, data.css)
+          break
+        case MsgType.ListThemes:
+          res = listThemes()
+          break
+        case MsgType.SetCurrentTheme:
+          res = setCurrentThemeName(data)
+          break
         default:
           break
       }
+      console.log("res", res)
       event?.ports[0]?.postMessage(res)
       return res
     }
