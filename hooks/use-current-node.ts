@@ -51,7 +51,6 @@ export const useCurrentExtNodeHandleBlockId = () => {
  */
 export const useCurrentChatProjectId = () => {
   const extension = useCurrentExtension()
-
   if (extension) {
     return extension.id
   }

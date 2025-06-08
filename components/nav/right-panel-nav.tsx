@@ -34,7 +34,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { AIChatHeader } from "@/components/ai-chat/ai-chat-header"
-import { useAIChatData } from "@/components/ai-chat/hooks/use-ai-chat-history"
 
 import {
   useAppsStore,

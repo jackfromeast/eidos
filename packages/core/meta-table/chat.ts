@@ -1,6 +1,7 @@
 import { ChatTableName } from "@/lib/sqlite/const"
 import { createInsertTriggerForFields } from "@/lib/sqlite/sql-meta-table-trigger"
 import { BaseTable, BaseTableImpl } from "./base"
+import { ChatMessage } from "./message"
 
 export type Chat = {
   id: string
@@ -33,12 +34,40 @@ export class ChatTable extends BaseTableImpl<Chat> implements BaseTable<Chat> {
     return result.map((row: any) => row.id);
   }
 
-  async delete(chatId: string) {
-    await this.dataSpace.db.transaction(async () => {
-      await this.dataSpace.message.deleteMessagesByChatId(chatId);
-      const sql = `DELETE FROM ${this.name} WHERE id = ?`;
-      await this.dataSpace.exec2(sql, [chatId]);
-    });
+  async getChatsByProjectId(projectId: string): Promise<Chat[]> {
+    const chats = await this.list({ project_id: projectId }, {
+      orderBy: "created_at",
+      order: "ASC"
+    })
+    return chats || []
+  }
+
+  async getChatById(chatId: string): Promise<Chat & { messages: ChatMessage[] } | null> {
+    const chat = await this.get(chatId)
+    if (!chat) {
+      return null
+    }
+    const messages = await this.dataSpace.message.list({ chat_id: chatId }, {
+      orderBy: "created_at",
+      order: "ASC"
+    })
+    return {
+      ...chat,
+      messages
+    }
+  }
+
+  async del(chatId: string) {
+    try {
+      await this.dataSpace.db.transaction(async () => {
+        await this.dataSpace.message.deleteMessagesByChatId(chatId);
+        const sql = `DELETE FROM ${this.name} WHERE id = ?`;
+        await this.dataSpace.exec2(sql, [chatId]);
+      });
+      return true
+    } catch (error) {
+      return false
+    }
   }
 }
 
