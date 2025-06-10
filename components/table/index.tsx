@@ -1,18 +1,16 @@
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 
-import { ViewTypeEnum } from "@/lib/store/IView"
-import { useSqlite } from "@/hooks/use-sqlite"
 import { useSqliteTableSubscribe } from "@/hooks/use-sqlite-table-subscribe"
-import { useTableOperation } from "@/hooks/use-table"
 import { useUiColumns } from "@/hooks/use-ui-columns"
+import { ViewTypeEnum } from "@/lib/store/IView"
 
+import { FieldEditor } from "./fields"
 import { TABLE_CONTENT_ELEMENT_ID } from "./helper"
 import { TableContext, useCurrentView, useUDFs } from "./hooks"
 import { ViewToolbar } from "./view-toolbar"
 import { DocListView } from "./views/doc-list"
 import GalleryView from "./views/gallery"
 import GridView from "./views/grid"
-import { FieldEditor } from "./fields"
 import KanbanView from "./views/kanban"
 
 // const GalleryView = React.lazy(() => import("./views/gallery"))

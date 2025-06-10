@@ -1,13 +1,15 @@
-import { getOrSetDataSpace } from "../../data-space";
-import { getIndexHtml } from "./ext-html";
-import { generateImportMap, getAllLibs, makeSdkInjectScript, twConfig } from "./helper";
-import { extractFunction } from "@/lib/v3/extract-function";
+import { extractFunction } from "@/lib/v3/code-tools/extract-function";
+import { generateImportMap, getAllLibs } from "@/lib/v3/code-tools/get-deps";
 import { DataSpace } from '@/packages/core/DataSpace';
 import { IExtension } from "@/packages/core/meta-table/extension";
 import vm from 'vm';
+import { getOrSetDataSpace } from "../../data-space";
+import { getIndexHtml } from "./ext-html";
+import { makeSdkInjectScript, twConfig } from "./helper";
 
 
 import { ConfigManager, getConfigManager } from "@/apps/desktop/electron/config";
+import { uiComponentsDependencies } from "./ui-deps";
 
 
 export class ServerBlock {
@@ -70,7 +72,7 @@ export class ServerBlock {
         const code = extension?.ts_code || ""
         const compiledCode = extension?.code || ""
 
-        const { thirdPartyLibs, uiLibs, cssLibs } = getAllLibs(code)
+        const { thirdPartyLibs, uiLibs, cssLibs } = getAllLibs(code, uiComponentsDependencies)
         const res = await this.handleServerAction(code, dataSpace, url)
         console.log("server action result", res)
         // // preload some libs
