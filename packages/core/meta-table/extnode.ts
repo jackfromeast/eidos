@@ -35,11 +35,6 @@ export class ExtNodeTable extends BaseTableImpl<IExtNode> implements BaseTable<I
   END;
   `
 
-  constructor(protected dataSpace: DataSpace) {
-    super(dataSpace)
-    this.initTable(this.createTableSql)
-  }
-
   async addExtNode(data: Omit<IExtNode, "created_at" | "updated_at">) {
     return this.add(data)
   }
