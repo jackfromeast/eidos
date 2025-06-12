@@ -4,7 +4,7 @@ import {
   replaceWithFindIndexQuery,
 } from "@/lib/sqlite/sql-parser"
 import { IView, ViewTypeEnum } from "@/lib/store/IView"
-import { getUuid } from "@/lib/utils"
+import { getTableIdByRawTableName, getUuid } from "@/lib/utils"
 
 import { BaseTable, BaseTableImpl } from "./base"
 import { timeit } from "../helper"
@@ -67,13 +67,14 @@ CREATE TABLE IF NOT EXISTS ${this.name} (
     )
   }
 
-  public async createDefaultView(table_id: string, type: ViewTypeEnum = ViewTypeEnum.Grid) {
+  public async createDefaultView(tableName: string, type: ViewTypeEnum = ViewTypeEnum.Grid) {
+    const table_id = getTableIdByRawTableName(tableName)
     return await this.add({
       id: getUuid(),
       name: "New View",
       type,
       table_id,
-      query: `SELECT * FROM tb_${table_id}`,
+      query: `SELECT * FROM ${tableName}`,
     })
   }
 
