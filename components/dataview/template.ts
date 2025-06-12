@@ -36,12 +36,13 @@ FROM eidos__files WHERE mime LIKE 'image/%'
     tags: ["doc", "bookmark"],
     sql: `
 WITH valid_docs AS (
-    SELECT id, content
+    SELECT id, content, created_at
     FROM eidos__docs
     WHERE json_valid(content) = 1
 )
 SELECT
     d.id as doc_id,
+    d.created_at as created_at,
     json_extract(j.value, '$.type') as type,
     json_extract(j.value, '$.title') as title,
     json_extract(j.value, '$.url') as url,
@@ -64,7 +65,8 @@ WITH
   valid_docs AS (
     SELECT
       id,
-      content
+      content,
+      created_at
     FROM
       eidos__docs
     WHERE

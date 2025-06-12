@@ -99,17 +99,17 @@ export const CreateNodeTrigger = ({ parent_id }: { parent_id?: string }) => {
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => {
-            handleCreateNode(TreeNodeType.Dataview)
-          }}
-        >
-          {t("node.menu.newDataView")}
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => {
             handleCreateNode(TreeNodeType.Folder)
           }}
         >
           {t("node.menu.newFolder")}
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => {
+            handleCreateNode(TreeNodeType.Dataview)
+          }}
+        >
+          {t("node.menu.newDataView")}
         </DropdownMenuItem>
         {extNodes.length > 0 && <DropdownMenuSeparator />}
         {extNodes.map((node) => (
