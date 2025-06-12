@@ -174,6 +174,10 @@ export const TextPropertyEditor = (props: IFieldPropertyEditorProps) => {
       setIsResetting(false)
     }
   }
+  const { isView } = useContext(TableContext)
+  if (isView) {
+    return null
+  }
 
   return (
     <Collapsible
