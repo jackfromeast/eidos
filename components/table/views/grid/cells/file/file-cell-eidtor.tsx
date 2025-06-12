@@ -1,4 +1,4 @@
-import { useRef, type FC } from "react"
+import { useContext, useRef, type FC } from "react"
 import type { Identifier, XYCoord } from "dnd-core"
 import { FileIcon, MoreHorizontal } from "lucide-react"
 import { useDrag, useDrop } from "react-dnd"
@@ -10,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { TableContext } from "@/components/table/hooks"
 
 enum ItemTypes {
   CARD = "card",
@@ -93,6 +94,7 @@ export const Card: FC<CardProps> = ({
   setCurrentPreviewIndex,
 }) => {
   const ref = useRef<HTMLDivElement>(null)
+  const { isView } = useContext(TableContext)
   const [{ handlerId }, drop] = useDrop<
     DragItem,
     void,
@@ -196,9 +198,11 @@ export const Card: FC<CardProps> = ({
           <DropdownMenuItem onClick={handleClickViewOriginal}>
             View Original
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => deleteByUrl(index)}>
-            Delete
-          </DropdownMenuItem>
+          {!isView && (
+            <DropdownMenuItem onClick={() => deleteByUrl(index)}>
+              Delete
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
