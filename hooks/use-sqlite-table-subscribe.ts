@@ -27,6 +27,10 @@ export const useSqliteTableSubscribe = (tableName: string) => {
   )
 
   useEffect(() => {
+    // view table is not a real table, so we don't need to subscribe to it
+    if (tableName.startsWith("vw_")) {
+      return
+    }
     const bc = new BroadcastChannel(EidosDataEventChannelName)
     const handler = (ev: MessageEvent<EidosDataEventChannelMsg>) => {
       const { type, payload } = ev.data
