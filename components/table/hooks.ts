@@ -28,6 +28,7 @@ interface TableContextType {
   space: string
   viewId?: string
   isReadOnly?: boolean
+  isView?: boolean
   udfs?: {
     id: string
     name: string
@@ -40,6 +41,7 @@ export const TableContext = createContext<TableContextType>({
   space: "",
   viewId: undefined,
   isReadOnly: true,
+  isView: false,
   udfs: [],
 })
 

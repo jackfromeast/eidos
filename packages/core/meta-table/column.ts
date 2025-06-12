@@ -62,6 +62,20 @@ export class ColumnTable extends BaseTableImpl implements BaseTable<IField> {
     const columnType = typeMap[type] ?? "TEXT"
     return columnType
   }
+
+  async addPureUIColumn(data: IField) {
+    const { name, type, table_name, table_column_name, property } = data
+    this.dataSpace.db.prepare(
+      `INSERT INTO ${ColumnTableName} (name,type,table_name,table_column_name,property) VALUES (?,?,?,?,?)`,
+    ).run([name, type, table_name, table_column_name, JSON.stringify(property)])
+  }
+
+  async updatePureUIColumn(data: Partial<IField>) {
+    this.dataSpace.db.prepare(
+      `UPDATE ${ColumnTableName} SET name = ?, type = ?, table_name = ?, table_column_name = ?, property = ? WHERE table_column_name = ? AND table_name = ?`,
+    ).run([data.name, data.type, data.table_name, data.table_column_name, JSON.stringify(data.property), data.table_column_name, data.table_name])
+  }
+
   async add(data: IField): Promise<IField> {
     const { name, type, table_name, table_column_name, property } = data
     const columnType = ColumnTable.getColumnTypeByFieldType(type)
@@ -376,6 +390,9 @@ export class ColumnTable extends BaseTableImpl implements BaseTable<IField> {
 
   async list(q: { table_name: string }): Promise<IField[]> {
     const res = await super.list(q)
+    if (q.table_name.startsWith("vw_")) {
+      return res
+    }
     return res.filter((col) => !col.table_column_name.startsWith("_"))
   }
 
@@ -385,6 +402,7 @@ export class ColumnTable extends BaseTableImpl implements BaseTable<IField> {
       ColumnTable.getColumnTypeByFieldType(newType)
     )
   }
+
   async changeType(
     tableName: string,
     tableColumnName: string,

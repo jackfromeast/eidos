@@ -167,7 +167,8 @@ export const useLayoutInit = () => {
   useEffect(() => {
     // when table name changed
     if (database && tableName) {
-      sqlite?.onTableChange(database, tableName)
+      console.log("onTableChange", { database, tableName })
+      // sqlite?.onTableChange(database, tableName)
     }
   }, [database, tableName, sqlite])
 

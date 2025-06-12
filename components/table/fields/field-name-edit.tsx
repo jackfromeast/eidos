@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useContext, useEffect, useRef, useState } from "react"
 
 import { IField } from "@/lib/store/interface"
 import { useTableOperation } from "@/hooks/use-table"
@@ -6,6 +6,7 @@ import { useUiColumns } from "@/hooks/use-ui-columns"
 import { Input } from "@/components/ui/input"
 
 import { checkNewFieldNameIsOk } from "./helper"
+import { TableContext } from "../hooks"
 
 interface IFieldNameEditProps {
   field: IField
@@ -22,6 +23,7 @@ export const FieldNameEdit = ({
 }: IFieldNameEditProps) => {
   const [error, setError] = useState<string>()
 
+  const { isView } = useContext(TableContext)
   const { uiColumns } = useUiColumns(tableName, databaseName)
   const handleNewFieldNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newName = e.target.value
@@ -70,6 +72,7 @@ export const FieldNameEdit = ({
         value={newFieldName}
         onBlur={handleChangeFieldName}
         autoFocus
+        disabled={isView}
         autoComplete="off"
         onChange={handleNewFieldNameChange}
         onKeyDown={(e) => {

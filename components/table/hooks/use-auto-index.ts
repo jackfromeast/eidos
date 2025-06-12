@@ -3,13 +3,14 @@ import { useEffect } from "react"
 import { useSqlite } from "@/hooks/use-sqlite"
 import { getSortColumns } from "@/lib/sqlite/sql-sort-parser"
 import { IView } from "@/lib/store/IView"
-import { getRawTableNameById } from "@/lib/utils"
 
+import { getRawTableNameFromQuery } from "@/lib/sqlite/sql-parser"
 import { DataLevel, getDataLevel } from "../helper"
 import { useTableCount } from "./use-table-count"
 
 export const useAutoIndex = (view: IView) => {
-  const { count } = useTableCount(getRawTableNameById(view.table_id))
+  const rawTableName = getRawTableNameFromQuery(view.query)
+  const { count } = useTableCount(rawTableName)
   const dataLevel = getDataLevel(count)
   const { sqlite } = useSqlite()
 

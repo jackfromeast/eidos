@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useContext, useEffect, useMemo, useState } from "react"
 import { PlusIcon } from "@radix-ui/react-icons"
 import update from "immutability-helper"
 import sortBy from "lodash/sortBy"
@@ -9,7 +9,7 @@ import { useTranslation } from "react-i18next"
 
 import { IView } from "@/lib/store/IView"
 import { IField } from "@/lib/store/interface"
-import { useCurrentUiColumns } from "@/hooks/use-ui-columns"
+import { useCurrentUiColumns, useUiColumns } from "@/hooks/use-ui-columns"
 import { Button } from "@/components/ui/button"
 import {
   Popover,
@@ -19,7 +19,7 @@ import {
 import { CommonMenuItem } from "@/components/common-menu-item"
 import { useTableAppStore } from "@/components/table/views/grid/store"
 
-import { useViewOperation } from "../hooks"
+import { TableContext, useViewOperation } from "../hooks"
 import { FieldItemCard } from "./view-field-item"
 
 export interface ContainerState {
@@ -37,7 +37,8 @@ export const ViewField = (props: { view?: IView }) => {
     () => props.view?.hidden_fields || [],
     [props.view?.hidden_fields]
   )
-  const { uiColumns } = useCurrentUiColumns()
+  const { tableName, space } = useContext(TableContext)
+  const { uiColumns } = useUiColumns(tableName, space)
   const { setIsAddFieldEditorOpen } = useTableAppStore()
   const [cards, setCards] = useState<IField[]>([])
   const sortedUiColumns = useMemo(

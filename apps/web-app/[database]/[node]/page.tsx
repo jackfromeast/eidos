@@ -16,6 +16,7 @@ import {
   useNodeMap,
 } from "@/hooks/use-current-node"
 import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
+import { useDataViewById } from "@/hooks/use-data-view"
 import { useEmoji } from "@/hooks/use-emoji"
 import { useNode } from "@/hooks/use-nodes"
 import { useSqlite } from "@/hooks/use-sqlite"
@@ -28,6 +29,7 @@ import { DocProperty } from "@/components/doc-property"
 import { Editor } from "@/components/doc/editor"
 import { FolderTree } from "@/components/folder"
 import { Table } from "@/components/table"
+import { View } from "@/components/view"
 
 import { DefaultColors } from "../../../../components/file-selector"
 import { useGenerateTitle } from "./hooks/use-generate-title"
@@ -129,11 +131,12 @@ export const NodeComponent = ({
   return (
     <>
       <NodeRestore node={node} />
+      {node?.type === "view" && <View nodeId={nodeId} />}
       {node?.type.startsWith("ext__") && (
         <div className="flex h-full w-full">
           <ExtNodeBlockApp
             space={space}
-            blockId={handleBlockId}
+            blockId={handleBlockId || null}
             nodeId={nodeId}
           />
         </div>

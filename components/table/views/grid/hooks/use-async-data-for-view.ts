@@ -21,21 +21,16 @@ import {
 } from "react"
 
 import { useAutoIndex } from "@/components/table/hooks/use-auto-index"
-import { useViewCount } from "@/components/table/hooks/use-view-count"
-import { useViewLoadingStore } from "@/components/table/hooks/use-view-loading"
 import { useSqlite, useSqliteStore } from "@/hooks/use-sqlite"
 import {
-  _rewriteQuery2getSortedSqliteRowIds,
-  rewriteQuery2getSortedSqliteRowIds,
   rewriteQueryWithOffsetAndLimit,
-  rewriteQueryWithSortedQuery,
+  rewriteQueryWithSortedQuery
 } from "@/lib/sqlite/sql-sort-parser"
 import { IView } from "@/lib/store/IView"
 import { useDebounceFn } from "ahooks"
 
 import { TableContext } from "@/components/table/hooks"
-import { isInkServiceMode, isDesktopMode } from "@/lib/env"
-import { useAppRuntimeStore } from "@/lib/store/runtime-store"
+import { isDesktopMode, isInkServiceMode } from "@/lib/env"
 import { useDataMutation } from "./use-data-mutation"
 
 export type RowRange = readonly [number, number]
@@ -47,7 +42,7 @@ export type RowEditedCallback<T> = (
   rowData: T
 ) => T | undefined
 
-export function useAsyncData<TRowType>(data: {
+export function useAsyncDataForView<TRowType>(data: {
   tableName: string
   pageSize: number
   maxConcurrency: number
@@ -90,7 +85,6 @@ export function useAsyncData<TRowType>(data: {
   // rowIdsRef and dataRef are same thing, the diff is rowIdsRef has all row ids, dataRef has only part of row ids
   const dataRef = useRef<string[]>([])
   const rowIdsRef = useRef<string[]>([])
-  const { count } = useViewCount(view)
 
   const [visiblePages, setVisiblePages] = useState<Rectangle>({
     x: 0,
@@ -101,7 +95,6 @@ export function useAsyncData<TRowType>(data: {
   const visiblePagesRef = useRef(visiblePages)
   visiblePagesRef.current = visiblePages
   const { setRows } = useSqliteStore()
-  const { setLoading } = useViewLoadingStore()
 
   useAutoIndex(view)
   const onVisibleRegionChanged: NonNullable<
@@ -128,13 +121,10 @@ export function useAsyncData<TRowType>(data: {
       if (rowUuid !== undefined && rowData) {
         const cell = toCell(rowData, col)
         const isFileCell = cell.kind === GridCellKind.Custom && (cell.data as any).kind === "file-cell"
-        if (!isReadOnly) {
-          return cell
-        }
         return {
           ...cell,
-          readonly: Boolean(isReadOnly),
-          allowOverlay: isFileCell,
+          readonly: true,
+          allowOverlay: true,
         } as any
       }
       return {
@@ -226,73 +216,6 @@ export function useAsyncData<TRowType>(data: {
     refreshData()
     loadPage(0)
   }, [tableName, qs, loadPage])
-  const {
-    setBlockUIMsg,
-    setBlockUIData,
-  } = useAppRuntimeStore()
-
-  const getViewSortedSqliteRowIds = useCallback(async () => {
-    if (!qs || !sqlite) return
-    setLoading(qs, true)
-    let allRowIds: string[] = []
-    const batchSize = 150000
-    if (count > batchSize) {
-      setBlockUIMsg('loading')
-    }
-    const start = performance.now()
-    const queries = rewriteQuery2getSortedSqliteRowIds(qs, count, batchSize)
-    // for (let i = 0; i < queries.length; i++) {
-    //   const res = await sqlite.sql4mainThread(queries[i])
-    //   setBlockUIData({
-    //     progress: (i / queries.length) * 100,
-    //   })
-    //   const rowIds = res.map((r: any) => r[0])
-    //   allRowIds = allRowIds.concat(rowIds)
-
-    //   // If we've fetched less than 200,000 rows (except for the last query), we can stop
-    //   if (i < queries.length - 1 && rowIds.length < batchSize) {
-    //     break
-    //   }
-    // }
-
-    let completedCount = 0
-    const queryPromises = queries.map((query) =>
-      sqlite!.sql4mainThread(query).then((res) => {
-        completedCount++
-        setBlockUIData({
-          progress: (completedCount / queries.length) * 100,
-        })
-        return res
-      })
-    )
-
-    const results = await Promise.all(queryPromises)
-    for (let i = 0; i < results.length; i++) {
-      const rowIds = results[i].map((r: any) => r[0])
-      allRowIds = allRowIds.concat(rowIds)
-      // If we've fetched less than 200,000 rows (except for the last query), we can stop
-      if (i < results.length - 1 && rowIds.length < batchSize) {
-        break
-      }
-    }
-    const end = performance.now()
-    console.log(`Time taken: ${end - start} milliseconds for ${count} rows`)
-    setBlockUIMsg(null)
-    // const _qs = _rewriteQuery2getSortedSqliteRowIds(qs)
-    // const res = await sqlite.sql4mainThread(_qs)
-    // allRowIds = res.map((r: any) => r[0])
-
-    rowIdsRef.current = allRowIds
-    // setCount(allRowIds.length)
-    setLoading(qs, false)
-  }, [qs, setLoading, count, sqlite])
-
-  useEffect(() => {
-    if (isReadOnly) {
-      return
-    }
-    getViewSortedSqliteRowIds()
-  }, [getViewSortedSqliteRowIds])
 
   const loadData = useCallback(
     async (loadRowIds: string[], startIndex: number) => {

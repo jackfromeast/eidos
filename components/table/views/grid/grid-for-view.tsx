@@ -15,25 +15,21 @@ import React, {
   useMemo,
   useRef,
 } from "react"
-import { useKeyPress, useSize } from "ahooks"
 import { Plus } from "lucide-react"
 import { useTheme } from "next-themes"
 
 import { IGridViewProperties, IView } from "@/lib/store/IView"
 import { cn } from "@/lib/utils"
-import { useSqlite } from "@/hooks/use-sqlite"
 import { useTableOperation } from "@/hooks/use-table"
 import { useUiColumns } from "@/hooks/use-ui-columns"
 
-import { TwinkleSparkle } from "../../../loading"
 import { Button } from "../../../ui/button"
 import { TableContext, useCurrentView } from "../../hooks"
 import { useTableSearchStore } from "../../hooks/use-table-search-store"
 import { useViewCount } from "../../hooks/use-view-count"
 import { customCells } from "./cells"
-import { GridContextMenu } from "./grid-context-menu"
 import { defaultConfig, getScrollbarWidth } from "./helper"
-import { useAsyncData } from "./hooks/use-async-data"
+import { useAsyncDataForView } from "./hooks/use-async-data-for-view"
 import { useColumns } from "./hooks/use-col"
 import { useDataSource } from "./hooks/use-data-source"
 import { useDrop } from "./hooks/use-drop"
@@ -41,9 +37,6 @@ import { ROW_NUMBER_COL_WIDTH, useFreezeLine } from "./hooks/use-freeze-line"
 import { useGridSearch } from "./hooks/use-grid-search"
 import { useHighlightRow } from "./hooks/use-highlight-row"
 import { useHover } from "./hooks/use-hover"
-import { AITools } from "./plugins/ai-tools"
-import { FormulaEditor } from "./plugins/formula-editor"
-import { useFormulaEditor } from "./plugins/use-formula-editor"
 import { useTableAppStore } from "./store"
 import "./styles.css"
 import { useDynamicTheme } from "./theme"
@@ -57,21 +50,18 @@ interface IGridProps {
   className?: string
 }
 
-export default function GridView(props: IGridProps) {
+export function GridViewForView(props: IGridProps) {
   const { tableName, databaseName } = props
   const { theme = "light" } = useTheme()
   const _theme = useDynamicTheme(theme)
   const { setCurrentTableSchema } = useSpaceAppStore()
   const glideDataGridRef = useRef<DataEditorRef>(null)
   const containerRef = useRef<HTMLDivElement>(null)
-  const { undo, redo } = useSqlite(databaseName)
-  const size = useSize(containerRef)
   const aiContainerRef = useRef<HTMLDivElement>(null)
   const [aiHighlightRegions, setAIHighlightRegions] = React.useState<
     DataEditorProps["highlightRegions"]
   >([])
 
-  const formulaEditorRef = useRef<HTMLDivElement>(null)
   const r = containerRef.current?.querySelector(".dvn-scroll-inner")
   const hasScroll = r && r?.scrollWidth > r?.clientWidth
 
@@ -92,12 +82,6 @@ export default function GridView(props: IGridProps) {
     currentView
   )
 
-  const getFieldByIndex = useCallback(
-    (index: number) => {
-      return showColumns[index]
-    },
-    [showColumns]
-  )
   const getColumnIndexByColumnName = useCallback(
     (columnName: string) => {
       return (
@@ -114,11 +98,8 @@ export default function GridView(props: IGridProps) {
     onCellEdited,
     onCellsEdited,
     getCellsForSelection,
-    handleAddRow,
-    handleDelRows,
-    getRowByIndex,
     getIndexByRowId,
-  } = useAsyncData<any>({
+  } = useAsyncDataForView<any>({
     tableName,
     pageSize: 100,
     maxConcurrency: 5,
@@ -130,7 +111,7 @@ export default function GridView(props: IGridProps) {
     view: currentView,
   })
 
-  const { customHighlightRegions, setCustomHighlightRegions } = useHighlightRow(
+  const { customHighlightRegions } = useHighlightRow(
     tableName,
     getIndexByRowId,
     showColumns
@@ -138,7 +119,6 @@ export default function GridView(props: IGridProps) {
 
   const { setIsAddFieldEditorOpen, selection, setSelection, clearSelection } =
     useTableAppStore()
-  const [isAItoolsOpen, setIsAItoolsOpen] = React.useState(false)
 
   // Get search state from context
   const { searchQuery, showSearch } = useTableSearchStore()
@@ -146,32 +126,6 @@ export default function GridView(props: IGridProps) {
     showColumns,
     getColumnIndexByColumnName
   )
-
-  const {
-    onCellActivated,
-    showEditor,
-    editorRef,
-    closeEditor,
-    formulaField,
-    rowIndex,
-    refreshEditorPosition,
-  } = useFormulaEditor(
-    showColumns,
-    glideDataGridRef,
-    formulaEditorRef,
-    selection
-  )
-
-  useEffect(() => {
-    if (showEditor) {
-      refreshEditorPosition()
-    }
-  }, [size])
-
-  const rowId = useMemo(() => {
-    const row = rowIndex ? getRowByIndex(rowIndex) : null
-    return row?._id
-  }, [rowIndex, getRowByIndex])
 
   // Add state for search highlight
   const [searchHighlightRegion, setSearchHighlightRegion] = React.useState<
@@ -220,7 +174,6 @@ export default function GridView(props: IGridProps) {
 
   useEffect(() => {
     if (!selection.current) {
-      closeAItools()
     }
     const bounds = glideDataGridRef.current?.getBounds(
       selection.current?.cell[0],
@@ -292,10 +245,6 @@ export default function GridView(props: IGridProps) {
     setCellValue: (col, row, value) => onCellEdited?.([col, row], value),
   })
 
-  const closeAItools = () => {
-    setIsAItoolsOpen(false)
-    glideDataGridRef.current?.focus()
-  }
   const highlightRegions = useMemo(() => {
     return [
       ...(highlights ?? []),
@@ -309,50 +258,6 @@ export default function GridView(props: IGridProps) {
     customHighlightRegions,
     searchHighlightRegion,
   ])
-
-  const { showAILoading, positionStyle } = useMemo(() => {
-    if (aiHighlightRegions?.length) {
-      const bounds = glideDataGridRef.current?.getBounds(
-        aiHighlightRegions[0].range.x,
-        aiHighlightRegions[0].range.y
-      )
-      if (bounds) {
-        return {
-          showAILoading: true,
-          positionStyle: {
-            left: bounds.x + bounds.width - 30,
-            top: bounds.y + 4,
-          },
-        }
-      }
-    }
-    return {
-      showAILoading: false,
-      positionStyle: {},
-    }
-  }, [aiHighlightRegions])
-
-  // useKeyPress(["ctrl.f", "meta.f"], (e) => {
-  //   e.preventDefault()
-  //   setShowSearch(!showSearch)
-  // })
-
-  useKeyPress("alt.i", (e) => {
-    if (e.metaKey) return
-    e.preventDefault()
-    e.stopPropagation()
-    setIsAItoolsOpen((prev) => !prev)
-  })
-
-  // handle undo redo
-  useKeyPress(["ctrl.z", "meta.z"], (e) => {
-    e.preventDefault()
-    if (e.shiftKey) {
-      redo()
-    } else {
-      undo()
-    }
-  })
 
   return (
     <div
@@ -380,93 +285,55 @@ export default function GridView(props: IGridProps) {
             style={{ left: `${previewLinePosition}px` }}
           />
         )}
-        <GridContextMenu
-          handleDelRows={handleDelRows}
-          getRowByIndex={getRowByIndex}
-          getFieldByIndex={getFieldByIndex}
-          openAItools={() => setIsAItoolsOpen(true)}
-        >
-          {Boolean(uiColumns.length) && (
-            <DataEditor
-              {...config}
-              rowMarkerWidth={ROW_NUMBER_COL_WIDTH}
-              searchResults={formattedSearchResults}
-              getCellsForSelection={getCellsForSelection}
-              onVisibleRegionChanged={onVisibleRegionChanged}
-              customRenderers={customCells}
-              ref={glideDataGridRef}
-              theme={_theme}
-              onDragLeave={onDragLeave}
-              onDrop={onDrop}
-              onDragOverCell={onDragOverCell}
-              highlightRegions={highlightRegions}
-              gridSelection={selection}
-              onItemHovered={onItemHovered}
-              onHeaderClicked={onHeaderClicked}
-              onHeaderContextMenu={onHeaderClicked}
-              onGridSelectionChange={setSelection}
-              onColumnResize={onColumnResize}
-              onColumnMoved={onColumnMoved}
-              getCellContent={getCellContent}
-              maxColumnWidth={2000}
-              fillHandle={true}
-              columns={columns ?? []}
-              rows={viewCount}
-              rightElement={
-                !isReadOnly && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className={cn(
-                      "flex w-full justify-start rounded-none",
-                      `h-[${defaultConfig.headerHeight}px]`
-                    )}
-                    onClick={() => {
-                      setIsAddFieldEditorOpen(true)
-                    }}
-                  >
-                    <Plus size={16} />
-                  </Button>
-                )
-              }
-              rightElementProps={{
-                fill: true,
-              }}
-              onCellEdited={onCellEdited}
-              onCellsEdited={onCellsEdited}
-              onCellActivated={onCellActivated}
-              onRowAppended={isReadOnly ? undefined : handleAddRow}
-            />
-          )}
-        </GridContextMenu>
-        <div ref={aiContainerRef} className=" fixed">
-          {isAItoolsOpen && (
-            <AITools
-              close={closeAItools}
-              fields={showColumns}
-              getRowByIndex={getRowByIndex}
-              getFieldByIndex={getFieldByIndex}
-              selection={selection}
-              setAIHighlightRegions={setAIHighlightRegions}
-            />
-          )}
-        </div>
-        {showAILoading && (
-          <div style={positionStyle} className="fixed">
-            <TwinkleSparkle />
-          </div>
-        )}
-        <div ref={formulaEditorRef} className="fixed">
-          {showEditor && (
-            <FormulaEditor
-              editorRef={editorRef}
-              closeEditor={closeEditor}
-              formulaField={formulaField}
-              uiColumns={uiColumns}
-              rowId={rowId}
-            />
-          )}
-        </div>
+
+        <DataEditor
+          {...config}
+          rowMarkerWidth={ROW_NUMBER_COL_WIDTH}
+          searchResults={formattedSearchResults}
+          getCellsForSelection={getCellsForSelection}
+          onVisibleRegionChanged={onVisibleRegionChanged}
+          customRenderers={customCells}
+          ref={glideDataGridRef}
+          theme={_theme}
+          onDragLeave={onDragLeave}
+          onDrop={onDrop}
+          onDragOverCell={onDragOverCell}
+          highlightRegions={highlightRegions}
+          gridSelection={selection}
+          onItemHovered={onItemHovered}
+          onHeaderClicked={onHeaderClicked}
+          onHeaderContextMenu={onHeaderClicked}
+          onGridSelectionChange={setSelection}
+          onColumnResize={onColumnResize}
+          onColumnMoved={onColumnMoved}
+          getCellContent={getCellContent}
+          maxColumnWidth={2000}
+          fillHandle={true}
+          columns={columns ?? []}
+          rows={viewCount}
+          rightElement={
+            !isReadOnly && (
+              <Button
+                size="sm"
+                variant="ghost"
+                className={cn(
+                  "flex w-full justify-start rounded-none",
+                  `h-[${defaultConfig.headerHeight}px]`
+                )}
+                onClick={() => {
+                  setIsAddFieldEditorOpen(true)
+                }}
+              >
+                <Plus size={16} />
+              </Button>
+            )
+          }
+          rightElementProps={{
+            fill: true,
+          }}
+          // onCellEdited={onCellEdited}
+          // onCellsEdited={onCellsEdited}
+        />
       </div>
     </div>
   )

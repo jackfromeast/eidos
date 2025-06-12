@@ -1,13 +1,15 @@
-import React from "react"
+import React, { useContext } from "react"
 import { useClickAway } from "ahooks"
 import { Trash2 } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
 import { FieldType } from "@/lib/fields/const"
 import { IField } from "@/lib/store/interface"
+import { useTableOperation } from "@/hooks/use-table"
 import { Label } from "@/components/ui/label"
 import { CommonMenuItem } from "@/components/common-menu-item"
 
+import { TableContext } from "../hooks"
 import { useTableAppStore } from "../views/grid/store"
 import { FieldDelete } from "./field-delete"
 import { FieldNameEdit } from "./field-name-edit"
@@ -61,7 +63,8 @@ export const FieldPropertyEditor = ({
   const ref = React.useRef<HTMLDivElement>(null)
   const { setIsFieldPropertiesEditorOpen, currentUiColumn: currentField } =
     useTableAppStore()
-
+  const { updateViewColumn } = useTableOperation(tableName, databaseName)
+  const { isView } = useContext(TableContext)
   const handleDeleteField = () => {
     currentField && deleteField(currentField.table_column_name)
     setIsFieldPropertiesEditorOpen(false)
@@ -85,7 +88,16 @@ export const FieldPropertyEditor = ({
     currentField && updateFieldProperty(currentField, property)
   }
   const handleChangeFieldType = (type: FieldType) => {
-    currentField && changeFieldType(currentField, type)
+    if (isView && currentField) {
+      updateViewColumn(
+        tableName,
+        currentField.table_column_name,
+        type,
+        currentField.property
+      )
+    } else {
+      currentField && changeFieldType(currentField, type)
+    }
   }
 
   const Editor =
