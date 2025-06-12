@@ -1,7 +1,7 @@
 import { useEffect } from "react"
 import { Wand2 } from "lucide-react"
 import { useTranslation } from "react-i18next"
-import { useParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 
 import {
   DataUpdateSignalType,
@@ -11,20 +11,19 @@ import {
 } from "@/lib/const"
 import { isInkServiceMode } from "@/lib/env"
 import { TreeNodeType } from "@/lib/store/ITreeNode"
+import { isDayPageId } from "@/lib/utils"
 import {
   useCurrentExtNodeHandleBlockId,
   useCurrentNode,
   useNodeMap,
 } from "@/hooks/use-current-node"
 import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
-import { useDataViewById } from "@/hooks/use-data-view"
 import { useEmoji } from "@/hooks/use-emoji"
 import { useNode } from "@/hooks/use-nodes"
 import { useSqlite } from "@/hooks/use-sqlite"
 import { useUiColumns } from "@/hooks/use-ui-columns"
 import { Button } from "@/components/ui/button"
 import { toast } from "@/components/ui/use-toast"
-import { BlockApp } from "@/components/block-renderer/block-app"
 import { ExtNodeBlockApp } from "@/components/block-renderer/ext-node-block-app"
 import { DataView } from "@/components/dataview"
 import { DocProperty } from "@/components/doc-property"
@@ -53,11 +52,11 @@ export const NodeComponent = ({
   const { updateUiColumns } = useUiColumns(tableName)
 
   const handleBlockId = useCurrentExtNodeHandleBlockId()
-  const { space } = useCurrentPathInfo()
   const { getEmoji } = useEmoji()
   const { updateIcon, updateCover, updateHideProperties } = useNode()
   const { generateTitle, isLoading: isTitleGenerating } = useGenerateTitle()
   const { getDocMarkdown } = useSqlite()
+  const { space } = useCurrentPathInfo()
 
   useEffect(() => {
     const bc = new BroadcastChannel(EidosDataEventChannelName)
@@ -92,6 +91,7 @@ export const NodeComponent = ({
   if (!nodeId) {
     return null
   }
+
   const node = nodeMap[nodeId]
   const parentNode = node.parent_id ? nodeMap[node.parent_id] : null
   const handleAddIcon = async () => {
@@ -213,5 +213,14 @@ export const NodeComponent = ({
 export default function TablePage() {
   const node = useCurrentNode()
   const { table: nodeId } = useParams()
+  const isDayPage = isDayPageId(nodeId)
+  const navigate = useNavigate()
+  const { space } = useCurrentPathInfo()
+  useEffect(() => {
+    if (isDayPage) {
+      navigate(`/${space}/everyday/${nodeId}`)
+    }
+  }, [isDayPage, space, navigate, nodeId])
+
   return <NodeComponent nodeId={node?.id} isRootPage={nodeId === "~"} />
 }
