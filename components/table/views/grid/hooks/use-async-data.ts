@@ -37,6 +37,7 @@ import { TableContext } from "@/components/table/hooks"
 import { isInkServiceMode, isDesktopMode } from "@/lib/env"
 import { useAppRuntimeStore } from "@/lib/store/runtime-store"
 import { useDataMutation } from "./use-data-mutation"
+import { useNavigate } from "react-router-dom"
 
 export type RowRange = readonly [number, number]
 type RowCallback<T> = (range: RowRange, qs?: string) => Promise<readonly T[]>
@@ -119,6 +120,7 @@ export function useAsyncData<TRowType>(data: {
     })
   }, [])
   const { isReadOnly } = useContext(TableContext)
+  const navigate = useNavigate()
 
   const getCellContent = useCallback<DataEditorProps["getCellContent"]>(
     (cell) => {
@@ -128,8 +130,23 @@ export function useAsyncData<TRowType>(data: {
       if (rowUuid !== undefined && rowData) {
         const cell = toCell(rowData, col)
         const isFileCell = cell.kind === GridCellKind.Custom && (cell.data as any).kind === "file-cell"
+        const isUrlCell = cell.kind === GridCellKind.Uri
         if (!isReadOnly) {
           return cell
+        }
+        if (isUrlCell) {
+          return {
+            ...cell,
+            readonly: true,
+            allowOverlay: true,
+            onClickUri: (args: any) => {
+              if (cell.data.startsWith("/")) {
+                navigate(cell.data)
+              } else {
+                window.open(cell.data, "_blank")
+              }
+            },
+          } as any
         }
         return {
           ...cell,
