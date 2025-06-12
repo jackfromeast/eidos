@@ -53,7 +53,7 @@ export function ViewSortEditor(props: IViewEditorProps) {
     onSortChange?.(orderItems)
   }, [onSortChange, orderItems])
 
-  const { rawIdNameMap, uiColumns } = useUiColumns(tableName!, space!)
+  const { uiColumns } = useUiColumns(tableName!, space!)
   const restFields = useMemo(() => {
     return uiColumns.filter((item) => {
       return addedFields.indexOf(item.table_column_name) === -1

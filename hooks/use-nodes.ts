@@ -13,7 +13,7 @@ export const useAllNodes = (opts?: {
     ? Array.isArray(type)
       ? type
       : [type]
-    : ["table", "doc", "folder"]
+    : ["table", "doc", "folder", "view"]
 
   if (isDeleted) {
     return nodeIds

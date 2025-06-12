@@ -62,6 +62,7 @@ export abstract class BaseServerDatabase {
 
   abstract prepare(sql: string): {
     run: (bind?: any[]) => void;
+    all: (bind?: any[]) => Promise<any[]>;
   };
   abstract close(): void;
   abstract selectObjects(sql: string, bind?: any[]): Promise<{ [columnName: string]: any }[]>;

@@ -97,12 +97,18 @@ export const checkIsInWorker = () => {
  * @param id
  * @returns
  */
-export const getRawTableNameById = (id: string) => {
-  return `tb_${id}`
+export const getRawTableNameById = (id: string, isView: boolean = false) => {
+  return isView ? `vw_${id}` : `tb_${id}`
 }
 
 export const getTableIdByRawTableName = (rawTableName: string) => {
-  return rawTableName.replace("tb_", "")
+  if (rawTableName.startsWith("tb_")) {
+    return rawTableName.replace("tb_", "")
+  }
+  if (rawTableName.startsWith("vw_")) {
+    return rawTableName.replace("vw_", "")
+  }
+  return rawTableName
 }
 
 export const getColumnIndexName = (tableName: string, columnName: string) => {

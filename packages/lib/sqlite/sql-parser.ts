@@ -7,6 +7,19 @@ import {
   toSql,
 } from "pgsql-ast-parser"
 
+
+export const getRawTableNameFromQuery = (sql?: string) => {
+  if (!sql) return ""
+  const ast: Statement[] = parse(sql)
+  if (ast?.[0]?.type === "select") {
+    const from = (ast?.[0] as SelectFromStatement).from
+    if (from?.[0]?.type === "table") {
+      return from?.[0]?.name.name
+    }
+  }
+  return ""
+}
+
 export const getColumnsFromQuery = (sql?: string) => {
   if (!sql) return []
   // parse multiple statements

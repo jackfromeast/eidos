@@ -35,7 +35,7 @@ interface SqliteState {
 
   setViews: (tableId: string, views: IView[]) => void
   setFields: (tableId: string, fields: IField[]) => void
-  setRows: (tableId: string, rows: Record<string, any>[]) => void
+  setRows: (tableId: string, rows: Record<string, any>[], offset?: number) => void
   delRows: (tableId: string, rowIds: string[]) => void
   getRowById: (tableId: string, rowId: string) => Record<string, any> | null
   getRowIds: (tableId: string) => string[]
@@ -140,7 +140,7 @@ export const useSqliteStore = create<SqliteState>()((set, get) => ({
     })
   },
 
-  setRows: (tableId: string, rows: Record<string, any>[]) => {
+  setRows: (tableId: string, rows: Record<string, any>[], offset?: number) => {
     set((state) => {
       const { tableMap } = state.dataStore
       if (!tableMap[tableId]) {
@@ -151,8 +151,13 @@ export const useSqliteStore = create<SqliteState>()((set, get) => ({
           viewMap: {},
         }
       }
-      const newRowMap = rows.reduce((acc, cur) => {
-        acc[cur._id] = cur
+      const newRowMap = rows.reduce((acc, cur, index) => {
+        const hasId = cur._id
+        if (hasId) {
+          acc[hasId] = cur
+        } else {
+          acc[index + (offset || 0)] = cur
+        }
         return acc
       }, {} as Record<string, any>)
       tableMap[tableId].rowMap = {
@@ -331,6 +336,19 @@ export const useSqlite = (dbName?: string) => {
     })
     node && addNode(node)
     return folderId
+  }
+
+  const createView = async (parent_id?: string) => {
+    if (!sqlWorker) return
+    const viewId = uuidv7().split("-").join("")
+    const node = await sqlWorker.addTreeNode({
+      id: viewId,
+      name: "New View",
+      type: "view",
+      parent_id,
+    })
+    node && addNode(node)
+    return viewId
   }
 
   const createExtNode = async (ext_node_type: string, parent_id?: string) => {
@@ -642,6 +660,7 @@ export const useSqlite = (dbName?: string) => {
     deleteTable,
     createFolder,
     createExtNode,
+    createView,
     duplicateTable,
     queryAllTables: queryAllNodes,
     updateNodeList,

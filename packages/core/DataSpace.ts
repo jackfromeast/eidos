@@ -50,6 +50,7 @@ import { withSqlite3AllUDF } from "./udf"
 import { TableSemanticSearch } from "./data-pipeline/TableSemanticSearch"
 import { ExtNodeTable } from "./meta-table/extnode"
 import { ThemeManager } from "./sdk/theme-manager"
+import { SqlDataView } from "./sdk/sql-data-view"
 // import { QueueTable } from "./meta-table/queue"
 
 export type EidosTable =
@@ -88,6 +89,7 @@ export class DataSpace {
   file: FileTable
   extNode: ExtNodeTable
   theme: ThemeManager
+  dataView: SqlDataView
   dataChangeTrigger: DataChangeTrigger
   linkRelationUpdater: LinkRelationUpdater
   allTables: BaseTable<any>[] = []
@@ -184,6 +186,7 @@ export class DataSpace {
     this.message = new MessageTable(this)
     this.extNode = new ExtNodeTable(this)
     this.theme = new ThemeManager(this)
+    this.dataView = new SqlDataView(this)
     // this.queue = new QueueTable(this)
     //
     this.allTables = [
@@ -324,6 +327,9 @@ export class DataSpace {
     tableName: string,
     toDeleteColumns?: string[]
   ) {
+    if (tableName.startsWith("vw_")) {
+      return
+    }
     if (space === this.dbName) {
       const collist = await this.listRawColumns(tableName)
       await this.dataChangeTrigger.setTrigger(
@@ -1121,6 +1127,9 @@ export class DataSpace {
   }
 
   public async listUiColumns(tableName: string) {
+    if (tableName.startsWith("vw_")) {
+      return this.dataView.getViewFields(getTableIdByRawTableName(tableName))
+    }
     return this.column.list({ table_name: tableName })
   }
 

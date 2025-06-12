@@ -1,26 +1,24 @@
 import { FilterIcon } from "lucide-react"
+import { useContext } from "react"
 
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
 import { useUiColumns } from "@/hooks/use-ui-columns"
-import {
-  transformFilterItems2SqlString
-} from "@/lib/sqlite/sql-filter-parser"
+import { transformFilterItems2SqlString } from "@/lib/sqlite/sql-filter-parser"
 import { IView } from "@/lib/store/IView"
 import { cn } from "@/lib/utils"
 
 import { Button } from "../ui/button"
-import { useViewOperation } from "./hooks"
+import { TableContext, useViewOperation } from "./hooks"
 import { useViewQuery } from "./hooks/use-view-query"
 import { FilterValueType } from "./view-filter-editor/interface"
 import { ViewFilterEditor } from "./view-filter-editor/view-filter-editor"
 
 export const ViewFilter = (props: { view: IView }) => {
-  const { database, tableName } = useCurrentPathInfo()
+  const { tableName, space } = useContext(TableContext)
   const { parsedSql } = useViewQuery(props.view)
   const { updateView } = useViewOperation()
   const hasFilter = Boolean(parsedSql.where)
@@ -42,7 +40,7 @@ export const ViewFilter = (props: { view: IView }) => {
     })
   }
 
-  const { uiColumns } = useUiColumns(tableName!, database!)
+  const { uiColumns } = useUiColumns(tableName, space)
 
   if (!props.view) {
     return null

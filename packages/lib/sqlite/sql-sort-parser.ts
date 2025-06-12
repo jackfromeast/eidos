@@ -117,8 +117,8 @@ export const rewriteQueryWithOffsetAndLimit = (
   limit: number
 ) => {
   const ast = parseFirst(query) as SelectFromStatement
-
-  if (!ast.orderBy) {
+  const isView = ast.from?.some((f) => f.type === 'table' && f.name.name.startsWith('vw_'))
+  if (!ast.orderBy && !isView) {
     ast.orderBy = [
       {
         by: {

@@ -15,13 +15,21 @@ export const useCurrentPathInfo = () => {
   }
 
   switch (currentNode?.type) {
+    case "view":
+      return {
+        database,
+        space: database!,
+        tableName: table ? getRawTableNameById(table, true) : "",
+        tableId: table,
+        viewId,
+      }
     case "table":
       return {
         database,
         space: database!,
         // space = database
         // rawTableName stored in sqlite
-        tableName: table ? getRawTableNameById(table) : "",
+        tableName: table ?  getRawTableNameById(table) : "",
         // tableId = table
         tableId: table,
         viewId,

@@ -165,6 +165,7 @@ export const ViewToolbar = (props: {
   const location = useLocation()
   const { addView, delView, moveViewPosition } = useViewOperation()
 
+  const isView = tableName.startsWith("vw_")
   const { currentView, setCurrentViewId, defaultViewId } = useCurrentView({
     space,
     tableName,
@@ -371,13 +372,13 @@ export const ViewToolbar = (props: {
           ref={ref2}
         >
           <div className="flex gap-1">
-            <ViewSearch view={currentView} />
+            {!isView && <ViewSearch view={currentView} />}
             <ViewFilter view={currentView} />
             <ViewSort view={currentView} />
             <ViewField view={currentView} />
           </div>
 
-          {!props.isReadOnly && (
+          {!props.isReadOnly && !isView && (
             <Button size="xs" onClick={handleAddRow}>
               <PlusIcon className="h-4 w-4"></PlusIcon>
               {t("common.new")}

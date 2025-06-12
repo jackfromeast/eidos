@@ -27,10 +27,7 @@ export const useTableFields = (tableIdOrName: string | undefined) => {
     dataStore: { tableMap },
   } = useSqliteStore()
   const nodeId = useMemo(() => {
-    if (tableIdOrName?.startsWith("tb_")) {
-      return tableIdOrName?.replace("tb_", "")
-    }
-    return tableIdOrName
+    return getTableIdByRawTableName(tableIdOrName || "")
   }, [tableIdOrName])
   const node = tableMap[nodeId || ""]
   const fieldMap = node?.fieldMap
@@ -232,6 +229,16 @@ export const useTableOperation = (tableName: string, databaseName: string) => {
     [rowMap]
   )
 
+  const updateViewColumn = useCallback(async (tableName: string, tableColumnName: string, type: FieldType, property: any) => {
+    if (!sqlite) return
+    await sqlite.dataView.updateViewColumn({
+      tableName,
+      tableColumnName,
+      type,
+      property,
+    })
+  }, [sqlite])
+
   return {
     deleteRowsByIds,
     getRowData,
@@ -239,6 +246,7 @@ export const useTableOperation = (tableName: string, databaseName: string) => {
     updateCell,
     addField,
     updateFieldName,
+    updateViewColumn,
     changeFieldType,
     updateFieldProperty,
     deleteField,

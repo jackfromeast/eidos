@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useContext, useEffect, useMemo, useRef, useState } from "react"
 import { useClickAway } from "ahooks"
 import {
   ArrowDownWideNarrowIcon,
@@ -26,7 +26,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { CommonMenuItem } from "@/components/common-menu-item"
-import { useCurrentView, useViewOperation } from "@/components/table/hooks"
+import {
+  TableContext,
+  useCurrentView,
+  useViewOperation,
+} from "@/components/table/hooks"
 
 import { useColumns } from "../views/grid/hooks/use-col"
 import { useTableAppStore } from "../views/grid/store"
@@ -49,6 +53,7 @@ export const FieldEditorDropdown = (props: IFieldEditorDropdownProps) => {
     setCurrentUiColumn,
   } = useTableAppStore()
 
+  const { isView } = useContext(TableContext)
   const isOpen = menu !== undefined
   const ref = useRef<HTMLDivElement>(null)
   const ref2 = useRef<HTMLDivElement>(null)
@@ -210,7 +215,7 @@ export const FieldEditorDropdown = (props: IFieldEditorDropdownProps) => {
                   ? t("table.resetFreezeColumn")
                   : t("table.freezeToHere")}
               </CommonMenuItem>
-              {currentUiColumn?.type !== "title" && (
+              {currentUiColumn?.type !== "title" && !isView && (
                 <DialogTrigger
                   onClick={handleDeleteFieldClick}
                   className="w-full"

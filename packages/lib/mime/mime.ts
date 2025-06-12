@@ -189,6 +189,9 @@ export const getFileType = (
   if (url?.startsWith("data:")) {
     return "image"
   }
+  if (url?.startsWith("http")) {
+    return "image"
+  }
   let fileType = lookup(url)
   if (!fileType) return false
   fileType = (fileType as string).split("/")[0]

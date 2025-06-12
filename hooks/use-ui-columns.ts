@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react"
+import { useCallback, useContext, useMemo } from "react"
 
 import { getTableIdByRawTableName } from "@/lib/utils"
 
@@ -6,10 +6,11 @@ import { IField } from "@/lib/store/interface"
 import { useCurrentPathInfo } from "./use-current-pathinfo"
 import { useSqlite, useSqliteStore } from "./use-sqlite"
 import { useTableFields } from "./use-table"
+import { TableContext } from "@/components/table/hooks"
 
 export const useCurrentUiColumns = () => {
-  const { space, tableName } = useCurrentPathInfo()
-  return useUiColumns(tableName!, space!)
+  const { tableName, space } = useContext(TableContext)
+  return useUiColumns(tableName, space)
 }
 
 export const useUiColumns = (
@@ -19,13 +20,15 @@ export const useUiColumns = (
   const { space } = useCurrentPathInfo()
   const databaseName = _databaseName || space
   const { sqlite } = useSqlite(databaseName)
-  const { setFields: setUiColumns } = useSqliteStore()
+  const { setFields: setUiColumns, dataStore } = useSqliteStore()
   const { fields: uiColumns } = useTableFields(tableName)
+  // console.log("uiColumns", { tableName, uiColumns, dataStore })
 
   const updateUiColumns = useCallback(
     async (_tableName = tableName) => {
       if (!sqlite || !_tableName) return
       const res = await sqlite.listUiColumns(_tableName)
+      console.log("res", { res, _tableName })
       // order by created_at
       res.sort((a, b) => {
         return (a.created_at || 0) > (b.created_at || 0) ? 1 : -1

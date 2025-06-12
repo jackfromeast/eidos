@@ -1,8 +1,8 @@
 import { useEffect } from "react"
 
+import { ViewTypeEnum } from "@/lib/store/IView"
 import { useSqliteTableSubscribe } from "@/hooks/use-sqlite-table-subscribe"
 import { useUiColumns } from "@/hooks/use-ui-columns"
-import { ViewTypeEnum } from "@/lib/store/IView"
 
 import { FieldEditor } from "./fields"
 import { TABLE_CONTENT_ELEMENT_ID } from "./helper"
@@ -11,6 +11,7 @@ import { ViewToolbar } from "./view-toolbar"
 import { DocListView } from "./views/doc-list"
 import GalleryView from "./views/gallery"
 import GridView from "./views/grid"
+import { GridViewForView } from "./views/grid/grid-for-view"
 import KanbanView from "./views/kanban"
 
 // const GalleryView = React.lazy(() => import("./views/gallery"))
@@ -39,6 +40,7 @@ export const Table = ({
   })
   const udfs = useUDFs()
 
+  const isView = tableName.startsWith("vw_")
   const { updateUiColumns } = useUiColumns(tableName, space)
   useEffect(() => {
     updateUiColumns(tableName)
@@ -52,6 +54,7 @@ export const Table = ({
         space,
         viewId: currentView?.id || viewId,
         isReadOnly,
+        isView,
         udfs,
       }}
     >
@@ -66,14 +69,22 @@ export const Table = ({
           className="relative flex-grow overflow-hidden"
           id={TABLE_CONTENT_ELEMENT_ID}
         >
-          {currentView?.type === ViewTypeEnum.Grid && (
-            <GridView
-              tableName={tableName!}
-              databaseName={space}
-              view={currentView}
-              isEmbed={isEmbed}
-            />
-          )}
+          {currentView?.type === ViewTypeEnum.Grid &&
+            (isView ? (
+              <GridViewForView
+                tableName={tableName!}
+                databaseName={space}
+                view={currentView}
+                isEmbed={isEmbed}
+              />
+            ) : (
+              <GridView
+                tableName={tableName}
+                databaseName={space}
+                view={currentView}
+                isEmbed={isEmbed}
+              />
+            ))}
           {currentView?.type === ViewTypeEnum.Gallery && (
             <GalleryView
               space={space}
