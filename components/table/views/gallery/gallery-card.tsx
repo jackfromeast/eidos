@@ -1,31 +1,9 @@
-import { MoveDiagonalIcon, MoveUpRightIcon, Trash2Icon } from "lucide-react"
 
-import { useRowDataOperation } from "@/components/doc-property/hook"
-import { ScriptContextMenu } from "@/components/table/views/grid/script-context-menu"
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-} from "@/components/ui/context-menu"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
-import { useCurrentSubPage } from "@/hooks/use-current-sub-page"
-import { useGoto } from "@/hooks/use-goto"
-import { useSqlite, useSqliteStore } from "@/hooks/use-sqlite"
-import { IField } from "@/lib/store/interface"
-import {
-  shortenId
-} from "@/lib/utils"
-
-import { CellEditor } from "../../cell-editor"
-import { GalleryCardCover } from "../shared/card-cover"
-import { IGalleryViewProperties } from "./properties"
 import { DataCard } from "@/components/table/views/shared/data-card"
+import { useSqliteStore } from "@/hooks/use-sqlite"
+import { IField } from "@/lib/store/interface"
+
+import { IGalleryViewProperties } from "./properties"
 
 interface ICardProps<T> {
   columnIndex: number
@@ -47,6 +25,8 @@ export interface IGalleryCardProps {
   hiddenFieldIcon?: boolean
   hiddenField?: boolean
   hiddenFields?: string[]
+  isView?: boolean
+  titleField: string
 }
 
 export const GalleryCard = ({
@@ -66,16 +46,21 @@ export const GalleryCard = ({
     space,
     hiddenFields,
     properties,
+    isView,
+    titleField,
   } = data
 
   const rowId = items[rowIndex * columnCount + columnIndex]
   const { getRowById } = useSqliteStore()
   const item = getRowById(tableId, rowId)
-  const coverField = properties?.coverPreview?.startsWith("cl_")
-    ? (uiColumns as IField[]).find(
-        (c) => c.table_column_name === properties?.coverPreview
-      )
-    : undefined
+  const _coverField = (uiColumns as IField[]).find(
+    (c) => c.table_column_name === properties?.coverPreview
+  )
+  const coverField = isView
+    ? _coverField
+    : properties?.coverPreview?.startsWith("cl_")
+      ? _coverField
+      : undefined
 
   if (!item) {
     return <div style={style}></div>
@@ -85,6 +70,7 @@ export const GalleryCard = ({
     <DataCard
       item={item}
       coverField={coverField}
+      titleField={titleField}
       rawIdNameMap={rawIdNameMap}
       style={style}
       hiddenFields={hiddenFields}

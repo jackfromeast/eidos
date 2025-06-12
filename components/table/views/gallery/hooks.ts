@@ -1,5 +1,9 @@
-import { useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 
+import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
+import { useSqlite, useSqliteStore } from "@/hooks/use-sqlite"
+import { useUiColumns } from "@/hooks/use-ui-columns"
+import { useViewSort } from "@/hooks/use-view-sort"
 import {
   DataUpdateSignalType,
   EidosDataEventChannelMsg,
@@ -8,11 +12,7 @@ import {
 } from "@/lib/const"
 import { transformSql } from "@/lib/sqlite/sql-parser"
 import { IView } from "@/lib/store/IView"
-import { getRawTableNameById } from "@/lib/utils"
-import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
-import { useSqlite, useSqliteStore } from "@/hooks/use-sqlite"
-import { useUiColumns } from "@/hooks/use-ui-columns"
-import { useViewSort } from "@/hooks/use-view-sort"
+import { TableContext } from "../../hooks"
 
 type RowData = Record<string, any> & {
   _id: string
@@ -21,7 +21,7 @@ type RowData = Record<string, any> & {
 
 export const useGalleryViewData = (view: IView) => {
   const { table_id: tableId, query } = view
-  const tableName = getRawTableNameById(tableId)
+  const { tableName, isView } = useContext(TableContext)
   const { sqlite } = useSqlite()
   const { setRows } = useSqliteStore()
   const { getViewSortedRows } = useViewSort(query)
@@ -37,9 +37,13 @@ export const useGalleryViewData = (view: IView) => {
       const defaultQuery = `select * from ${tableName}`
       const q = query.trim().length ? query : defaultQuery
       const sql = transformSql(q, tableName, nameRawIdMap)
-      sqlite.sql2`${sql}`.then((data) => {
+      console.log("useGalleryViewData", { sql, nameRawIdMap })
+      sqlite.sql2`${sql}`.then((data: any[]) => {
+        console.log("useGalleryViewData", { data, tableId })
         setRows(tableId, data)
-        setData(data.map((d: any) => d._id))
+        setData(
+          isView ? Array.from({ length: data.length }, (_, i) => i + '') : data.map((d: any) => d._id)
+        )
         setList(data as any[])
         setLoading(false)
       })

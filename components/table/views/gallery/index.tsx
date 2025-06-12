@@ -1,20 +1,17 @@
-import { useEffect, useRef, useState } from "react"
+import { useContext, useEffect, useRef, useState } from "react"
 import AutoSizer from "react-virtualized-auto-sizer"
 import { VariableSizeGrid as Grid } from "react-window"
 
-import { useSqliteStore } from "@/hooks/use-sqlite"
-import { useUiColumns } from "@/hooks/use-ui-columns"
 import { IView } from "@/lib/store/IView"
 import { getTableIdByRawTableName } from "@/lib/utils"
+import { useSqliteStore } from "@/hooks/use-sqlite"
+import { useUiColumns } from "@/hooks/use-ui-columns"
 
-import { useShowColumns } from "../../hooks"
+import { TableContext, useShowColumns } from "../../hooks"
 import { GalleryCard } from "./gallery-card"
 import { useGalleryViewData } from "./hooks"
 import { IGalleryViewProperties } from "./properties"
-import {
-  computeCardHeight,
-  getColumnWidthAndCount
-} from "./utils"
+import { computeCardHeight, getColumnWidthAndCount } from "./utils"
 
 interface IGalleryViewProps {
   space: string
@@ -35,7 +32,11 @@ export default function GalleryView({
     tableName,
     space
   )
+  const { isView } = useContext(TableContext)
   const showFields = useShowColumns(uiColumns, view)
+  console.log("GalleryView", { showFields, uiColumns })
+
+  const titleField = showFields?.[0]?.table_column_name || "title"
 
   const { columnCount, cardWidth } = getColumnWidthAndCount(
     size?.scaledWidth ?? 0
@@ -66,7 +67,7 @@ export default function GalleryView({
         }).length
       })
     const maxShowFieldCount = Math.max(...thisRowCardShowFieldCounts)
-    const cardHeight = computeCardHeight(maxShowFieldCount)
+    const cardHeight = computeCardHeight(maxShowFieldCount, isView)
     return cardHeight
   }
 
@@ -93,6 +94,8 @@ export default function GalleryView({
             space,
             hiddenFieldIcon: true,
             hiddenFields: view.hidden_fields,
+            isView,
+            titleField,
           }}
           className="pb-[128px]"
         >

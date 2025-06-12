@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 
 import { FileField } from "@/lib/fields/file"
 import { IField } from "@/lib/store/interface"
@@ -13,6 +13,8 @@ import { useSqlite } from "@/hooks/use-sqlite"
 import { BlockApp } from "@/components/block-renderer/block-app"
 import { InnerEditor } from "@/components/doc/editor"
 import { getFirstImageUrl } from "@/components/doc/utils/helper"
+
+import { TableContext } from "../../hooks"
 
 interface GalleryCardCoverProps {
   item: any
@@ -36,6 +38,7 @@ export const GalleryCardCover = ({
     return fileField.getCellContent(cv).data.displayData[0]
   }
 
+  const { isView } = useContext(TableContext)
   const showContent = coverPreview == undefined || coverPreview === "content"
   const showBlock = coverPreview?.startsWith("block://")
   const [imageUrl, setImageUrl] = useState<string | null>(null)
@@ -68,7 +71,8 @@ export const GalleryCardCover = ({
     }
   }, [item._id, coverPreview])
 
-  if (coverPreview?.startsWith("cl_")) {
+  console.log("GalleryCardCover", { isView, coverPreview })
+  if (isView || coverPreview?.startsWith("cl_")) {
     const coverUrl = getCoverUrl(item, coverField)
     return (
       <img

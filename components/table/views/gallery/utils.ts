@@ -56,12 +56,12 @@ const TITLE_HEIGHT = 36
 const COVER_HEIGHT = 200
 const FIELD_HEIGHT = 32
 
-export const computeCardHeight = (allColumnSize: number) => {
+export const computeCardHeight = (allColumnSize: number, isView?: boolean) => {
   const columnCount = allColumnSize || 0
   return (
     OUT_PADDING * 2 +
     CONTENT_PADDING * 2 +
-    TITLE_HEIGHT +
+    (isView ? 0 : TITLE_HEIGHT) +
     COVER_HEIGHT +
     FIELD_HEIGHT * columnCount
   )
