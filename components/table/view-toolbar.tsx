@@ -352,16 +352,18 @@ export const ViewToolbar = (props: {
                     <span>{t("views.types.gallery")}</span>
                   </div>
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => handleAddView(ViewTypeEnum.Kanban)}
-                >
-                  <div className="flex items-center gap-2">
-                    {React.createElement(ViewIconMap[ViewTypeEnum.Kanban], {
-                      className: "h-4 w-4",
-                    })}
-                    <span>{t("views.types.kanban")}</span>
-                  </div>
-                </DropdownMenuItem>
+                {!isView && (
+                  <DropdownMenuItem
+                    onClick={() => handleAddView(ViewTypeEnum.Kanban)}
+                  >
+                    <div className="flex items-center gap-2">
+                      {React.createElement(ViewIconMap[ViewTypeEnum.Kanban], {
+                        className: "h-4 w-4",
+                      })}
+                      <span>{t("views.types.kanban")}</span>
+                    </div>
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           )}

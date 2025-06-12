@@ -1,15 +1,14 @@
 "use client"
 
-import { useVirtualList } from "ahooks"
-import {
-  Minimize,
-  Plus
-} from "lucide-react"
-import { useTheme } from "next-themes"
 import { memo, useMemo, useRef, useState } from "react"
+import { useVirtualList } from "ahooks"
+import { Minimize, Plus } from "lucide-react"
+import { useTheme } from "next-themes"
 import { useTranslation } from "react-i18next"
 
-import { DataCard } from "@/components/table/views/shared/data-card"
+import { SelectField } from "@/lib/fields/select"
+import { IField } from "@/lib/store/interface"
+import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import {
@@ -18,9 +17,7 @@ import {
   KanbanHeader,
   KanbanBoard as OriginKanbanBoard,
 } from "@/components/ui/kibo-ui/kanban"
-import { SelectField } from "@/lib/fields/select"
-import { IField } from "@/lib/store/interface"
-import { cn } from "@/lib/utils"
+import { DataCard } from "@/components/table/views/shared/data-card"
 
 import { IGalleryViewProperties } from "../gallery/properties"
 import { computeCardHeight } from "../gallery/utils"
@@ -95,8 +92,8 @@ export const KanbanBoard = memo(
       properties?.cardSize === "small"
         ? "w-[300px]"
         : properties?.cardSize === "medium"
-        ? "w-[350px]"
-        : "w-[400px]"
+          ? "w-[350px]"
+          : "w-[400px]"
 
     const handleCreateNewItem = async () => {
       const title = newItemTitle.trim()
@@ -185,6 +182,7 @@ export const KanbanBoard = memo(
                       key={item.id}
                       item={item}
                       showFields={showFields}
+                      titleField={"title"}
                       uiColumnMap={uiColumnMap}
                       rawIdNameMap={rawIdNameMap}
                       tableId={tableId}
