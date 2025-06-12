@@ -131,17 +131,22 @@ export const FieldPropertyEditor = ({
 
           <Editor uiColumn={currentField} onPropertyChange={onPropertyChange} />
 
-          <div className="flex-none">
-            <hr />
-            {currentField.table_column_name !== "title" && (
-              <FieldDelete field={currentField} deleteField={handleDeleteField}>
-                <CommonMenuItem>
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  {t("table.deleteField")}
-                </CommonMenuItem>
-              </FieldDelete>
-            )}
-          </div>
+          {!isView && (
+            <div className="flex-none">
+              <hr />
+              {currentField.table_column_name !== "title" && (
+                <FieldDelete
+                  field={currentField}
+                  deleteField={handleDeleteField}
+                >
+                  <CommonMenuItem>
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    {t("table.deleteField")}
+                  </CommonMenuItem>
+                </FieldDelete>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useSqlite } from "./use-sqlite"
 
 export const useDataView = () => {
@@ -28,16 +28,20 @@ export const useDataViewById = (id?: string) => {
     const [viewColumns, setViewColumns] = useState<any[]>([])
     const { sqlite } = useSqlite()
 
-    // console.log("viewColumns", { id, viewColumns })
-    useEffect(() => {
+    const reload = useCallback(() => {
         if (id) {
             sqlite?.dataView.isDataViewExist(id).then(setIsDataViewExist)
             sqlite?.dataView.getViewColumns(id).then(setViewColumns)
         }
     }, [id])
+    // console.log("viewColumns", { id, viewColumns })
+    useEffect(() => {
+        reload()
+    }, [id, reload])
 
     return {
         isDataViewExist,
-        viewColumns
+        viewColumns,
+        reload
     }
 }

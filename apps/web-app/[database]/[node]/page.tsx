@@ -25,11 +25,11 @@ import { Button } from "@/components/ui/button"
 import { toast } from "@/components/ui/use-toast"
 import { BlockApp } from "@/components/block-renderer/block-app"
 import { ExtNodeBlockApp } from "@/components/block-renderer/ext-node-block-app"
+import { DataView } from "@/components/dataview"
 import { DocProperty } from "@/components/doc-property"
 import { Editor } from "@/components/doc/editor"
 import { FolderTree } from "@/components/folder"
 import { Table } from "@/components/table"
-import { View } from "@/components/view"
 
 import { DefaultColors } from "../../../../components/file-selector"
 import { useGenerateTitle } from "./hooks/use-generate-title"
@@ -131,7 +131,7 @@ export const NodeComponent = ({
   return (
     <>
       <NodeRestore node={node} />
-      {node?.type === "view" && <View nodeId={nodeId} />}
+      {node?.type === "view" && <DataView nodeId={nodeId} />}
       {node?.type.startsWith("ext__") && (
         <div className="flex h-full w-full">
           <ExtNodeBlockApp

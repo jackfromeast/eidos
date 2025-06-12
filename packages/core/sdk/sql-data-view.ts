@@ -22,7 +22,7 @@ export class SqlDataView {
             sql: `SELECT sql FROM sqlite_master WHERE type='view' and name = ?;`,
             bind: [tableName]
         })
-        return view[0].sql
+        return view[0]?.sql || ""
     }
 
     async getViewColumns(id: string) {

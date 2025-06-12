@@ -43,6 +43,7 @@ export const CreateNodeTrigger = ({ parent_id }: { parent_id?: string }) => {
   const handleCreateView = async () => {
     const viewId = await createView(parent_id)
     console.log("create view")
+    goto(space, viewId)
   }
 
   const handleCreateExtNode = async (type: ITreeNode["type"]) => {
@@ -101,7 +102,7 @@ export const CreateNodeTrigger = ({ parent_id }: { parent_id?: string }) => {
             handleCreateNode("view")
           }}
         >
-          {t("node.menu.newView")}
+          {t("node.menu.newDataView")}
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => {

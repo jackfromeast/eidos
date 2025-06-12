@@ -1,5 +1,5 @@
 import { SelectFromStatement, parseFirst, toSql } from "pgsql-ast-parser"
-import { IField } from "../store/interface"
+import { format } from "sql-formatter"
 
 export const getTransformedQuery = (query: string) => {
   const ast = parseFirst(query)
@@ -12,6 +12,9 @@ export function isReadOnlySql(sql: string) {
   return readonlySqls.some((item) => sql.trim().toUpperCase().startsWith(item))
 }
 
+export const formatSql = (sql: string) => {
+  return format(sql, { language: "sqlite" })
+}
 /**
  *
  * example 1:
