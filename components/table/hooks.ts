@@ -72,7 +72,7 @@ export const useViewOperation = () => {
 
   const addView = useCallback(async (type: ViewTypeEnum = ViewTypeEnum.Grid) => {
     if (tableId && sqlite) {
-      const view = await sqlite.createDefaultView(tableId, type)
+      const view = await sqlite.createDefaultView(tableName, type)
       await updateViews()
       return view
     }

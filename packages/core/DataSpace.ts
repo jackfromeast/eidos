@@ -591,8 +591,8 @@ export class DataSpace {
     return await this.view.set(viewId, view)
   }
 
-  public async createDefaultView(tableId: string, type: ViewTypeEnum = ViewTypeEnum.Grid) {
-    return await this.view.createDefaultView(tableId, type)
+  public async createDefaultView(tableName: string, type: ViewTypeEnum = ViewTypeEnum.Grid) {
+    return await this.view.createDefaultView(tableName, type)
   }
 
   public async isRowExistInQuery(
@@ -899,7 +899,7 @@ export class DataSpace {
       await this.addTreeNode({ id, name, type: "table", parent_id })
       db.exec(tableSchema)
       // create view for table
-      await this.createDefaultView(id)
+      await this.createDefaultView(getRawTableNameById(id))
     })
   }
 
