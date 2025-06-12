@@ -46,6 +46,15 @@ export const DataViewPlaceholder = ({
                 <div className="text-sm text-muted-foreground mt-1">
                   {t(template.descriptionKey)}
                 </div>
+                {template.tags && template.tags.length > 0 && (
+                  <div className="flex gap-1 mt-2 flex-wrap">
+                    {template.tags.map((tag) => (
+                      <span key={tag} className="px-2 py-0.5 text-xs bg-secondary text-secondary-foreground rounded-full">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </button>
             ))}
           </div>

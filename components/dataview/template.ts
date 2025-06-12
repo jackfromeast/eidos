@@ -3,6 +3,7 @@ export const templates = [
     name: "queryAllFiles",
     i18nKey: "dataview.template.queryAllFiles",
     descriptionKey: "dataview.template.queryAllFiles.description",
+    tags: ["file"],
     sql: `
 SELECT
     *,
@@ -14,9 +15,25 @@ FROM eidos__files
     `
   },
   {
+    name: "queryAllImages",
+    i18nKey: "dataview.template.queryAllImages",
+    descriptionKey: "dataview.template.queryAllImages.description",
+    tags: ["file", "image"],
+    sql: `
+SELECT 
+    *,
+    CASE
+        WHEN path LIKE 'spaces/%' THEN substr(path, 7)
+        ELSE path
+    END AS path_display    
+FROM eidos__files WHERE mime LIKE 'image/%'
+    `
+  },
+  {
     name: "queryAllBookmarksInDocs",
     i18nKey: "dataview.template.queryAllBookmarksInDocs",
     descriptionKey: "dataview.template.queryAllBookmarksInDocs.description",
+    tags: ["doc", "bookmark"],
     sql: `
 WITH valid_docs AS (
     SELECT id, content
@@ -41,6 +58,7 @@ AND json_extract(j.value, '$.type') = 'bookmark';
     name: "queryAllChecklistsInDocs",
     i18nKey: "dataview.template.queryAllChecklistsInDocs",
     descriptionKey: "dataview.template.queryAllChecklistsInDocs.description",
+    tags: ["doc", "checklist"],
     sql: `
 WITH
   valid_docs AS (

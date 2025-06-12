@@ -98,6 +98,8 @@
     "dataview.template.queryAllChecklistsInDocs.description": "检索文档中的所有清单项及其完成状态和文本内容。",
     "dataview.template.queryAllFiles": "查询空间中的所有文件",
     "dataview.template.queryAllFiles.description": "检索当前空间中的所有文件及其元数据，包括名称、类型、大小和创建时间。",
+    "dataview.template.queryAllImages": "查询空间中的所有图片",
+    "dataview.template.queryAllImages.description": "检索当前空间中的所有图片文件及其元数据，包括名称、类型、大小和创建时间。",
     "doc.addCover": "添加封面",
     "doc.addIcon": "添加图标",
     "doc.changeCover": "更改封面",
