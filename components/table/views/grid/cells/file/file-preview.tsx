@@ -18,10 +18,19 @@ export const FilePreview = ({
     document.body.appendChild(newContainer)
     setContainer(newContainer)
 
+    const handleEscKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose()
+      }
+    }
+
+    document.addEventListener("keydown", handleEscKey)
+
     return () => {
       document.body.removeChild(newContainer)
+      document.removeEventListener("keydown", handleEscKey)
     }
-  }, [])
+  }, [onClose])
 
   if (!container) {
     return null
