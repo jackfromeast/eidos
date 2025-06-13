@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next"
 
+import { TreeNodeType } from "@/lib/store/ITreeNode"
 import { useAllNodes } from "@/hooks/use-nodes"
 import {
   Select,
@@ -16,7 +17,7 @@ export const TableSelector = ({
   onSelect?: (tableId: string) => void
   value?: string
 }) => {
-  const tables = useAllNodes({ type: "table" })
+  const tables = useAllNodes({ type: TreeNodeType.Table })
   const { t } = useTranslation()
 
   const selectedValue = value || undefined
