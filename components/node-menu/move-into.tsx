@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next"
 
-import { ITreeNode } from "@/lib/store/ITreeNode"
+import { ITreeNode, TreeNodeType } from "@/lib/store/ITreeNode"
 import { useNodeTree } from "@/hooks/use-node-tree"
 import { useAllNodes } from "@/hooks/use-nodes"
 import { useSqlite } from "@/hooks/use-sqlite"
@@ -18,7 +18,7 @@ import { ScrollArea } from "../ui/scroll-area"
 
 export const NodeMoveInto = ({ node }: { node: ITreeNode }) => {
   const tableNodes = useAllNodes({
-    type: ["table", "folder"],
+    type: [TreeNodeType.Table, TreeNodeType.Folder],
     isDeleted: false,
   })
   const { t } = useTranslation()

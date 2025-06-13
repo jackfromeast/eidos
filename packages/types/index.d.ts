@@ -406,11 +406,56 @@ declare module "packages/lib/sqlite/const" {
     export const QueueTableName = "eidos__queue";
     export const ExtNodeTableName = "eidos__extnodes";
 }
+declare module "packages/lib/sqlite/helper" {
+    export const getTransformedQuery: (query: string) => string;
+    export function isReadOnlySql(sql: string): boolean;
+    export const formatSql: (sql: string) => string;
+    /**
+     *
+     * example 1:
+     *
+     * const id = 42
+     * const fieldName = "id"
+     * buildSql`select ${Symbol(fieldName)} from table where id = ${id}` => { sql: "select id from table where id = ?", bind: [42]}
+     *
+     * example 2:
+     * const table = "books"
+     * buildSql`select * from ${Symbol(table)}` => { sql: "select * from books", bind: []}
+     *
+     * buildSql only return sql and bind, no execute.we need to escape table name, column name, etc.
+     *
+     * in example 1, we can use ? placeholder to avoid sql injection
+     * in example 2, we need to escape table name, column name, etc.
+     *
+     * if variable is a Symbol, we don't escape it.
+     * @param strings
+     * @param values
+     * @returns
+     */
+    export function buildSql(strings: TemplateStringsArray, ...values: any[]): {
+        sql: string;
+        bind: any[];
+    };
+    export const checkSqlIsModifyTableSchema: (sql: string) => boolean;
+    export const checkSqlIsOnlyQuery: (sql: string) => boolean;
+    export const checkSqlIsModifyTableData: (sql: string) => boolean;
+    export function isAggregated(sql: string): boolean;
+    export const aggregateSql2columns: (sql: string, originFields: string[]) => any;
+    export const getSqlQueryColumns: (sql: string, originSchema: any) => any;
+    export const queryData2JSON: (sqlResult: any[][], fields: string[]) => any[];
+    export const stringify: (obj: any) => any;
+}
 declare module "packages/lib/store/ITreeNode" {
+    export enum TreeNodeType {
+        Table = "table",
+        Doc = "doc",
+        Folder = "folder",
+        Dataview = "dataview"
+    }
     export interface ITreeNode {
         id: string;
         name: string;
-        type: "table" | "doc" | "folder" | string;
+        type: TreeNodeType | `ext__${string}` | 'day';
         position?: number;
         parent_id?: string;
         is_pinned?: boolean;
@@ -485,44 +530,6 @@ declare module "packages/lib/store/interface" {
         };
     }
 }
-declare module "packages/lib/sqlite/helper" {
-    export const getTransformedQuery: (query: string) => string;
-    export function isReadOnlySql(sql: string): boolean;
-    /**
-     *
-     * example 1:
-     *
-     * const id = 42
-     * const fieldName = "id"
-     * buildSql`select ${Symbol(fieldName)} from table where id = ${id}` => { sql: "select id from table where id = ?", bind: [42]}
-     *
-     * example 2:
-     * const table = "books"
-     * buildSql`select * from ${Symbol(table)}` => { sql: "select * from books", bind: []}
-     *
-     * buildSql only return sql and bind, no execute.we need to escape table name, column name, etc.
-     *
-     * in example 1, we can use ? placeholder to avoid sql injection
-     * in example 2, we need to escape table name, column name, etc.
-     *
-     * if variable is a Symbol, we don't escape it.
-     * @param strings
-     * @param values
-     * @returns
-     */
-    export function buildSql(strings: TemplateStringsArray, ...values: any[]): {
-        sql: string;
-        bind: any[];
-    };
-    export const checkSqlIsModifyTableSchema: (sql: string) => boolean;
-    export const checkSqlIsOnlyQuery: (sql: string) => boolean;
-    export const checkSqlIsModifyTableData: (sql: string) => boolean;
-    export function isAggregated(sql: string): boolean;
-    export const aggregateSql2columns: (sql: string, originFields: string[]) => any;
-    export const getSqlQueryColumns: (sql: string, originSchema: any) => any;
-    export const queryData2JSON: (sqlResult: any[][], fields: string[]) => any[];
-    export const stringify: (obj: any) => any;
-}
 declare module "packages/lib/utils" {
     import { type ClassValue } from "clsx";
     import type { Message } from 'ai';
@@ -544,7 +551,7 @@ declare module "packages/lib/utils" {
      * @param id
      * @returns
      */
-    export const getRawTableNameById: (id: string) => string;
+    export const getRawTableNameById: (id: string, isView?: boolean) => string;
     export const getTableIdByRawTableName: (rawTableName: string) => string;
     export const getColumnIndexName: (tableName: string, columnName: string) => string;
     export const generateColumnName: () => string;
@@ -701,6 +708,7 @@ declare module "packages/lib/sqlite/interface" {
         }>;
         abstract prepare(sql: string): {
             run: (bind?: any[]) => void;
+            all: (bind?: any[]) => Promise<any[]>;
         };
         abstract close(): void;
         abstract selectObjects(sql: string, bind?: any[]): Promise<{
@@ -1731,6 +1739,8 @@ declare module "packages/core/meta-table/column" {
         createTableSql: string;
         JSONFields: string[];
         static getColumnTypeByFieldType(type: FieldType): any;
+        addPureUIColumn(data: IField): Promise<void>;
+        updatePureUIColumn(data: Partial<IField>): Promise<void>;
         add(data: IField): Promise<IField>;
         addField(data: IField): Promise<IField>;
         getColumn<T = any>(tableName: string, tableColumnName: string): Promise<IField<T> | null>;
@@ -1839,6 +1849,19 @@ declare module "packages/lib/sqlite/sql-sort-parser" {
         [fieldId: string]: IField<any>;
     }) => string;
 }
+declare module "packages/lib/sqlite/sql-parser" {
+    export const getRawTableNameFromQuery: (sql?: string) => string;
+    export const getColumnsFromQuery: (sql?: string) => import("pgsql-ast-parser").SelectedColumn[];
+    export const replaceQueryTableName: (query: string, tableNameMap: Record<string, string>) => string;
+    export const replaceWithFindIndexQuery: (query: string, rowId: string) => string;
+    /**
+     * transform sql query replace column name with columnNameMap
+     * @param sql
+     * @param columnNameMap
+     * @returns transformed sql
+     */
+    export const transformSql: (sql: string, rawTableName: string, columnNameMap: Map<string, string>) => string;
+}
 declare module "packages/lib/sqlite/sql-filter-parser" {
     import { ExprBinary } from "pgsql-ast-parser";
     import { FilterValueType } from "components/table/view-filter-editor/interface";
@@ -1929,6 +1952,25 @@ declare module "packages/lib/web/crypto" {
      * return checksum
      */
     export function fileChecksum(file: File): Promise<string>;
+}
+declare module "packages/lib/fields/formula" {
+    import type { TextCell } from "@glideapps/glide-data-grid";
+    import { BaseField } from "packages/lib/fields/base";
+    import { FieldType } from "packages/lib/fields/const";
+    export type FormulaProperty = {
+        formula: string;
+        displayType?: FieldType;
+    };
+    export class FormulaField extends BaseField<TextCell, FormulaProperty> {
+        static type: FieldType;
+        get compareOperators(): any[];
+        get displayType(): FieldType;
+        rawData2JSON(rawData: string): string;
+        getCellContent(rawData: string): TextCell;
+        cellData2RawData(cell: TextCell): {
+            rawData: string;
+        };
+    }
 }
 declare module "packages/lib/fields/multi-select" {
     import { MultiSelectCell } from "components/table/views/grid/cells/multi-select-cell";
@@ -2038,48 +2080,6 @@ declare module "packages/lib/fields/select" {
         deleteOption(id: string): void;
     }
 }
-declare module "packages/lib/sqlite/sql-parser" {
-    export const getColumnsFromQuery: (sql?: string) => import("pgsql-ast-parser").SelectedColumn[];
-    export const replaceQueryTableName: (query: string, tableNameMap: Record<string, string>) => string;
-    export const replaceWithFindIndexQuery: (query: string, rowId: string) => string;
-    /**
-     * transform sql query replace column name with columnNameMap
-     * @param sql
-     * @param columnNameMap
-     * @returns transformed sql
-     */
-    export const transformSql: (sql: string, rawTableName: string, columnNameMap: Map<string, string>) => string;
-}
-declare module "packages/lib/ai/generate" {
-    export const generateText: ({ prompt, modelId, systemPrompt, config, }: {
-        prompt: string;
-        systemPrompt?: string;
-        modelId: string;
-        config: {
-            apiKey: string;
-            baseURL: string;
-        };
-    }) => Promise<string>;
-}
-declare module "packages/lib/fields/formula" {
-    import type { TextCell } from "@glideapps/glide-data-grid";
-    import { BaseField } from "packages/lib/fields/base";
-    import { FieldType } from "packages/lib/fields/const";
-    export type FormulaProperty = {
-        formula: string;
-        displayType?: FieldType;
-    };
-    export class FormulaField extends BaseField<TextCell, FormulaProperty> {
-        static type: FieldType;
-        get compareOperators(): any[];
-        get displayType(): FieldType;
-        rawData2JSON(rawData: string): string;
-        getCellContent(rawData: string): TextCell;
-        cellData2RawData(cell: TextCell): {
-            rawData: string;
-        };
-    }
-}
 declare module "packages/lib/fields/number" {
     import type { NumberCell } from "@glideapps/glide-data-grid";
     import { RangeCell } from "components/table/views/grid/cells/range-cell";
@@ -2164,6 +2164,17 @@ declare module "packages/lib/fields/text" {
             rawData: string;
         };
     }
+}
+declare module "packages/lib/ai/generate" {
+    export const generateText: ({ prompt, modelId, systemPrompt, config, }: {
+        prompt: string;
+        systemPrompt?: string;
+        modelId: string;
+        config: {
+            apiKey: string;
+            baseURL: string;
+        };
+    }) => Promise<string>;
 }
 declare module "packages/lib/fields/file" {
     import type { FileCell } from "components/table/views/grid/cells/file/file-cell";
@@ -2691,6 +2702,29 @@ declare module "packages/core/data-pipeline/TableFullTextSearch" {
         rebuildFTS(tableName: string): Promise<void>;
     }
 }
+declare module "packages/core/data-pipeline/TableSemanticSearch" {
+    import { DataSpace } from "packages/core/DataSpace";
+    export class TableSemanticSearch {
+        private readonly dataspace;
+        constructor(dataspace: DataSpace);
+        search(params: {
+            tableName: string;
+            query: string;
+            viewId?: string;
+            fieldId?: string;
+            page?: number;
+            pageSize?: number;
+            method?: 'L2' | 'COSINE';
+        }): Promise<{
+            meta: {
+                embeddingFieldId: string;
+                page: number;
+                pageSize: number;
+            };
+            results: any;
+        }>;
+    }
+}
 declare module "packages/core/data-pipeline/UndoRedo" {
     import { DataSpace } from "packages/core/DataSpace";
     interface StackEntry {
@@ -2925,6 +2959,34 @@ declare module "packages/core/meta-table/doc" {
         }>;
     }
 }
+declare module "packages/core/meta-table/extnode" {
+    import { BaseTable, BaseTableImpl } from "packages/core/meta-table/base";
+    export interface IExtNode {
+        id: string;
+        blob?: Buffer;
+        text?: string;
+        path?: string;
+        type: string;
+        created_at?: string;
+        updated_at?: string;
+    }
+    export class ExtNodeTable extends BaseTableImpl<IExtNode> implements BaseTable<IExtNode> {
+        name: string;
+        createTableSql: string;
+        addExtNode(data: Omit<IExtNode, "created_at" | "updated_at">): Promise<IExtNode>;
+        updateExtNode(id: string, data: Partial<Omit<IExtNode, "id" | "created_at" | "updated_at">>): Promise<boolean>;
+        getExtNodesByType(type: string): Promise<IExtNode[]>;
+        getExtNode(id: string): Promise<IExtNode | null>;
+        getBlob(id: string): Promise<Buffer | null>;
+        getText(id: string): Promise<string | null>;
+        getPath(id: string): Promise<string | null>;
+        setBlob(id: string, blob: Buffer): Promise<boolean>;
+        setPath(id: string, path: string): Promise<boolean>;
+        setType(id: string, type: string): Promise<boolean>;
+        setText(id: string, text: string): Promise<boolean>;
+        deleteExtNode(id: string): Promise<boolean>;
+    }
+}
 declare module "packages/core/meta-table/reference" {
     import { IField } from "packages/lib/store/interface";
     import { BaseTable, BaseTableImpl } from "packages/core/meta-table/base";
@@ -2994,7 +3056,7 @@ declare module "packages/core/meta-table/view" {
         del(id: string): Promise<boolean>;
         deleteByTableId(table_id: string, db?: import("@/lib/sqlite/interface").BaseServerDatabase): Promise<void>;
         updateQuery(id: string, query: string): Promise<void>;
-        createDefaultView(table_id: string, type?: ViewTypeEnum): Promise<IView<any>>;
+        createDefaultView(tableName: string, type?: ViewTypeEnum): Promise<IView<any>>;
         isRowExistInQuery(table_id: string, rowId: string, query: string): Promise<boolean>;
         findRowIndexInQuery(table_id: string, rowId: string, query: string): Promise<number>;
         recompute(table_id: string, rowIds: string[]): Promise<any>;
@@ -3026,72 +3088,25 @@ declare module "packages/core/meta-table/view" {
         private checkAndReorderIfNeeded;
     }
 }
-declare module "packages/core/udf/index" {
-    export const withSqlite3AllUDF: (bc: {
-        postMessage: (data: any) => void;
-    }) => {
-        ALL_UDF: {
-            name: string;
-            xFunc: (pCx: any, table: any, _new: any, _old: any) => void;
-        }[];
-        ALL_UDF_NO_CTX: {
-            name: string;
-            xFunc: (table: any, _new: any, _old: any) => void;
-        }[];
-    };
-}
-declare module "packages/core/data-pipeline/TableSemanticSearch" {
+declare module "packages/core/sdk/sql-data-view" {
     import { DataSpace } from "packages/core/DataSpace";
-    export class TableSemanticSearch {
-        private readonly dataspace;
-        constructor(dataspace: DataSpace);
-        search(params: {
-            tableName: string;
-            query: string;
-            viewId?: string;
-            fieldId?: string;
-            page?: number;
-            pageSize?: number;
-            method?: 'L2' | 'COSINE';
-        }): Promise<{
-            meta: {
-                embeddingFieldId: string;
-                page: number;
-                pageSize: number;
-            };
-            results: any;
-        }>;
-    }
-}
-declare module "packages/core/meta-table/extnode" {
-    import { BaseTable, BaseTableImpl } from "packages/core/meta-table/base";
-    import { DataSpace } from "packages/core/DataSpace";
-    export interface IExtNode {
-        id: string;
-        blob?: Buffer;
-        text?: string;
-        path?: string;
-        type: string;
-        created_at?: string;
-        updated_at?: string;
-    }
-    export class ExtNodeTable extends BaseTableImpl<IExtNode> implements BaseTable<IExtNode> {
-        protected dataSpace: DataSpace;
-        name: string;
-        createTableSql: string;
+    import { IField } from "packages/lib/store/interface";
+    import { FieldType } from "packages/lib/fields/const";
+    export class SqlDataView {
+        private dataSpace;
         constructor(dataSpace: DataSpace);
-        addExtNode(data: Omit<IExtNode, "created_at" | "updated_at">): Promise<IExtNode>;
-        updateExtNode(id: string, data: Partial<Omit<IExtNode, "id" | "created_at" | "updated_at">>): Promise<boolean>;
-        getExtNodesByType(type: string): Promise<IExtNode[]>;
-        getExtNode(id: string): Promise<IExtNode | null>;
-        getBlob(id: string): Promise<Buffer | null>;
-        getText(id: string): Promise<string | null>;
-        getPath(id: string): Promise<string | null>;
-        setBlob(id: string, blob: Buffer): Promise<boolean>;
-        setPath(id: string, path: string): Promise<boolean>;
-        setType(id: string, type: string): Promise<boolean>;
-        setText(id: string, text: string): Promise<boolean>;
-        deleteExtNode(id: string): Promise<boolean>;
+        delete(id: string): Promise<void>;
+        isDataViewExist(id: string): Promise<boolean>;
+        getViewRawQuery(tableName: string): Promise<any>;
+        getViewColumns(id: string): Promise<any[]>;
+        getViewFields(id: string): Promise<IField[]>;
+        updateViewColumn({ tableName, tableColumnName, type, property, }: {
+            tableName: string;
+            tableColumnName: string;
+            type: FieldType;
+            property: any;
+        }): Promise<void>;
+        createDataView(id: string, createViewSql: string): Promise<boolean>;
     }
 }
 declare module "packages/core/sdk/theme-manager" {
@@ -3106,6 +3121,20 @@ declare module "packages/core/sdk/theme-manager" {
         setCurrentTheme(name: string): Promise<void>;
     }
 }
+declare module "packages/core/udf/index" {
+    export const withSqlite3AllUDF: (bc: {
+        postMessage: (data: any) => void;
+    }) => {
+        ALL_UDF: {
+            name: string;
+            xFunc: (pCx: any, table: any, _new: any, _old: any) => void;
+        }[];
+        ALL_UDF_NO_CTX: {
+            name: string;
+            xFunc: (table: any, _new: any, _old: any) => void;
+        }[];
+    };
+}
 declare module "packages/core/DataSpace" {
     import { FieldType } from "packages/lib/fields/const";
     import { EidosFileSystemManager, FileSystemType } from "packages/lib/storage/eidos-file-system";
@@ -3118,6 +3147,7 @@ declare module "packages/core/DataSpace" {
     import { DataChangeTrigger } from "packages/core/data-pipeline/DataChangeTrigger";
     import { LinkRelationUpdater } from "packages/core/data-pipeline/LinkRelationUpdater";
     import { TableFullTextSearch } from "packages/core/data-pipeline/TableFullTextSearch";
+    import { TableSemanticSearch } from "packages/core/data-pipeline/TableSemanticSearch";
     import { SQLiteUndoRedo } from "packages/core/data-pipeline/UndoRedo";
     import { ActionTable } from "packages/core/meta-table/action";
     import { BaseTable } from "packages/core/meta-table/base";
@@ -3125,15 +3155,15 @@ declare module "packages/core/DataSpace" {
     import { ColumnTable } from "packages/core/meta-table/column";
     import { DocTable } from "packages/core/meta-table/doc";
     import { EmbeddingTable, IEmbedding } from "packages/core/meta-table/embedding";
+    import { ExtensionStatus, ExtensionTable, IExtension } from "packages/core/meta-table/extension";
+    import { ExtNodeTable } from "packages/core/meta-table/extnode";
     import { FileTable, IFile } from "packages/core/meta-table/file";
     import { MessageTable } from "packages/core/meta-table/message";
     import { ReferenceTable } from "packages/core/meta-table/reference";
-    import { IExtension, ExtensionStatus, ExtensionTable } from "packages/core/meta-table/extension";
     import { TreeTable } from "packages/core/meta-table/tree";
     import { ViewTable } from "packages/core/meta-table/view";
+    import { SqlDataView } from "packages/core/sdk/sql-data-view";
     import { TableManager } from "packages/core/sdk/table";
-    import { TableSemanticSearch } from "packages/core/data-pipeline/TableSemanticSearch";
-    import { ExtNodeTable } from "packages/core/meta-table/extnode";
     import { ThemeManager } from "packages/core/sdk/theme-manager";
     export type EidosTable = DocTable | ActionTable | ExtensionTable | TreeTable | ViewTable | ColumnTable | EmbeddingTable | FileTable;
     export type EidosDatabase = BaseServerDatabase;
@@ -3157,6 +3187,7 @@ declare module "packages/core/DataSpace" {
         file: FileTable;
         extNode: ExtNodeTable;
         theme: ThemeManager;
+        dataView: SqlDataView;
         dataChangeTrigger: DataChangeTrigger;
         linkRelationUpdater: LinkRelationUpdater;
         allTables: BaseTable<any>[];
@@ -3295,7 +3326,7 @@ declare module "packages/core/DataSpace" {
         addView(view: IView): Promise<IView<any>>;
         delView(viewId: string): Promise<boolean>;
         updateView(viewId: string, view: Partial<IView>): Promise<boolean>;
-        createDefaultView(tableId: string, type?: ViewTypeEnum): Promise<IView<any>>;
+        createDefaultView(tableName: string, type?: ViewTypeEnum): Promise<IView<any>>;
         isRowExistInQuery(tableId: string, rowId: string, query: string): Promise<boolean>;
         getRecomputeRows(tableId: string, rowIds: string[]): Promise<any>;
         addField(data: IField): Promise<IField>;

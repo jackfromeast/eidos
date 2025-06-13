@@ -228,7 +228,11 @@ export function NodeItem({
             {extNodes.map((extNode) => (
               <ContextMenuItem
                 key={extNode.ext_node_type}
-                onClick={() => handleCreateExtNode(extNode.ext_node_type!)}
+                onClick={() =>
+                  handleCreateExtNode(
+                    extNode.ext_node_type! as `ext__${string}`
+                  )
+                }
               >
                 <FileIcon className="pr-2" />
                 {extNode.name}
