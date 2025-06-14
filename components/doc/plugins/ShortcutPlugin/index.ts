@@ -1,54 +1,44 @@
-import { $isListItemNode, ListItemNode, ListNode } from "@lexical/list"
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext"
 import { useKeyPress } from "ahooks"
-import { $getSelection, $createParagraphNode, $isParagraphNode, ParagraphNode, $isTextNode, $createTextNode, $createRangeSelection, $setSelection, $isRangeSelection } from "lexical"
-import { $duplicateParagraph } from "../../utils/selection"
 import { useCallback } from "react"
+import { $duplicateParagraph, $moveListItem, $toggleCheckList } from "../../utils/selection"
 
 export function ShortcutPlugin() {
   const [editor] = useLexicalComposerContext()
 
-  //   toggle check list
+  // Toggle check list
+  const toggleCheckList = useCallback(() => {
+    editor.update(() => {
+      if (!editor.isEditable()) return
+      $toggleCheckList()
+    })
+  }, [editor])
+
+  // Duplicate paragraph
+  const duplicateParagraph = useCallback((isUp: boolean) => {
+    editor.update(() => {
+      if (!editor.isEditable()) return
+      $duplicateParagraph(isUp)
+    })
+  }, [editor])
+
+  // Move list item
+  const moveListItem = useCallback((isUp: boolean) => {
+    editor.update(() => {
+      if (!editor.isEditable()) return
+      $moveListItem(isUp)
+    })
+  }, [editor])
+
+  // Toggle check list
   useKeyPress(
     ["ctrl.Enter", "meta.Enter"],
     (e) => {
       e.stopPropagation()
-      editor.update(() => {
-        if (!editor.isEditable()) {
-          return
-        }
-        const selection = $getSelection()
-        const nodes = selection?.getNodes()
-        if (nodes?.length === 1) {
-          const node = nodes[0]
-          if ($isListItemNode(node)) {
-            const parent = node.getParent() as ListNode
-            if (parent.getListType() === "check") {
-              ; (node as ListItemNode).toggleChecked()
-            }
-          } else if ($isListItemNode(node.getParent())) {
-            const parent = node.getParent() as ListItemNode
-            const listNode = parent.getParent() as ListNode
-            if (listNode.getListType() === "check") {
-              parent.toggleChecked()
-            }
-          }
-        }
-      })
+      toggleCheckList()
     },
-    {
-      useCapture: true,
-    }
+    { useCapture: true }
   )
-
-  const duplicateParagraph = useCallback((isUp: boolean) => {
-    editor.update(() => {
-      if (!editor.isEditable()) {
-        return
-      }
-      $duplicateParagraph(isUp)
-    })
-  }, [editor])
 
   // Duplicate paragraph up
   useKeyPress(
@@ -58,9 +48,7 @@ export function ShortcutPlugin() {
       e.stopPropagation()
       duplicateParagraph(true)
     },
-    {
-      useCapture: true,
-    }
+    { useCapture: true }
   )
 
   // Duplicate paragraph down
@@ -71,9 +59,29 @@ export function ShortcutPlugin() {
       e.stopPropagation()
       duplicateParagraph(false)
     },
-    {
-      useCapture: true,
-    }
+    { useCapture: true }
+  )
+
+  // Move list item up
+  useKeyPress(
+    ["alt.uparrow"],
+    (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      moveListItem(true)
+    },
+    { useCapture: true }
+  )
+
+  // Move list item down
+  useKeyPress(
+    ["alt.downarrow"],
+    (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      moveListItem(false)
+    },
+    { useCapture: true }
   )
 
   return null
