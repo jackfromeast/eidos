@@ -1,0 +1,123 @@
+---
+title: Dataviews
+description: When you need to ask your data questions
+sidebar:
+  order: 3
+---
+
+I recently realized that almost every productivity tool forces you to make a choice that shouldn't exist in the first place.
+
+When you're taking notes, you'll always hit this moment: should this piece of information go in a freeform document or a structured table? It's like being asked: "Do you want flexibility or do you want organization?" But the question itself is wrong. Why can't I have both?
+
+Think about librarians in the real world. They don't tell you: "Sorry, this book can either go in the fiction section or the history section, but it can't be categorized in both places." Libraries have sophisticated classification systems where the same book can be found through multiple approaches. But digital tools are still stuck in the "one thing can only go in one place" mindset.
+
+This is why Notion feels awkward. It gives you documents and databases, but they're like two neighbors who don't talk to each other. Obsidian is slightly better—it stores everything as markdown files and has dataview plugins to query data. But markdown has too many limitations; it's like trying to write an academic paper within Twitter's character limit.
+
+I've seen too many people waste time on this problem. They'll spend hours agonizing over where a piece of information should go, or worse, they'll duplicate the same information in different places. This isn't productivity—this is fighting with your tools.
+
+## Why traditional approaches don't work
+
+Let me tell you a real story. I have a friend who's extremely organized, and his way of saving interesting links impressed me—not because it was good, but because it was so chaotic.
+
+His bookmarks were everywhere:
+
+- Sometimes he'd see a good article and paste it directly into that day's journal with a one-line comment
+- Sometimes he'd properly organize it into a "Reading List" table
+- Sometimes he'd mention useful resources in project documents
+- Sometimes he'd use automation tools to save directly to a database
+
+Each approach made sense in its context. Recording in the journal because he was already writing his journal; organizing in a table because he wanted systematic management; mentioning in documents because it was project-related; automated saving because he was too lazy to do it manually.
+
+The problem came three months later when he wanted to find a specific link—he had to search through four different places. It's like putting your keys in four different drawers and then having to check all the drawers every time you need your keys.
+
+## The dataview breakthrough
+
+Dataviews solve this fundamental problem. Instead of requiring you to change your behavior, they make your data queryable.
+
+The key insight here is: in Eidos, everything is stored in a database. Your documents aren't text files—they're rows in database tables. Your structured data lives in appropriate tables. This means you can write SQL queries that span all your content.
+
+Back to my friend's bookmark problem. With dataviews, he doesn't need to change any habits. He can create a query that:
+
+- Searches all documents for URLs
+- Extracts bookmarks from dedicated tables
+- Merges everything into one view
+- Shows when and in what context he saved each link
+
+The result looks like a table, but it's actually a live view of data from multiple sources. When he adds a new bookmark anywhere in the system, it automatically appears in this view. It's like having an invisible assistant organizing things for you, but never interrupting your workflow.
+
+## Real application: Finding all todos
+
+Let's look at a concrete example. Suppose you want to find all the todos in your system. What's the traditional approach? Open each document and check one by one. Or force yourself to only record tasks in one dedicated "Todo" table.
+
+But reality is, todos appear everywhere: action items in meeting notes, ideas that come up while reading, checklists in project documents. Forcing yourself to only record tasks in one place is like forcing yourself to only think in your bedroom—unrealistic and unnecessary.
+
+With dataviews, you can query like this:
+
+```sql
+WITH
+  valid_docs AS (
+    SELECT
+      id,
+      content,
+      created_at
+    FROM
+      eidos__docs
+    WHERE
+      json_valid(content) = 1
+  )
+SELECT
+  json_extract(j.value, '$.children[0].text') as title,
+  json_extract(j.value, '$.checked') as checked,
+  d.created_at as created_at,
+FROM
+  valid_docs d,
+  json_tree(d.content, '$.root.children') AS parent,
+  json_tree(parent.value, '$.children') AS j
+WHERE
+  parent.type = 'object'
+  AND json_extract(parent.value, '$.type') = 'list'
+  AND json_extract(parent.value, '$.listType') = 'check'
+  AND j.type = 'object'
+  AND json_extract(j.value, '$.type') = 'listitem'
+```
+
+This query will find all todos in all documents. You get a view called `vw_<node_id>` that contains all todos in your system, regardless of which document they originally lived in.
+
+## Going further: Aggregating different types of data
+
+Now suppose you also have a dedicated project task table for tracking bugs:
+
+| title            | description      | done | priority | created_at | updated_at |
+| ---------------- | ---------------- | ---- | -------- | ---------- | ---------- |
+| Fix login issue  | Fix login issue  | 1    | High     | 2025-01-01 | 2025-01-01 |
+| Fix signup issue | Fix signup issue | 0    | Medium   | 2025-01-01 | 2025-01-01 |
+
+You can merge todos from documents with this table:
+
+```sql
+SELECT title, done as checked, created_at FROM tb_<node_id>
+UNION ALL
+SELECT * FROM vw_<node_id>
+```
+
+Now you have a unified view of all todos—both scattered temporary tasks from various documents and formal project tasks from tables.
+
+Want to see todos from the past week? Build another view based on the existing one:
+
+```sql
+SELECT * FROM vw_<node_id> WHERE created_at >= date('now', '-7 days')
+```
+
+## Why this matters
+
+Dataviews change your relationship with information. You no longer need to decide where information will ultimately belong when you're recording it. You can record in the most natural way, then organize and reorganize through queries.
+
+It's like shifting from "pre-classification" to "post-classification." Traditional tools require you to know upfront where information should go, but in reality, we often don't know the most useful way to organize information until we need it.
+
+Dataviews let you organize data in the most meaningful way for each specific question, rather than forcing everything into rigid categories upfront. You dynamically organize information based on the specific questions you're trying to answer.
+
+This is a more human-aligned approach. We don't think in strict classifications—we connect and reconnect information based on current needs. Dataviews let tools adapt to how we think, rather than forcing us to adapt to tool limitations.
+
+Technically, dataviews are read-only tables powered by SQL queries. You write queries, and Eidos presents results using all the regular table functionality—sorting, filtering, different view types, custom display options. But the real value lies in the ability to aggregate across data sources.
+
+This isn't just a technical feature—it's a new way of thinking about information organization.

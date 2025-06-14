@@ -1,0 +1,98 @@
+---
+title: Node
+description: The building blocks of everything in Eidos
+sidebar:
+  order: 3
+---
+
+Here's something interesting about software architecture: most systems make you think in terms of files and folders, but what if you thought in terms of _things_ instead?
+
+That's what nodes are in Eidos. They're not files—they're more like containers that can hold different types of content. Think of them as smart boxes that know what they're supposed to contain.
+
+We have four types of these boxes:
+
+- **doc** - for writing and thinking
+- **table** - for organizing structured data
+- **folder** - for organizing nodes
+- **dataview** - for asking questions of your data
+
+The clever bit is that these nodes live in a tree structure, just like folders, but they're much more powerful than folders. Each node knows what it is and how to behave. A document node knows it should render text beautifully. A table node knows it should let you sort and filter data.
+
+You can think of the whole system as modular. Want new types of nodes? Build extensions. It's like having a workshop where you can create new types of smart boxes whenever you need them.
+
+The tree structure gives you the familiar hierarchical organization you're used to, but each item in that tree is actually a sophisticated data container with its own capabilities.
+
+## How We Store Node Information
+
+Node information is stored in the `eidos__tree` table
+
+```sql
+  CREATE TABLE IF NOT EXISTS eidos__tree (
+    id TEXT PRIMARY KEY,
+    name TEXT,
+    type TEXT,
+    parent_id TEXT NULL,
+    is_pinned BOOLEAN DEFAULT 0,
+    is_full_width BOOLEAN DEFAULT 0,
+    is_locked BOOLEAN DEFAULT 0,
+    icon TEXT NULL,
+    cover TEXT NULL,
+    is_deleted BOOLEAN DEFAULT 0,
+    hide_properties BOOLEAN DEFAULT 0,
+    position REAL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+```
+
+## Field Definitions
+
+| Field           | Type      | What it's for                         |
+| --------------- | --------- | ------------------------------------- |
+| id              | TEXT      | Unique identifier for the node        |
+| name            | TEXT      | Node name                             |
+| type            | TEXT      | Node type (doc/table/dataview/folder) |
+| icon            | TEXT      | Node icon                             |
+| cover           | TEXT      | Node cover                            |
+| parent_id       | TEXT      | Parent node ID                        |
+| is_pinned       | BOOLEAN   | Whether the node is pinned            |
+| created_at      | TIMESTAMP | Creation timestamp                    |
+| updated_at      | TIMESTAMP | Last update timestamp                 |
+| is_deleted      | BOOLEAN   | Whether the node is deleted           |
+| position        | REAL      | Node position                         |
+| is_full_width   | BOOLEAN   | Whether to display in full width      |
+| is_locked       | BOOLEAN   | Whether the node is locked            |
+| hide_properties | BOOLEAN   | Whether to hide properties            |
+
+## Extending Nodes
+
+We have prepared the `eidos__extnode` table for storing extension nodes. You can combine it with Micro Block extensions to customize the display and interaction of nodes.
+
+```sql
+  CREATE TABLE IF NOT EXISTS eidos__extnode (
+    id TEXT PRIMARY KEY,
+    blob BLOB,
+    text TEXT,
+    path TEXT,
+    type TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+```
+
+| Field      | Type      | What it's for                           |
+| ---------- | --------- | --------------------------------------- |
+| id         | TEXT      | Unique identifier for the node          |
+| name       | TEXT      | Node name                               |
+| type       | TEXT      | Node type, e.g., `excalidraw`          |
+| blob       | BLOB      | Node content                            |
+| text       | TEXT      | Node text                               |
+| path       | TEXT      | Node path                               |
+| created_at | TIMESTAMP | Creation timestamp                      |
+| updated_at | TIMESTAMP | Last update timestamp                   |
+
+We have prepared three different data fields for storing different types of data. Which field to use depends on the extension type. For example, the excalidraw extension uses the text field to store text data, because excalidraw node content is in JSON text format.
+
+- blob is used to store binary data, such as images, audio, video, etc.
+- text is used to store text data, such as text, Markdown, etc.
+- path is used to store path data, such as file paths, URLs, etc.

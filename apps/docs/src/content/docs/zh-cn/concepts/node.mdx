@@ -1,0 +1,98 @@
+---
+title: 节点
+description: Eidos 中一切事物的构建块
+sidebar:
+  order: 3
+---
+
+软件架构有一个有趣的现象：大多数系统让您按照文件和文件夹的方式思考，但如果您按照*事物*的方式思考会怎样？
+
+这就是 Eidos 中节点的作用。它们不是文件——它们更像是可以容纳不同类型内容的容器。把它们想象成知道自己应该包含什么的智能盒子。
+
+我们有4种类型的盒子：
+
+- **doc** - 用于写作和思考
+- **table** - 用于组织结构化数据
+- **folder** - 用于组织节点
+- **dataview** - 用于查询您的数据
+
+巧妙之处在于这些节点存在于树形结构中，就像文件夹一样，但它们比文件夹功能更强大。每个节点都知道自己是什么以及应该如何表现。文档节点知道它应该优美地渲染文本。表格节点知道它应该让您对数据进行排序和过滤。
+
+您可以将整个系统视为模块化的。想要新类型的节点？构建[扩展](#扩展节点)即可。这就像拥有一个工作室，您可以在需要时创建新类型的智能盒子。
+
+树形结构为您提供了熟悉的层次化组织方式，但该树中的每个项目实际上都是一个具有自己功能的复杂数据容器。
+
+## 我们如何存储节点信息
+
+节点信息存储在 `eidos__tree` 这张表中
+
+```sql
+  CREATE TABLE IF NOT EXISTS eidos__tree (
+    id TEXT PRIMARY KEY,
+    name TEXT,
+    type TEXT,
+    parent_id TEXT NULL,
+    is_pinned BOOLEAN DEFAULT 0,
+    is_full_width BOOLEAN DEFAULT 0,
+    is_locked BOOLEAN DEFAULT 0,
+    icon TEXT NULL,
+    cover TEXT NULL,
+    is_deleted BOOLEAN DEFAULT 0,
+    hide_properties BOOLEAN DEFAULT 0,
+    position REAL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+```
+
+## 每个字段的含义
+
+| 字段            | 类型      | 作用                                  |
+| --------------- | --------- | ------------------------------------- |
+| id              | TEXT      | 节点唯一标识符                        |
+| name            | TEXT      | 节点名称                              |
+| type            | TEXT      | 节点类型（doc/table/dataview/folder） |
+| icon            | TEXT      | 节点图标                              |
+| cover           | TEXT      | 节点封面                              |
+| parent_id       | TEXT      | 父节点ID                              |
+| is_pinned       | BOOLEAN   | 是否置顶                              |
+| created_at      | TIMESTAMP | 创建时间                              |
+| updated_at      | TIMESTAMP | 更新时间                              |
+| is_deleted      | BOOLEAN   | 是否已删除                            |
+| position        | REAL      | 节点位置                              |
+| is_full_width   | BOOLEAN   | 是否全宽显示                          |
+| is_locked       | BOOLEAN   | 是否锁定                              |
+| hide_properties | BOOLEAN   | 是否隐藏属性                          |
+
+## 扩展节点
+
+我们准备了 `eidos__extnode` 表，用于存储扩展节点。 你可以结合 Micro Block 扩展自定义节点的展示和交互。
+
+```sql
+  CREATE TABLE IF NOT EXISTS eidos__extnode (
+    id TEXT PRIMARY KEY,
+    blob BLOB,
+    text TEXT,
+    path TEXT,
+    type TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+```
+
+| 字段       | 类型      | 作用                        |
+| ---------- | --------- | --------------------------- |
+| id         | TEXT      | 节点唯一标识符              |
+| name       | TEXT      | 节点名称                    |
+| type       | TEXT      | 节点类型，例如 `excalidraw` |
+| blob       | BLOB      | 节点内容                    |
+| text       | TEXT      | 节点文本                    |
+| path       | TEXT      | 节点路径                    |
+| created_at | TIMESTAMP | 创建时间                    |
+| updated_at | TIMESTAMP | 更新时间                    |
+
+我们准备了三个不同的数据字段，用于存储不同类型的数据。具体使用哪个字段取决于扩展的类型。比如 excalidraw 扩展使用 text 字段存储文本数据，因为 excalidraw 的节点内容是 JSON 格式的文本。
+
+- blob 用于存储二进制数据，例如图片、音频、视频等
+- text 用于存储文本数据，例如文本、Markdown 等
+- path 用于存储路径数据，例如文件路径、URL 等

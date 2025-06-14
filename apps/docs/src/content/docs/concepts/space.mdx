@@ -1,0 +1,41 @@
+---
+title: Space
+description: Why you probably only need one, but might want more
+sidebar:
+  order: 2
+---
+
+import { FileTree } from "@astrojs/starlight/components"
+
+Most people overthink organization. They create elaborate folder hierarchies and complex tagging systems, then spend more time organizing than actually using their stuff.
+
+Spaces in Eidos work differently. Think of a space like having a completely separate universe for your data. Most of the time, you want everything in one universe—your notes, your projects, your random thoughts all interconnected and searchable together.
+
+But sometimes separation makes sense. Maybe you want to keep work completely separate from personal stuff. Or you're working on a project with sensitive data that shouldn't mix with everything else. That's when you create multiple spaces.
+
+Here's the key insight: each space gets its own database. Not just its own folder, but its own completely isolated data store. It's like having separate computers, except they happen to be running on the same machine.
+
+## How it looks on disk
+
+<FileTree>
+
+- my-eidos-data
+  - spaces
+    - work
+      - db.sqlite3 ← This is where all the work data lives
+      - files
+        - some-presentation.pdf
+        - meeting-notes-attachment.png
+    - personal
+      - db.sqlite3 ← Completely separate database
+      - files
+        - vacation-photos.jpg
+        - recipe-ingredients.pdf
+    - secret-project
+      - db.sqlite3 ← Again, totally isolated
+      - files
+        - prototype-designs.sketch
+
+</FileTree>
+
+The elegant part is the simplicity. No complex permissions, no shared databases with elaborate access controls. Just clean separation when you need it, and everything together when you don't.
