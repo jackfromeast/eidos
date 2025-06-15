@@ -14,7 +14,13 @@ export class CheckboxField extends BaseField<
   static type = FieldType.Checkbox
 
   get compareOperators() {
-    return [CompareOperator.IsEmpty, CompareOperator.IsNotEmpty]
+    return [
+      CompareOperator.Equal,
+      CompareOperator.NotEqual,
+      CompareOperator.IsEmpty,
+      CompareOperator.IsNotEmpty,
+
+    ]
   }
   rawData2JSON(rawData: number) {
     return rawData
