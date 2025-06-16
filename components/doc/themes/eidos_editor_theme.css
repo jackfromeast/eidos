@@ -7,7 +7,7 @@ code::before {
 }
 
 .eidos_editor_card_block {
-  border: 1px solid #ccc;
+  border: 1px solid hsl(var(--border));
   padding: 1rem;
   margin: 1rem 0;
   border-radius: 0.5rem;
@@ -31,8 +31,8 @@ code::before {
 .eidos_editor_theme__quote {
   margin: 0 !important;
   font-size: 15px;
-  color: rgb(101, 103, 107);
-  border-left-color: rgb(206, 208, 212);
+  color: hsl(var(--muted-foreground));
+  border-left-color: hsl(var(--border));
   border-left-width: 4px;
   border-left-style: solid;
   padding-left: 16px;
@@ -40,13 +40,13 @@ code::before {
 
 .eidos_editor_theme__h1 {
   font-size: 24px;
-  color: rgb(5, 5, 5);
+  color: hsl(var(--foreground));
   font-weight: 400;
 }
 
 .eidos_editor_theme__h2 {
   font-size: 15px;
-  color: rgb(101, 103, 107);
+  color: hsl(var(--muted-foreground));
   font-weight: 700;
   /* text-transform: uppercase; */
 }
@@ -98,12 +98,12 @@ code::before {
 }
 
 .eidos_editor_theme__hashtag {
-  background-color: rgba(88, 144, 255, 0.15);
-  border-bottom: 1px solid rgba(88, 144, 255, 0.3);
+  background-color: hsl(var(--accent) / 0.15);
+  border-bottom: 1px solid hsl(var(--accent) / 0.3);
 }
 
 .eidos_editor_theme__link {
-  color: rgb(33, 111, 219);
+  color: hsl(var(--primary));
   text-decoration: none;
 }
 
@@ -132,12 +132,12 @@ code::before {
 .eidos_editor_theme__code:before {
   content: attr(data-gutter);
   position: absolute;
-  background-color: #eee;
+  background-color: hsl(var(--secondary));
   left: 0;
   top: 0;
-  border-right: 1px solid #ccc;
+  border-right: 1px solid hsl(var(--border));
   padding: 8px;
-  color: #777;
+  color: hsl(var(--muted-foreground));
   white-space: pre-wrap;
   text-align: right;
   min-width: 25px;
@@ -195,11 +195,11 @@ code::before {
 }
 
 .eidos_editor_theme__tableCellSelected {
-  background-color: #c9dbf0;
+  background-color: hsl(var(--accent) / 0.5);
 }
 
 .eidos_editor_theme__tableCellPrimarySelected {
-  border: 2px solid rgb(60, 132, 244);
+  border: 2px solid hsl(var(--primary));
   display: block;
   height: calc(100% - 2px);
   position: absolute;
@@ -210,7 +210,7 @@ code::before {
 }
 
 .eidos_editor_theme__tableCellEditing {
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0 5px hsl(var(--foreground) / 0.4);
   border-radius: 3px;
 }
 
@@ -284,7 +284,7 @@ code::before {
   display: block;
   position: absolute;
   width: 1px;
-  background-color: rgb(60, 132, 244);
+  background-color: hsl(var(--primary));
   height: 100%;
   top: 0;
 }
@@ -316,7 +316,7 @@ code::before {
 
 .eidos_editor_theme__characterLimit {
   display: inline;
-  background-color: #ffbbbb !important;
+  background-color: hsl(var(--destructive) / 0.3) !important;
 }
 
 .eidos_editor_theme__ol1 {
@@ -480,26 +480,26 @@ ul li.eidos_editor_theme__listItem[role="checkbox"]>.editor-image {
 
 .eidos_editor_theme__listItemUnchecked:focus:before,
 .eidos_editor_theme__listItemChecked:focus:before {
-  box-shadow: 0 0 0 2px #a6cdfe;
+  box-shadow: 0 0 0 2px hsl(var(--ring) / 0.5);
   border-radius: 2px;
 }
 
 .eidos_editor_theme__listItemUnchecked:before {
-  border: 1px solid #999;
+  border: 1px solid hsl(var(--muted-foreground));
   border-radius: 2px;
 }
 
 .eidos_editor_theme__listItemChecked:before {
-  border: 1px solid rgb(61, 135, 245);
+  border: 1px solid hsl(var(--primary));
   border-radius: 2px;
-  background-color: #3d87f5;
+  background-color: hsl(var(--primary));
   background-repeat: no-repeat;
 }
 
 .eidos_editor_theme__listItemChecked:after {
   content: "";
   cursor: pointer;
-  border-color: #fff;
+  border-color: hsl(var(--primary-foreground));
   border-style: solid;
   position: absolute;
   display: block;
@@ -555,24 +555,24 @@ ul li.eidos_editor_theme__listItem[role="checkbox"]>.editor-image {
 }
 
 .eidos_editor_theme__mark {
-  background: rgba(255, 212, 0, 0.14);
-  border-bottom: 2px solid rgba(255, 212, 0, 0.3);
+  background: hsl(var(--accent) / 0.14);
+  border-bottom: 2px solid hsl(var(--accent) / 0.3);
   padding-bottom: 2px;
 }
 
 .eidos_editor_theme__markOverlap {
-  background: rgba(255, 212, 0, 0.3);
-  border-bottom: 2px solid rgba(255, 212, 0, 0.7);
+  background: hsl(var(--accent) / 0.3);
+  border-bottom: 2px solid hsl(var(--accent) / 0.7);
 }
 
 .eidos_editor_theme__mark.selected {
-  background: rgba(255, 212, 0, 0.5);
-  border-bottom: 2px solid rgba(255, 212, 0, 1);
+  background: hsl(var(--accent) / 0.5);
+  border-bottom: 2px solid hsl(var(--accent));
 }
 
 .eidos_editor_theme__markOverlap.selected {
-  background: rgba(255, 212, 0, 0.7);
-  border-bottom: 2px solid rgba(255, 212, 0, 0.7);
+  background: hsl(var(--accent) / 0.7);
+  border-bottom: 2px solid hsl(var(--accent) / 0.7);
 }
 
 .eidos_editor_theme__embedBlock {

@@ -360,15 +360,13 @@ export default function GridView(props: IGridProps) {
       ref={containerRef}
     >
       <div
-        className={cn(
-          "relative flex h-full w-full overflow-hidden rounded-md border-t"
-        )}
+        className={cn("relative flex h-full w-full overflow-hidden rounded-md")}
       >
         {/* Static Freeze Column Line - Uses values from hook */}
         {columns && columns.length > 0 && freezeHandleLeft > 0 && (
           <div
             ref={freezeHandleRef}
-            className="absolute top-0 bottom-0 z-10 w-[2px] cursor-col-resize hover:bg-blue-500 dark:hover:bg-blue-500 pointer-events-auto"
+            className="absolute top-0 bottom-0 z-10 w-[2px] cursor-col-resize hover:bg-primary pointer-events-auto"
             style={{ left: `${freezeHandleLeft}px` }}
             onMouseDown={handleMouseDown}
           />
@@ -376,7 +374,7 @@ export default function GridView(props: IGridProps) {
         {/* Drag Preview Line */}
         {isDragging && previewLinePosition !== null && (
           <div
-            className="absolute top-0 bottom-0 z-10 w-[2px] bg-blue-500/70 dark:bg-blue-400/70 pointer-events-none"
+            className="absolute top-0 bottom-0 z-10 w-[2px] bg-primary/70 pointer-events-none"
             style={{ left: `${previewLinePosition}px` }}
           />
         )}
