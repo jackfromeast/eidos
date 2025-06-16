@@ -9,6 +9,10 @@ export { uuidv7 } from "uuidv7";
 // export { v4 as uuidv7 } from "uuid"
 
 
+export const openUrlViaDefaultBrowser = (url: string) => {
+  window.eidos.openUrl(url)
+}
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }

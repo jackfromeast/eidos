@@ -122,6 +122,7 @@ async function main() {
     isDataFolderSet: !!configManager.get('dataFolder'),
     selectFolder: () => ipcRenderer.invoke('select-folder'),
     openFolder: (folder: string) => ipcRenderer.invoke('open-folder', folder),
+    openUrl: (url: string) => ipcRenderer.invoke('open-url', url),
     reloadApp: () => ipcRenderer.invoke('reload-app'),
     initializePlayground: (space: string, blockId: string, files: PlaygroundFile[]) => ipcRenderer.invoke('initialize-playground', space, blockId, files),
     minimizeWindow: () => ipcRenderer.send('window-control', 'minimize'),

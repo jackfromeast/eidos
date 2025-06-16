@@ -45,5 +45,6 @@ interface Window {
         getApiAgentStatus: () => Promise<import('./server/api-agent').ApiAgentStatus>
         onApiAgentStatusChanged: (callback: (status: import('./server/api-agent').ApiAgentStatus) => void) => () => void
         fetch: (url: string, options: RequestInit) => Promise<{ ok: boolean, status: number, statusText: string, headers: Record<string, string>, data: any, error?: string }>
+        openUrl: (url: string) => Promise<void>
     }
 }

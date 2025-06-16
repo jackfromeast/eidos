@@ -191,6 +191,22 @@ ipcMain.handle('open-folder', (event, folder) => {
     }
 });
 
+ipcMain.handle('open-url', async (event, url) => {
+    if (!url || typeof url !== 'string') {
+        electronLog.warn('Invalid URL provided');
+        return { success: false, error: 'Invalid URL provided' };
+    }
+
+    try {
+        await shell.openExternal(url);
+        electronLog.info(`URL opened successfully: ${url}`);
+        return { success: true };
+    } catch (error) {
+        electronLog.error(`Error opening URL: ${error}`);
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+});
+
 ipcMain.handle('reload-app', () => {
     app.relaunch();
     win?.reload()

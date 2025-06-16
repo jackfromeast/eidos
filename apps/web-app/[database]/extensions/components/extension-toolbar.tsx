@@ -5,8 +5,9 @@ import { Copy, ExternalLink, Play } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { useLoaderData, useRevalidator } from "react-router-dom"
 
+import { isDesktopMode } from "@/lib/env"
 import { useAppRuntimeStore } from "@/lib/store/runtime-store"
-import { getExtensionUrl, isUuid } from "@/lib/utils"
+import { getExtensionUrl, isUuid, openUrlViaDefaultBrowser } from "@/lib/utils"
 import { compileCode } from "@/lib/v3/compiler"
 import { getCompileMethod } from "@/lib/v3/script-compiler"
 import { openCursor } from "@/lib/web/schema"
@@ -16,8 +17,8 @@ import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/use-toast"
 import { usePlayground } from "@/apps/desktop/renderer/hooks/usePlayground"
 
-import { useRemixPrompt } from "../hooks/use-remix-prompt"
 import { useExtension } from "../../../../../hooks/use-extension"
+import { useRemixPrompt } from "../hooks/use-remix-prompt"
 import { useEditorStore } from "../stores/editor-store"
 import { CheckForUpdatesButton } from "./check-for-updates-button"
 import { ShareExtensionButton } from "./share-extension-button"
@@ -183,6 +184,17 @@ export const ExtensionToolbar = () => {
     return isUuid(script.id)
   }, [script.id])
 
+  const handleOpenInStandalone = useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      if (isDesktopMode && event.altKey) {
+        openUrlViaDefaultBrowser(getExtensionUrl(script.id, space))
+      } else {
+        window.open(getExtensionUrl(script.id, space), "_blank")
+      }
+    },
+    [script.id, space]
+  )
+
   return (
     <div className="flex items-center gap-2">
       <Button variant="ghost" size="sm" onClick={handleCopyCode}>
@@ -201,11 +213,9 @@ export const ExtensionToolbar = () => {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() =>
-            window.open(getExtensionUrl(script.id, space), "_blank")
-          }
+          onClick={handleOpenInStandalone}
           className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-          title="Open in standalone mode"
+          title="Open in standalone mode (Hold Alt/Option to open in default browser)"
         >
           <ExternalLink className="h-4 w-4" />
           {/* <span>Standalone</span> */}
