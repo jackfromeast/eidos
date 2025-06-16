@@ -17,6 +17,8 @@ import CodeMirror, {
 } from "@uiw/react-codemirror"
 import { toast } from "sonner"
 
+import { formatSql } from "@/lib/sqlite/helper"
+
 import sqliteFunctionList from "./function-tooltip.json"
 import { functionTooltip } from "./function-tooltips"
 import { KEY_BINDING } from "./key-matcher"
@@ -128,6 +130,26 @@ const SqlEditor = forwardRef<ReactCodeMirrorRef, SqlEditorProps>(
               )
             }
             return true
+          },
+        },
+        {
+          key: "Shift-Alt-f",
+          run: (view) => {
+            const currentValue = view.state.doc.toString()
+            try {
+              const formatted = formatSql(currentValue)
+              view.dispatch({
+                changes: {
+                  from: 0,
+                  to: view.state.doc.length,
+                  insert: formatted,
+                },
+              })
+              return true
+            } catch (error) {
+              console.error("Failed to format SQL:", error)
+              return false
+            }
           },
         },
         ...defaultKeymap,

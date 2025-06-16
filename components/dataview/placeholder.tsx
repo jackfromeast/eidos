@@ -6,7 +6,7 @@ import { shortenId } from "@/lib/utils"
 import { useDataView } from "@/hooks/use-data-view"
 import { Button } from "@/components/ui/button"
 
-import { SqlEditor } from "./sql-editor"
+import SqlEditor from "@/components/sql-editor"
 import { templates } from "./template"
 
 export const DataViewPlaceholder = ({
