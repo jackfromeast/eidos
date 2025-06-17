@@ -4,6 +4,7 @@ import { BrowserWindow, Menu, Tray, app, dialog, ipcMain, nativeImage, shell } f
 import electronLog from 'electron-log';
 import path from 'path';
 import { getConfigManager } from './config';
+import { corsManager } from './cors-manager';
 import { closeDataSpace, getDataSpace, getOrSetDataSpace, reloadDataSpace } from './data-space';
 import { cleanupPlaygroundWatchers, initializePlayground } from './file-system/playground';
 import { getResourcePath } from './helper';
@@ -301,6 +302,8 @@ app.on('second-instance', (event, commandLine) => {
 });
 
 app.whenReady().then(() => {
+    corsManager.initialize();
+
     win = createWindow();
     const configManager = getConfigManager();
 

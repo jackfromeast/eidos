@@ -30,6 +30,7 @@ export interface AppConfig {
     // Security configuration
     security: {
         webSecurity: boolean;
+        crossOriginDomains: string[];
     };
     // Sync configuration
     sync: {
@@ -59,6 +60,7 @@ const emptyConfig: AppConfig = {
     },
     security: {
         webSecurity: true,
+        crossOriginDomains: [],
     },
     sync: { // Updated structure
         enabled: false,

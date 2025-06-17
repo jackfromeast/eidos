@@ -1,0 +1,69 @@
+import { session } from 'electron';
+import { getConfigManager } from './config';
+
+export class CorsManager {
+    private static instance: CorsManager;
+    private isInitialized = false;
+
+    private constructor() { }
+
+    public static getInstance(): CorsManager {
+        if (!CorsManager.instance) {
+            CorsManager.instance = new CorsManager();
+        }
+        return CorsManager.instance;
+    }
+
+    public initialize() {
+        if (this.isInitialized) return;
+        this.isInitialized = true;
+
+        getConfigManager().on('configChanged', (data) => {
+            if (data.key === 'security') {
+                this.updateCorsSettings();
+            }
+        });
+
+        this.updateCorsSettings();
+    }
+
+    private updateCorsSettings() {
+        const securityConfig = getConfigManager().get('security');
+        const domains = securityConfig.crossOriginDomains || [];
+
+        session.defaultSession.webRequest.onBeforeSendHeaders({ urls: ['*://*/*'] }, null);
+        session.defaultSession.webRequest.onHeadersReceived({ urls: ['*://*/*'] }, null);
+
+        if (domains.length === 0) return;
+
+        const filter = { urls: domains.map(domain => `*://${domain}/*`) };
+
+        session.defaultSession.webRequest.onBeforeSendHeaders(filter, (details, callback) => {
+            const url = new URL(details.url);
+            if (domains.includes(url.hostname)) {
+                details.requestHeaders['Origin'] = '';
+            }
+            callback({ requestHeaders: details.requestHeaders });
+        });
+
+        session.defaultSession.webRequest.onHeadersReceived(filter, (details, callback) => {
+            const url = new URL(details.url);
+            if (domains.includes(url.hostname)) {
+                callback({
+                    responseHeaders: {
+                        ...details.responseHeaders,
+                        'cross-origin-resource-policy': 'cross-origin',
+                        'Access-Control-Allow-Origin': '*',
+                        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+                        'Access-Control-Allow-Headers': '*',
+                        'Access-Control-Allow-Credentials': 'true'
+                    }
+                });
+            } else {
+                callback({ responseHeaders: details.responseHeaders });
+            }
+        });
+    }
+}
+
+export const corsManager = CorsManager.getInstance(); 
