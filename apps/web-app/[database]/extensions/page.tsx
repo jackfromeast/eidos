@@ -1,6 +1,6 @@
 import { useMemo } from "react"
 import { IExtension } from "@/packages/core/meta-table/extension"
-import useUrlState from "@ahooksjs/use-url-state"
+import { useQueryParam, StringParam, BooleanParam } from "use-query-params"
 import { useMount } from "ahooks"
 import {
   FileIcon,
@@ -80,27 +80,26 @@ export const IconMap = Object.fromEntries(
 export const ScriptPage = () => {
   const scripts = useLoaderData() as IExtension[]
   const { space } = useCurrentPathInfo()
-  const [state, setState] = useUrlState(
-    {
-      filter: "all",
-      searchTerm: "",
-      showEnabledOnly: false,
-    },
-    {
-      parseOptions: {
-        parseBooleans: true,
-      },
-    }
-  )
-  const { filter, searchTerm, showEnabledOnly } = state
-  const setFilter = (value: string) => {
-    setState({ filter: value })
+  
+  const [filter, setFilter] = useQueryParam("filter", StringParam)
+  const [searchTerm, setSearchTerm] = useQueryParam("searchTerm", StringParam)
+  const [showEnabledOnly, setShowEnabledOnly] = useQueryParam("showEnabledOnly", BooleanParam)
+
+  // Set default values
+  const currentFilter = filter || "all"
+  const currentSearchTerm = searchTerm || ""
+  const currentShowEnabledOnly = showEnabledOnly || false
+
+  const handleSetFilter = (value: string) => {
+    setFilter(value === "all" ? undefined : value)
   }
-  const setSearchTerm = (value: string) => {
-    setState({ searchTerm: value })
+  
+  const handleSetSearchTerm = (value: string) => {
+    setSearchTerm(value || undefined)
   }
-  const setShowEnabledOnly = (value: boolean) => {
-    setState({ showEnabledOnly: value })
+  
+  const handleSetShowEnabledOnly = (value: boolean) => {
+    setShowEnabledOnly(value || undefined)
   }
 
   const _scripts = scripts
@@ -109,28 +108,28 @@ export const ScriptPage = () => {
     let filtered = _scripts
 
     // Apply type filter
-    if (filter !== "all") {
+    if (currentFilter !== "all") {
       filtered = filtered.filter(
-        (script) => script.type.toLowerCase() === filter.toLowerCase()
+        (script) => script.type.toLowerCase() === currentFilter.toLowerCase()
       )
     }
 
     // Apply search filter
-    if (searchTerm) {
+    if (currentSearchTerm) {
       filtered = filtered.filter(
         (script) =>
-          script.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          script.description.toLowerCase().includes(searchTerm.toLowerCase())
+          script.name.toLowerCase().includes(currentSearchTerm.toLowerCase()) ||
+          script.description.toLowerCase().includes(currentSearchTerm.toLowerCase())
       )
     }
 
     // Add enabled filter
-    if (showEnabledOnly) {
+    if (currentShowEnabledOnly) {
       filtered = filtered.filter((script) => script.enabled)
     }
 
     return filtered
-  }, [filter, _scripts, searchTerm, showEnabledOnly])
+  }, [currentFilter, _scripts, currentSearchTerm, currentShowEnabledOnly])
 
   const {
     deleteExtension,
@@ -237,7 +236,7 @@ export const ScriptPage = () => {
         <ScrollArea className="h-full">
           {extensionTypes.map((type) => {
             const Icon = type.icon
-            const isActive = filter === type.id
+            const isActive = currentFilter === type.id
             const count =
               type.id === "all"
                 ? _scripts.length
@@ -252,7 +251,7 @@ export const ScriptPage = () => {
                     ? "bg-primary text-primary-foreground"
                     : "hover:bg-muted"
                 )}
-                onClick={() => setFilter(type.id)}
+                onClick={() => handleSetFilter(type.id)}
               >
                 <Icon size={18} />
                 <span className="flex-1 text-left">{type.name}</span>
@@ -267,7 +266,7 @@ export const ScriptPage = () => {
       <div className="flex-1">
         <div className="flex items-center justify-between p-4">
           <div className="text-lg font-semibold">
-            {extensionTypes.find((t) => t.id === filter)?.name ||
+            {extensionTypes.find((t) => t.id === currentFilter)?.name ||
               "All Extensions"}
           </div>
           <div className="flex items-center gap-2">
@@ -280,15 +279,15 @@ export const ScriptPage = () => {
               </Label>
               <Switch
                 id="enabled-only"
-                checked={showEnabledOnly}
-                onCheckedChange={setShowEnabledOnly}
+                checked={currentShowEnabledOnly}
+                onCheckedChange={handleSetShowEnabledOnly}
               />
             </div>
             <Input
               className="h-[32px] w-[200px]"
               placeholder="Search extension..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              value={currentSearchTerm}
+              onChange={(e) => handleSetSearchTerm(e.target.value)}
             />
             <Button
               variant="outline"

@@ -11,7 +11,6 @@ import { IData } from "./interface";
 
 
 
-
 /**
  * handle chat api for frontend, use with `useChat` hook in ai sdk
  * @param data 
@@ -56,7 +55,6 @@ export async function handleChatApi(
     baseUrl,
     type: data.type
   })
-
 
   console.log("clientMessages", clientMessages)
   const dataspace = space && await ctx?.getDataspace(space)

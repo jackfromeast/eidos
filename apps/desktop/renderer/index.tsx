@@ -1,6 +1,8 @@
 import React from "react"
 import ReactDOM from "react-dom/client"
 import { RouterProvider, createBrowserRouter, redirect } from "react-router-dom"
+import { QueryParamProvider } from "use-query-params"
+import { ReactRouter6Adapter } from "use-query-params/adapters/react-router-6"
 
 import SettingsStoragePage from "@/apps/desktop/renderer/settings/storage/page"
 import NodePage from "@/apps/web-app/[database]/[node]/page"
@@ -45,10 +47,17 @@ import BlockPage from "./[database]/standalone-blocks/page"
 // extensions
 import RootLayout from "./layout"
 
+// Create a wrapper component that includes QueryParamProvider
+const AppWithQueryParams = () => (
+  <QueryParamProvider adapter={ReactRouter6Adapter}>
+    <RootLayout />
+  </QueryParamProvider>
+)
+
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <RootLayout />,
+    element: <AppWithQueryParams />,
     errorElement: <ErrorBoundary />,
     children: [
       {

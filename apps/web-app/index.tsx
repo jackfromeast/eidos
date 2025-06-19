@@ -1,6 +1,8 @@
 import React from "react"
 import ReactDOM from "react-dom/client"
 import { RouterProvider, createBrowserRouter, redirect } from "react-router-dom"
+import { QueryParamProvider } from "use-query-params"
+import { ReactRouter6Adapter } from "use-query-params/adapters/react-router-6"
 
 import NodePage from "@/apps/web-app/[database]/[node]/page"
 import EverydayPage from "@/apps/web-app/[database]/everyday/[day]/page"
@@ -42,10 +44,17 @@ import { ProviderPage } from "./settings/ai/provider/page"
 import SettingsApiKeyPage from "./settings/api-key/page"
 import { DevtoolsPage } from "./settings/dev/page"
 
+// Create a wrapper component that includes QueryParamProvider
+const AppWithQueryParams = () => (
+  <QueryParamProvider adapter={ReactRouter6Adapter}>
+    <RootLayout />
+  </QueryParamProvider>
+)
+
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <RootLayout />,
+    element: <AppWithQueryParams />,
     errorElement: <ErrorBoundary />,
     children: [
       {
