@@ -1,13 +1,12 @@
-import { getProvider } from "@/lib/ai/helper";
-import { CoreUserMessage, LanguageModelV1, Tool, convertToCoreMessages, createDataStreamResponse, extractReasoningMiddleware, jsonSchema, smoothStream, streamText, wrapLanguageModel } from "ai";
+import { getProvider } from "@/packages/ai/helper";
+import { LanguageModelV1, Message, Tool, appendClientMessage, appendResponseMessages, createDataStreamResponse, extractReasoningMiddleware, jsonSchema, smoothStream, streamText, wrapLanguageModel } from "ai";
 
 
 // import { queryEmbedding } from "../routes/lib"
-import { isDesktopMode } from "@/lib/env";
 import { uuidv7 } from "@/lib/utils";
 import { DataSpace } from "@/packages/core/DataSpace";
 import { ChatMessage } from "@/packages/core/meta-table/message";
-import { generateTitleFromUserMessage, getChatById, getChatMessages, getLastAssistantMessage, getMostRecentUserMessage, isReloadScenario, saveChat, saveMessages, updateChatTitle, updateMessage } from "./helper";
+import { combineAssistantMessage, generateTitleFromUserMessage, getChatById, getMessagesByChatId, getTrailingMessageId, saveChat, saveMessages, updateChatTitle } from "./helper";
 import { IData } from "./interface";
 
 
@@ -25,10 +24,9 @@ export async function handleChatApi(
     getDataspace: (space: string) => Promise<DataSpace | null>
   }
 ) {
-  // only use functions on desktop app
-  let useFunctions = isDesktopMode
   const {
-    messages,
+    message,
+    messages: clientMessages,
     apiKey,
     baseUrl,
     systemPrompt,
@@ -41,7 +39,8 @@ export async function handleChatApi(
     tools,
     chunking = 'line'
   } = data
-
+  // console.log("data", data)
+  // console.log("message", message)
   // now tools defined in `tools` field will be used, It comes from `useChat` hook in ai sdk
   const _tools: Record<string, Tool> = {}
 
@@ -58,25 +57,8 @@ export async function handleChatApi(
     type: data.type
   })
 
-  const lastMsg = messages[messages.length - 1]
-  let newMsgs = messages
-  if (systemPrompt?.length) {
-    newMsgs = [
-      {
-        id: "system",
-        role: "system" as const,
-        content: systemPrompt,
-      },
-      ...messages,
-    ]
-  }
 
-  const coreMessages = convertToCoreMessages(newMsgs);
-  const userMessage = getMostRecentUserMessage(coreMessages);
-  if (!userMessage) {
-    return new Response('No user message found', { status: 400 });
-  }
-
+  console.log("clientMessages", clientMessages)
   const dataspace = space && await ctx?.getDataspace(space)
 
   const llmodelForTextTask = textModel && getProvider({
@@ -86,14 +68,23 @@ export async function handleChatApi(
   })(textModel.modelId.split("@")[0]) as LanguageModelV1
 
   const llmodel = provider(model ?? "gpt-3.5-turbo-0125") as LanguageModelV1
-  let isReload = false
-  let lastAssistantMessageId = ""
+
+  let messages: Message[] = clientMessages
   if (dataspace) {
+    const previousMessages = await getMessagesByChatId(id, dataspace);
+
+    messages = appendClientMessage({
+      // @ts-expect-error: todo add type conversion from DBMessage[] to UIMessage[]
+      messages: previousMessages,
+      message,
+    });
+
+
     const chat = await getChatById(id, dataspace);
     const getTitle = () => {
       if (llmodelForTextTask) {
         try {
-          return generateTitleFromUserMessage({ message: userMessage as CoreUserMessage, model: llmodelForTextTask })
+          return generateTitleFromUserMessage({ message, model: llmodelForTextTask })
         } catch (error) {
           console.error("Failed to generate title", error)
           return 'error generating title'
@@ -101,12 +92,7 @@ export async function handleChatApi(
       }
       return 'untitle'
     }
-    console.log("userMessage", {
-      userMessage,
-      space,
-      id,
-      chat,
-    })
+
     if (!chat) {
       const title = await getTitle();
       await saveChat({ id, projectId, title }, dataspace);
@@ -116,17 +102,18 @@ export async function handleChatApi(
       await updateChatTitle(id, title, dataspace);
     }
 
-    // Check if this is a reload scenario
-    isReload = await isReloadScenario(messages as ChatMessage[], dataspace, id);
-    console.log('Is reload scenario:', isReload);
-    // Only save user message if it's not a reload
-    if (!isReload) {
-      await saveMessages({
-        messages: [
-          { ...userMessage, id: uuidv7(), chat_id: id } as ChatMessage,
-        ],
-      }, dataspace);
-    }
+    await saveMessages({
+      messages: [
+        {
+          id: message.id,
+          chat_id: id,
+          content: message.content,
+          role: message.role,
+          parts: message.parts,
+        } as ChatMessage,
+      ],
+    }, dataspace);
+
   }
 
 
@@ -134,52 +121,72 @@ export async function handleChatApi(
   return createDataStreamResponse({
     execute: dataStream => {
       dataStream.writeData('initialized call');
-      let request: Parameters<typeof streamText>[0] = {
+      const result = streamText({
         model: wrapLanguageModel({
           model: llmodel,
           middleware: extractReasoningMiddleware({ tagName: 'think' })
         }),
+        system: systemPrompt,
         experimental_transform: smoothStream({
           delayInMs: 20,
           chunking
         }),
-        messages: coreMessages,
-        onFinish: async ({ text }) => {
+        experimental_generateMessageId: uuidv7,
+        messages: messages,
+        tools: _tools,
+        onFinish: async ({ response }) => {
           try {
-            if (dataspace) {
-              if (isReload) {
-                const lastAssistantMessage = await getLastAssistantMessage(id, dataspace)
-                await updateMessage({
-                  id: lastAssistantMessage.id,
-                  chat_id: id,
-                  role: "assistant",
-                  content: text,
-                }, dataspace);
-              } else {
-                await saveMessages({
-                  messages: [{
-                    id: uuidv7(),
-                    chat_id: id,
-                    role: "assistant",
-                    content: text,
-                  }],
-                }, dataspace);
-              }
-
+            if (!dataspace) {
+              return;
             }
+            const assistantId = getTrailingMessageId({
+              messages: response.messages.filter(
+                (message) => message.role === 'assistant',
+              ),
+            });
+            console.log("assistantId", assistantId)
+
+            if (!assistantId) {
+              throw new Error('No assistant message found!');
+            }
+
+            let [, assistantMessage] = appendResponseMessages({
+              messages: [message],
+              responseMessages: response.messages,
+            });
+
+            if (!assistantMessage) {
+              const combinedMessage = combineAssistantMessage(message, response.messages[0])
+              await saveMessages({
+                messages: [
+                  {
+                    id: combinedMessage.id,
+                    chat_id: id,
+                    role: 'assistant',
+                    content: combinedMessage.content,
+                    parts: combinedMessage.parts as any,
+                  },
+                ],
+              }, dataspace);
+              return;
+            }
+            await saveMessages({
+              messages: [
+                {
+                  id: assistantId,
+                  chat_id: id,
+                  content: assistantMessage.content,
+                  role: assistantMessage.role,
+                  parts: assistantMessage.parts,
+                },
+              ],
+            }, dataspace);
           } catch (error) {
             console.error('Failed to save chat');
           }
         },
-      }
-      if (useFunctions) {
-        request = {
-          ...request,
-          tools: _tools,
-          toolChoice: "auto",
-        }
-      }
-      const result = streamText(request)
+      })
+      result.consumeStream();
       result.mergeIntoDataStream(dataStream, {
         sendReasoning: true
       });

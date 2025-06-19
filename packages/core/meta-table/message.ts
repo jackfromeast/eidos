@@ -1,6 +1,7 @@
-import { BaseTable, BaseTableImpl } from "./base"
 import { ChatTableName, MessageTableName } from "@/lib/sqlite/const"
 import { createTriggersForFields } from "@/lib/sqlite/sql-meta-table-trigger"
+import { Message } from "ai"
+import { BaseTable, BaseTableImpl } from "./base"
 
 
 export type ChatMessage = {
@@ -8,6 +9,7 @@ export type ChatMessage = {
   chat_id: string
   role: string
   content: string
+  parts: Message['parts']
   created_at?: string
 }
 
@@ -20,6 +22,7 @@ export class MessageTable extends BaseTableImpl<ChatMessage> implements BaseTabl
     role TEXT,
     content TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    parts TEXT,
     FOREIGN KEY(chat_id) REFERENCES ${ChatTableName}(id)
   );
 
@@ -27,6 +30,7 @@ export class MessageTable extends BaseTableImpl<ChatMessage> implements BaseTabl
     'id', 'chat_id', 'role', 'content', 'created_at'
   ])}
   `
+  JSONFields: string[] = ['parts']
 
   async deleteMessagesByChatId(chatId: string) {
     const sql = `DELETE FROM ${this.name} WHERE chat_id = ?`;

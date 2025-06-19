@@ -73,7 +73,8 @@ export const useAIChatData = () => {
             content: m.content,
             role: m.role as Message["role"],
             createdAt: new Date(m.created_at + 'Z'),
-            chat_id: m.chat_id
+            chat_id: m.chat_id,
+            parts: m.parts
         })) || []
         return messages as Message[]
     }, [currentChat])

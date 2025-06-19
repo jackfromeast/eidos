@@ -1,4 +1,4 @@
-import { LanguageModelV1, generateText, type CoreUserMessage, CoreToolMessage, CoreAssistantMessage } from 'ai';
+import { LanguageModelV1, generateText, type CoreUserMessage, CoreToolMessage, CoreAssistantMessage, UIMessage } from 'ai';
 
 
 import { CoreMessage } from "ai";
@@ -19,6 +19,31 @@ export async function getChatById(id: string, dataspace: DataSpace) {
     return chat
 }
 
+export async function getMessagesByChatId(id: string, dataspace: DataSpace) {
+    const messages = await dataspace.message.list({ chat_id: id }, {
+        orderBy: "created_at",
+        order: "ASC"
+    })
+    return messages
+}
+
+type ResponseMessageWithoutId = CoreToolMessage | CoreAssistantMessage;
+type ResponseMessage = ResponseMessageWithoutId & { id: string };
+
+export function getTrailingMessageId({
+    messages,
+}: {
+    messages: Array<ResponseMessage>;
+}): string | null {
+    const trailingMessage = messages.at(-1);
+
+    if (!trailingMessage) return null;
+
+    return trailingMessage.id;
+}
+
+
+
 export async function saveChat(data: { id: string, title?: string, projectId?: string }, dataspace: DataSpace) {
     await dataspace.chat.add({ id: data.id, title: data.title, project_id: data.projectId })
 }
@@ -26,10 +51,38 @@ export async function updateChatTitle(id: string, title: string, dataspace: Data
     await dataspace.chat.set(id, { title })
 }
 
-export async function saveMessages(messages: { messages: ChatMessage[] }, dataspace: DataSpace) {
-    await dataspace.message.add(messages.messages[0])
+
+async function createOrUpdateMessage(message: ChatMessage, dataspace: DataSpace) {
+    const existingMessage = await dataspace.message.get(message.id)
+    if (existingMessage) {
+        await dataspace.message.set(message.id, message)
+    } else {
+        await dataspace.message.add(message)
+    }
 }
 
+export async function saveMessages(messages: { messages: ChatMessage[] }, dataspace: DataSpace) {
+    try {
+        const message = messages.messages[0]
+        await createOrUpdateMessage(message, dataspace)
+    } catch (error) {
+        // throw new Error('Failed to save messages');
+        console.error('Failed to save messages', error)
+    }
+}
+
+
+export const combineAssistantMessage = (uiMessage: UIMessage, message: ResponseMessage) => {
+    if (uiMessage.role === 'assistant' && message.role === 'assistant') {
+        return {
+            id: uiMessage.id,
+            role: uiMessage.role,
+            content: uiMessage.content,
+            parts: [...uiMessage.parts, ...message.content],
+        }
+    }
+    throw new Error('Invalid message role')
+}
 export async function updateMessage(message: ChatMessage, dataspace: DataSpace) {
     await dataspace.message.set(message.id, message)
 }
@@ -73,7 +126,7 @@ export async function generateTitleFromUserMessage({
     message,
     model,
 }: {
-    message: CoreUserMessage;
+    message: UIMessage;
     model: LanguageModelV1;
 }) {
     const { text: title } = await generateText({

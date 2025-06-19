@@ -49,6 +49,7 @@ export const commands = [
       },
     },
     asTableAction: true, // if true, the command can be called as a table action
+    asTool: true, // if true, theme command can be called as a tool for LLM
   },
 ]
 ```

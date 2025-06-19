@@ -1,17 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useChat } from "@/packages/ai"
 import { IEmbedding } from "@/packages/core/meta-table/embedding"
-import { useChat } from "ai/react"
-import { Paintbrush, PaperclipIcon, PauseIcon } from "lucide-react"
+import { Paintbrush, PauseIcon } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { useWindowSize } from "usehooks-ts"
 
 import { EIDOS_CHAT_PROJECT_ID } from "@/lib/const"
 import { ITreeNode } from "@/lib/store/ITreeNode"
 import { useAppStore } from "@/lib/store/app-store"
+import { cn, uuidv7 } from "@/lib/utils"
 import { useAiConfig } from "@/hooks/use-ai-config"
 import { useAIFunctions } from "@/hooks/use-ai-functions"
 import { useAllPrompts } from "@/hooks/use-all-prompts"
-import { useAllTools } from "@/hooks/use-all-tools"
 import { useCurrentExtension, useCurrentNode } from "@/hooks/use-current-node"
 import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
 import { Button } from "@/components/ui/button"
@@ -28,9 +28,9 @@ import { Label } from "../ui/label"
 import { Switch } from "../ui/switch"
 import { AIChatAttachments } from "./ai-chat-attachments"
 import { AIModelSelect } from "./ai-chat-model-select"
-import { AIChatPromptSelect } from "./ai-chat-prompt-select"
 import { AIContextNodes } from "./ai-context-nodes"
 import { AIInputEditor, AIInputEditorRef } from "./ai-input-editor"
+import { AIToolsConfig, useFilteredTools, useMaxSteps } from "./ai-tools-config"
 import { useAIChatData } from "./hooks/use-ai-chat-data"
 import { useAttachments } from "./hooks/use-attachments"
 import { useSystemPrompt } from "./hooks/use-system-prompt"
@@ -42,6 +42,7 @@ export default function Chat() {
   const loadingRef = useRef<HTMLDivElement>(null)
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const aiInputEditorRef = useRef<AIInputEditorRef>(null)
+  const currentExtension = useCurrentExtension()
 
   const currentNode = useCurrentNode()
   const { prompts } = useAllPrompts()
@@ -68,6 +69,9 @@ export default function Chat() {
   const { aiModel, setAIModel } = useAppStore()
   const { space } = useCurrentPathInfo()
 
+  const filteredTools = useFilteredTools()
+  const maxSteps = useMaxSteps()
+
   const disableInput = useMemo(
     () => !aiModel?.length || !systemPrompt?.length,
     [aiModel, systemPrompt]
@@ -83,7 +87,7 @@ export default function Chat() {
 
   useEffect(() => {
     if (currentNode) {
-      setContextNodes([currentNode])
+      setContextNodes([currentNode as ITreeNode])
     }
   }, [])
 
@@ -97,8 +101,6 @@ export default function Chat() {
     }
   }, [aiModel, getConfigByModel])
 
-  const tools = useAllTools()
-
   const { messages, setMessages, reload, append, isLoading, stop } = useChat({
     initialMessages: chatMessages,
     onToolCall: async (thisCall) => {
@@ -109,6 +111,18 @@ export default function Chat() {
       console.log("toolCall", toolCall, res)
       return res
     },
+    experimental_prepareRequestBody: (body) => ({
+      message: body.messages.at(-1),
+      ...config,
+      systemPrompt,
+      model: aiModel,
+      tools: filteredTools,
+      useTools: enableTools,
+      id: chatId,
+      projectId: EIDOS_CHAT_PROJECT_ID,
+      space,
+      textModel: textModelConfig,
+    }),
     // onFinish(message) {},
     onError(error) {
       console.log("error:", error)
@@ -117,19 +131,13 @@ export default function Chat() {
         description: t("common.error.modelLimitation"),
       })
     },
-    body: {
-      ...config,
-      systemPrompt,
-      model: aiModel,
-      tools: tools,
-      useTools: enableTools,
-      id: chatId,
-      projectId: EIDOS_CHAT_PROJECT_ID,
-      space,
-      textModel: textModelConfig,
-    },
+    maxSteps,
+    experimental_throttle: 100,
+    sendExtraMessageFields: true,
+    generateId: uuidv7,
   })
 
+  console.log("messages", messages)
   const handleReload = async () => {
     await reload()
   }
@@ -294,7 +302,12 @@ export default function Chat() {
           contextNodes={contextNodes}
           onRemoveNode={removeContextNode}
         />
-        <div className="flex flex-col mt-2">
+        <div
+          className={cn(
+            "flex flex-col mt-2 border-2 ",
+            currentExtension ? "border-primary" : "border-secondary"
+          )}
+        >
           <AIInputEditor
             ref={aiInputEditorRef}
             enableRAG={withSpaceData}
@@ -308,14 +321,8 @@ export default function Chat() {
             setAttachments={setAttachments}
             uploadQueue={uploadQueue}
           />
-          <div className="flex items-center gap-1  bg-card rounded-b-sm justify-between border border-t-0">
+          <div className="flex items-center gap-1  bg-card rounded-b-sm justify-between">
             <div className="flex items-center gap-1">
-              <AIChatPromptSelect
-                value={currentSysPrompt}
-                onValueChange={setCurrentSysPrompt}
-                promptKeys={["base"]}
-                prompts={prompts}
-              />
               <AIModelSelect
                 onValueChange={setAIModel}
                 value={aiModel}
@@ -331,14 +338,15 @@ export default function Chat() {
                   <PauseIcon className="h-5 w-5" />
                 </Button>
               )}
-              <Button
+              <AIToolsConfig isLoading={isLoading} />
+              {/* <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isLoading}
               >
                 <PaperclipIcon className="h-5 w-5" />
-              </Button>
+              </Button> */}
               <Button variant="ghost" onClick={cleanMessages} size="sm">
                 <Paintbrush className="h-5 w-5" />
               </Button>

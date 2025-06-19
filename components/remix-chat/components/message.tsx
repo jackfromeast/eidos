@@ -4,17 +4,16 @@ import { useState, type Dispatch, type SetStateAction } from "react"
 import type { Message } from "ai"
 import cx from "classnames"
 import { motion } from "framer-motion"
-import { BookOpenTextIcon } from "lucide-react"
-import { Link } from "react-router-dom"
 
 import type { Vote } from "../interface"
 import type { UIBlock } from "./block"
-import { DocumentToolCall, DocumentToolResult } from "./document"
 import { SparklesIcon } from "./icons"
 import { Markdown } from "./markdown"
 import { MessageActions } from "./message-actions"
+import { MessageReasoning } from "./message-reasoning"
 import { PreviewAttachment } from "./preview-attachment"
-import { Weather } from "./weather"
+import { ToolCallResult } from "./tool-call-result"
+import { ToolCallSkeleton } from "./tool-call-skeleton"
 
 export const PreviewMessage = ({
   chatId,
@@ -37,8 +36,6 @@ export const PreviewMessage = ({
   onRegenerate?: () => void
   isLastMessage?: boolean
 }) => {
-  const [isReasoningExpanded, setIsReasoningExpanded] = useState(false)
-
   return (
     <motion.div
       className="w-full mx-auto max-w-3xl px-4 group/message"
@@ -69,133 +66,69 @@ export const PreviewMessage = ({
         )}
 
         <div className="flex flex-col gap-2 w-full min-w-0">
-          {message.reasoning && (
-            <div
-              className="text-sm text-muted-foreground bg-muted/50 rounded-lg p-3 border border-border/50 cursor-pointer"
-              onClick={() => setIsReasoningExpanded(!isReasoningExpanded)}
-            >
-              <div className="flex items-center gap-2 mb-1.5 text-xs uppercase tracking-wider font-medium">
-                <motion.div
-                  animate={{
-                    scale: [1, 1.2, 1],
-                    transition: { duration: 2, repeat: Infinity },
-                  }}
-                >
-                  💭
-                </motion.div>
-                Thought Process
-                <span className="ml-auto text-xs">
-                  {isReasoningExpanded ? "▼" : "▶"}
-                </span>
-              </div>
-              <div
-                className={cx(
-                  "leading-relaxed whitespace-pre-wrap overflow-hidden transition-all duration-200",
-                  isReasoningExpanded ? "max-h-[1000px]" : "max-h-0"
-                )}
-                onClick={(e) => e.stopPropagation()}
-              >
-                {message.reasoning}
-              </div>
-            </div>
-          )}
+          {message.parts?.map((part, index) => {
+            const { type } = part
+            const key = `message-${message.id}-part-${index}`
 
-          {message.content && (
-            <div
-              className={cx(
-                "flex flex-col gap-4 w-full",
-                message.role === "user" ? "break-all" : "break-words"
-              )}
-            >
-              <div className="w-full [&_pre]:overflow-x-auto [&_pre]:max-w-full [&_pre]:rounded-lg">
-                <Markdown>{message.content as string}</Markdown>
-              </div>
-            </div>
-          )}
+            if (type === "reasoning") {
+              return (
+                <MessageReasoning
+                  key={key}
+                  isLoading={isLoading}
+                  reasoning={part.reasoning}
+                />
+              )
+            }
 
-          {message.toolInvocations && message.toolInvocations.length > 0 && (
-            <div className="flex flex-col gap-4">
-              {message.toolInvocations.map((toolInvocation) => {
-                const { toolName, toolCallId, state, args } = toolInvocation
-                if (state === "result") {
-                  const { result } = toolInvocation
+            if (type === "tool-invocation") {
+              const { toolInvocation } = part
+              const { toolName, toolCallId, state } = toolInvocation
 
-                  return (
-                    <div key={toolCallId}>
-                      {toolName === "createDoc" ? (
-                        <div>
-                          <Link
-                            to={result}
-                            className="p-1 flex gap-2 text-blue-400"
-                          >
-                            <BookOpenTextIcon></BookOpenTextIcon>
-                            {args.title}
-                          </Link>
-                        </div>
-                      ) : toolName === "getWeather" ? (
-                        <Weather weatherAtLocation={result} />
-                      ) : toolName === "createDocument" ? (
-                        <DocumentToolResult
-                          type="create"
-                          result={result}
-                          block={block}
-                          setBlock={setBlock}
-                        />
-                      ) : toolName === "updateDocument" ? (
-                        <DocumentToolResult
-                          type="update"
-                          result={result}
-                          block={block}
-                          setBlock={setBlock}
-                        />
-                      ) : toolName === "requestSuggestions" ? (
-                        <DocumentToolResult
-                          type="request-suggestions"
-                          result={result}
-                          block={block}
-                          setBlock={setBlock}
-                        />
-                      ) : (
-                        <div className="flex flex-col gap-2">
-                          <div className="text-sm text-muted-foreground bg-muted/50 rounded-lg p-3 border border-border/50">
-                            {toolName}
-                            <div className="text-xs text-muted-foreground">
-                              {JSON.stringify(args, null, 2)}
-                            </div>
-                            <div className="text-xs text-muted-foreground whitespace-pre-wrap break-words overflow-wrap-anywhere">
-                              {JSON.stringify(result, null, 2)}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )
-                }
+              if (state === "call") {
+                const { args } = toolInvocation
                 return (
-                  <div
+                  <ToolCallSkeleton
                     key={toolCallId}
-                    className={cx({
-                      skeleton: ["getWeather"].includes(toolName),
-                    })}
-                  >
-                    {toolName === "getWeather" ? (
-                      <Weather />
-                    ) : toolName === "createDocument" ? (
-                      <DocumentToolCall type="create" args={args} />
-                    ) : toolName === "updateDocument" ? (
-                      <DocumentToolCall type="update" args={args} />
-                    ) : toolName === "requestSuggestions" ? (
-                      <DocumentToolCall
-                        type="request-suggestions"
-                        args={args}
-                      />
-                    ) : null}
-                  </div>
+                    toolName={toolName}
+                    toolCallId={toolCallId}
+                    args={args}
+                  />
                 )
-              })}
-            </div>
-          )}
+              }
 
+              if (state === "result") {
+                const { result } = toolInvocation
+                const { toolName, toolCallId, args } = toolInvocation
+
+                return (
+                  <ToolCallResult
+                    key={toolCallId}
+                    toolName={toolName}
+                    toolCallId={toolCallId}
+                    args={args}
+                    result={result}
+                    block={block}
+                    setBlock={setBlock}
+                  />
+                )
+              }
+            }
+
+            if (type === "text") {
+              return (
+                <div
+                  className={cx(
+                    "flex flex-col gap-4 w-full",
+                    message.role === "user" ? "break-all" : "break-words"
+                  )}
+                >
+                  <div className="w-full [&_pre]:overflow-x-auto [&_pre]:max-w-full [&_pre]:rounded-lg">
+                    <Markdown>{part.text as string}</Markdown>
+                  </div>
+                </div>
+              )
+            }
+          })}
           {message.experimental_attachments && (
             <div className="flex flex-row gap-2">
               {message.experimental_attachments.map((attachment) => (

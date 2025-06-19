@@ -7,7 +7,7 @@ import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
 import { useDocEditor } from "@/hooks/use-doc-editor"
 import { useSqlite } from "@/hooks/use-sqlite"
 import { ITreeNode } from "@/lib/store/ITreeNode"
-import { getRawTableNameById } from "@/lib/utils"
+import { getRawTableNameById, getTableIdByRawTableName } from "@/lib/utils"
 import systemPromptRaw from "./prompt.md?raw"
 
 import docPluginPrompt from "@/lib/v3/prompts/built-in-remix-prompt-for-doc-plugin.md?raw"
@@ -43,6 +43,7 @@ export const useAdditionalData = (
     const { space } = useCurrentPathInfo()
     const currentNode = useCurrentNode()
     const [_map, { set, reset, get }] = useMap<string, string>()
+    const [_tableMap, { set: setTable, reset: resetTable, get: getTable }] = useMap<string, string>()
     const { sqlite } = useSqlite()
     const { getDocMarkdown } = useDocEditor(sqlite)
 
@@ -70,12 +71,47 @@ export const useAdditionalData = (
         loadDocs()
     }, [docs, getDocMarkdown, set])
 
+    useEffect(() => {
+        async function loadTableSchemas() {
+            if (!sqlite) return
+
+            console.log(tables)
+            for (const tableName of tables) {
+                try {
+                    // Get table schema using PRAGMA table_info
+                    const columns = await sqlite.listUiColumns(tableName)
+                    /**
+                     *   name: string
+  type: FieldType
+  table_column_name: string
+  table_name: string
+  property: T
+  created_at?: string
+  updated_at?: string
+                     */
+                    console.log('columns', columns)
+                    const schemaText = columns.map((col) =>
+                        `${col.name}`
+                    ).join('\n')
+
+                    setTable(tableName, schemaText)
+                } catch (error) {
+                    console.warn(`Failed to load schema for table ${tableName}:`, error)
+                }
+            }
+        }
+        loadTableSchemas()
+    }, [tables, sqlite, setTable])
+
     const additionalData = useMemo(() => {
         return `
   <additional_data>
   <attached_docs>
   ${Array.from(_map.entries()).map(([key, value]) => `<doc id="${key}" title="${contextNodes.find(node => node.id === key)?.name}">\n${value}\n</doc>`).join("\n")}
   </attached_docs>
+  <attached_tables>
+  ${Array.from(_tableMap.entries()).map(([tableName, schema]) => `<table id="${getTableIdByRawTableName(tableName)}" name="${tableName}" title="${contextNodes.find(node => getRawTableNameById(node.id) === tableName)?.name}">\n${schema}\n</table>`).join("\n")}
+  </attached_tables>
   </additional_data>
   <use_info>
 ${currentNode ? ` <current_node id="${currentNode?.id}" name="${currentNode?.name}" type="${currentNode?.type}" />` : ""
@@ -83,7 +119,7 @@ ${currentNode ? ` <current_node id="${currentNode?.id}" name="${currentNode?.nam
   <current_space id="${space}" name="${space}" />
   </use_info>
   `
-    }, [_map, contextNodes, currentNode, space])
+    }, [_map, _tableMap, contextNodes, currentNode, space])
 
     return additionalData
 }

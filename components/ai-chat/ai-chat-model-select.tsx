@@ -86,10 +86,10 @@ export function AIModelSelect({
           role="combobox"
           aria-expanded={open}
           size={size}
-          className={cn("grow justify-between ", className)}
+          className={cn("grow gap-1", className)}
         >
           <p
-            className="w-[200px] truncate"
+            className="max-w-[200px] truncate"
             title={currentModel || "Select model..."}
           >
             {value ? currentModel : "Select model..."}

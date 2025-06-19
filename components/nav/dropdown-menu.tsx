@@ -1,4 +1,3 @@
-import { useCallback, useState } from "react"
 import {
   CogIcon,
   CommandIcon,
@@ -12,24 +11,15 @@ import {
   MoreHorizontal,
   MoveHorizontal,
   PackageIcon,
-  ScanTextIcon,
-  Trash2Icon,
+  Trash2Icon
 } from "lucide-react"
+import { useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Link, useNavigate } from "react-router-dom"
 
-import { BGEM3 } from "@/lib/ai/llm_vendors/bge"
-import { DOMAINS } from "@/lib/const"
-import { EIDOS_VERSION, isDesktopMode } from "@/lib/env"
-import { useAppRuntimeStore } from "@/lib/store/runtime-store"
-import { isDayPageId } from "@/lib/utils"
-import { useCurrentNode } from "@/hooks/use-current-node"
-import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
-import { useEmbedding } from "@/hooks/use-embedding"
-import { useHnsw } from "@/hooks/use-hnsw"
-import { useOpenInPlayground } from "@/hooks/use-open-in-playground"
-import { useSqlite } from "@/hooks/use-sqlite"
-import { useVCardEmail } from "@/hooks/use-vcard-email"
+import { useExperimentConfigStore } from "@/apps/web-app/settings/experiment/store"
+import { DiscordIcon } from "@/components/icons/discord"
+import { NodeUpdateTime } from "@/components/nav/node-update-time"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -51,9 +41,17 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { DiscordIcon } from "@/components/icons/discord"
-import { NodeUpdateTime } from "@/components/nav/node-update-time"
-import { useExperimentConfigStore } from "@/apps/web-app/settings/experiment/store"
+import { useCurrentNode } from "@/hooks/use-current-node"
+import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
+import { useEmbedding } from "@/hooks/use-embedding"
+import { useHnsw } from "@/hooks/use-hnsw"
+import { useOpenInPlayground } from "@/hooks/use-open-in-playground"
+import { useSqlite } from "@/hooks/use-sqlite"
+import { useVCardEmail } from "@/hooks/use-vcard-email"
+import { DOMAINS } from "@/lib/const"
+import { EIDOS_VERSION, isDesktopMode } from "@/lib/env"
+import { useAppRuntimeStore } from "@/lib/store/runtime-store"
+import { isDayPageId } from "@/lib/utils"
 
 import { CopyShowHide } from "../copy-show-hide"
 import { NodeMoveInto } from "../node-menu/move-into"

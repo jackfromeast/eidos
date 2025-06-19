@@ -8,5 +8,10 @@ export default async function handle(event: FetchEvent, ctx?: {
   getDataspace: (space: string) => Promise<DataSpace | null>
 }) {
   const data = (await event.request.json()) as IData
-  return handleChatApi(data, ctx)
+  // if request is post execute, then return 200 immediately
+  if (event.request.method === "POST") {
+    return handleChatApi(data, ctx)
+  }
+  console.log("request", event.request)
+  return new Response(JSON.stringify({ message: "OK" }), { status: 200 })
 }
