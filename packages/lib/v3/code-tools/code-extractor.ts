@@ -1,6 +1,11 @@
 import { parseSync } from '@oxc-parser/wasm';
 
 function extractFunction(code: string, functionName: string): string | null {
+    // Quick check: if function name doesn't exist in code, return null immediately
+    if (!code.includes(functionName)) {
+        return null;
+    }
+
     const ast = parseSync(code, {
         sourceType: 'module',
         sourceFilename: 'file.tsx',
@@ -19,6 +24,11 @@ function extractFunction(code: string, functionName: string): string | null {
 }
 
 function extractConstant(code: string, constantName: string): any {
+    // Quick check: if constant name doesn't exist in code, return null immediately
+    if (!code.includes(constantName)) {
+        return null;
+    }
+
     const ast = parseSync(code, {
         sourceType: 'module',
         sourceFilename: 'file.tsx',
