@@ -39,6 +39,23 @@ export const NavStatus = () => {
 
   return (
     <>
+      {runningCommand && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="animate-spin">
+                <Cog className="h-5 w-5 text-blue-500" />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>
+                <span className="font-semibold">{runningCommand}</span> is
+                running
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
       <SyncStatusIndicator />
       <AvatarList nameList={nameList} />
       {Boolean(currentNode?.is_locked) && (
@@ -105,23 +122,6 @@ export const NavStatus = () => {
             </TooltipProvider>
           </>
         )}
-      {runningCommand && (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="animate-spin">
-                <Cog className="h-5 w-5 text-blue-500" />
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>
-                <span className="font-semibold">{runningCommand}</span> is
-                running
-              </p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      )}
     </>
   )
 }

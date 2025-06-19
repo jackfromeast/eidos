@@ -1,7 +1,12 @@
 import { Tool } from "ai"
 import { useMemo } from "react"
 import { useAllScripts } from "./use-all-scripts"
+import { createRecordsTool } from "./tools/table"
 
+
+const builtInTools = {
+    createRecords: createRecordsTool,
+}
 export const useAllTools = () => {
     const scripts = useAllScripts()
     const commands = scripts.filter(script => script.commands && script.commands.length > 0)
@@ -25,7 +30,7 @@ export const useAllTools = () => {
             id: `${tool.scriptId}.${tool.name}` as `${string}.${string}`,
         }
         return acc
-    }, {} as Record<string, Tool>), [tools])
+    }, builtInTools as Record<string, Tool>), [tools])
 
     return _tools
 }

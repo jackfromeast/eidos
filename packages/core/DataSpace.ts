@@ -638,6 +638,14 @@ export class DataSpace {
     return await this.column.updateProperty(data)
   }
 
+  public async createRecords(table_id: string, records: Record<string, any>[]) {
+    const tm = new TableManager(table_id, this)
+    const res = await tm.rows.batchCreate(records, {
+      returnReadableData: true
+    })
+    return res
+  }
+
   @timeit(100)
   public async addRow(
     tableName: string,

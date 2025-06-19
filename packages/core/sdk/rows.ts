@@ -284,6 +284,24 @@ export class RowsManager {
     return createDatas
   }
 
+  async batchCreate(
+    datas: Record<string, any>[],
+    options?: {
+      useFieldId?: boolean,
+      returnReadableData?: boolean
+    }
+  ) {
+    const fieldMap = await this.getFieldMap()
+
+    const res = this.batchSyncCreate(datas, fieldMap, options)
+    if (options?.returnReadableData) {
+      const { fieldRawColumnNameFieldMap } = await this.getFieldMap();
+      return res.map(item => {
+        return RowsManager.rawData2Json(item, fieldRawColumnNameFieldMap)
+      })
+    }
+    return res;
+  }
   async create(
     data: Record<string, any>,
     options?: {

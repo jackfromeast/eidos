@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from "react"
 import { useParams } from "react-router-dom"
 
-import { ITreeNode } from "@/lib/store/ITreeNode"
+import { ITreeNode, TreeNodeType } from "@/lib/store/ITreeNode"
 import { getWeek, isDayPageId, isWeekNodeId } from "@/lib/utils"
 
 import { useExtensionById } from "@/hooks/use-extension"
@@ -16,14 +16,14 @@ export const useNodeMap = () => {
   return nodeMap
 }
 
-export const useCurrentNode = () => {
+export const useCurrentNode = (): ITreeNode | null => {
   const { table: nodeId, day } = useParams()
   const allNodesMap = useNodeMap()
   if (day && isDayPageId(day)) {
     return {
       id: day,
       name: day,
-      type: "doc",
+      type: TreeNodeType.Doc,
     }
   }
   return nodeId ? allNodesMap[nodeId] : null

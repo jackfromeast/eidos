@@ -5,12 +5,12 @@ import { getCodeFromMarkdown } from "@/lib/markdown"
 import { getUuid, uuidv7 } from "@/lib/utils"
 import { startRecorder, stopRecorder } from "@/lib/web/recorder"
 
+import { useAllTools } from "@/hooks/use-all-tools"
 import { useCurrentPathInfo } from "./use-current-pathinfo"
 import { useEidosFileSystemManager } from "./use-fs"
+import { useScriptCall } from "./use-script-call"
 import { useSqlite } from "./use-sqlite"
 import { useTableOperation } from "./use-table"
-import { useAllTools } from "@/hooks/use-all-tools"
-import { useScriptCall } from "./use-script-call"
 
 const autoRunScope = ["SQL.SELECT"]
 
@@ -115,6 +115,10 @@ export const useAIFunctions = () => {
       return res
     }
     switch (name) {
+      case "createRecords":
+        const { table_id, records } = parameters
+        const res1 = await sqlite?.createRecords(table_id, records)
+        return res1
       case "sqlQuery":
         const { sql } = parameters
         const scope = "SQL." + sql?.trim().toUpperCase().split(" ")[0]
