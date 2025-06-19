@@ -1,4 +1,4 @@
-import { getProvider } from "@/lib/ai/helper";
+import { getProvider } from "@/packages/ai/helper";
 
 import { embed } from "ai";
 import { getConfigManager } from "./config";

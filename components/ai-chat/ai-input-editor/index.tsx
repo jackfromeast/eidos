@@ -26,7 +26,7 @@ import {
 } from "lexical"
 import { useTranslation } from "react-i18next"
 
-import { BGEM3 } from "@/lib/ai/llm_vendors/bge"
+import { BGEM3 } from "@/packages/ai/llm_vendors/bge"
 import { ITreeNode } from "@/lib/store/ITreeNode"
 import { useEmbedding } from "@/hooks/use-embedding"
 import { useHnsw } from "@/hooks/use-hnsw"
@@ -312,7 +312,7 @@ export const AIInputEditor = React.forwardRef<
       <LexicalComposer initialConfig={initialConfig}>
         <div data-testid="ai-input-editor">
           <div
-            className="relative max-h-[200px] overflow-y-auto bg-card outline-none  transition-colors duration-200 border border-b-0"
+            className="relative max-h-[200px] overflow-y-auto bg-card outline-none  transition-colors duration-200"
             data-drop-zone="ai-editor"
           >
             <RichTextPlugin

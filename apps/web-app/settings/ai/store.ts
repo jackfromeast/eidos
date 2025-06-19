@@ -2,7 +2,7 @@ import { create } from "zustand"
 // can use anything: IndexedDB, Ionic Storage, etc.
 import { createJSONStorage, persist } from "zustand/middleware"
 
-import { AIFormValues, LLMProvider } from "@/lib/ai/config"
+import { AIFormValues, LLMProvider } from "@/packages/ai/config"
 
 // New import for the backend sync storage
 import { createBackendSyncStorage } from "@/lib/storage/backend-sync"

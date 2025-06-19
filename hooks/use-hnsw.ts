@@ -4,9 +4,9 @@ import { IEmbedding } from "@/packages/core/meta-table/embedding"
 import chunk from "lodash/chunk"
 import zip from "lodash/zip"
 
-import { DocLoader } from "@/lib/ai/doc_loader/doc"
-import { LLMBaseVendor } from "@/lib/ai/llm_vendors/base"
-import { getHnswIndex } from "@/lib/ai/vec_search"
+import { DocLoader } from "@/packages/ai/doc_loader/doc"
+import { LLMBaseVendor } from "@/packages/ai/llm_vendors/base"
+import { getHnswIndex } from "@/packages/ai/vec_search"
 import { EmbeddingTableName } from "@/lib/sqlite/const"
 
 import { useCurrentPathInfo } from "./use-current-pathinfo"

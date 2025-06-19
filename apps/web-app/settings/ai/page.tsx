@@ -5,7 +5,7 @@ import { Link, useNavigate } from "react-router-dom"
 import {
   ALL_PROVIDERS,
   LLMProviderType,
-} from "@/lib/ai/helper"
+} from "@/packages/ai/helper"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,

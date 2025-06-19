@@ -1,6 +1,6 @@
 import { useEmbedding } from "@/hooks/use-embedding"
 import { EmbeddingManager } from "@/hooks/use-hnsw"
-import { BGEM3 } from "@/lib/ai/llm_vendors/bge"
+import { BGEM3 } from "@/packages/ai/llm_vendors/bge"
 import { getSqliteProxy } from "@/lib/sqlite/channel"
 import { EidosFileSystemManager } from "@/lib/storage/eidos-file-system"
 

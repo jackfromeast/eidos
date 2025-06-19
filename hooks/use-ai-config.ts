@@ -2,7 +2,7 @@ import { useCallback, useMemo } from "react"
 
 import { useAIConfigStore } from "@/apps/web-app/settings/ai/store"
 import { TaskType } from "@/apps/web-app/settings/ai/hooks"
-import { getProvider } from "@/lib/ai/helper"
+import { getProvider } from "@/packages/ai/helper"
 import { LanguageModelV1 } from "ai"
 
 

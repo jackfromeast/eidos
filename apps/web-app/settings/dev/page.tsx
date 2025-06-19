@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react"
 
-import { getHnswIndex } from "@/lib/ai/vec_search"
+import { getHnswIndex } from "@/packages/ai/vec_search"
 import { getSqliteProxy } from "@/lib/sqlite/channel"
 import { useEidosFileSystemManager } from "@/hooks/use-fs"
 import { useHnsw } from "@/hooks/use-hnsw"

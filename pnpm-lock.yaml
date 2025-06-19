@@ -137,9 +137,6 @@ importers:
       '@octokit/rest':
         specifier: ^20.0.2
         version: 20.0.2
-      '@openrouter/ai-sdk-provider':
-        specifier: ^0.4.5
-        version: 0.4.5(zod@3.23.8)
       '@oxc-parser/wasm':
         specifier: ^0.60.0
         version: 0.60.0
@@ -750,6 +747,9 @@ importers:
       '@ai-sdk/perplexity':
         specifier: ^1.1.9
         version: 1.1.9(zod@3.24.3)
+      '@ai-sdk/react':
+        specifier: ^1.2.12
+        version: 1.2.12(react@18.2.0)(zod@3.24.3)
       '@ai-sdk/replicate':
         specifier: ^0.2.8
         version: 0.2.8(zod@3.24.3)
@@ -762,6 +762,12 @@ importers:
       '@ai-sdk/xai':
         specifier: ^1.2.16
         version: 1.2.16(zod@3.24.3)
+      '@openrouter/ai-sdk-provider':
+        specifier: ^0.4.5
+        version: 0.4.5(zod@3.24.3)
+      zod:
+        specifier: ^3.23.8
+        version: 3.24.3
 
   packages/core: {}
 
@@ -1027,7 +1033,7 @@ packages:
       zod: 3.24.3
     dev: false
 
-  /@ai-sdk/provider-utils@2.1.10(zod@3.23.8):
+  /@ai-sdk/provider-utils@2.1.10(zod@3.24.3):
     resolution: {integrity: sha512-4GZ8GHjOFxePFzkl3q42AU0DQOtTQ5w09vmaWUf/pKFXJPizlnzKSUkF0f+VkapIUfDugyMqPMT1ge8XQzVI7Q==}
     engines: {node: '>=18'}
     peerDependencies:
@@ -1040,7 +1046,7 @@ packages:
       eventsource-parser: 3.0.2
       nanoid: 3.3.11
       secure-json-parse: 2.7.0
-      zod: 3.23.8
+      zod: 3.24.3
     dev: false
 
   /@ai-sdk/provider-utils@2.1.15(zod@3.24.3):
@@ -1147,9 +1153,27 @@ packages:
       '@ai-sdk/provider-utils': 2.2.8(zod@3.23.8)
       '@ai-sdk/ui-utils': 1.2.11(zod@3.23.8)
       react: 18.2.0
-      swr: 2.2.5(react@18.2.0)
+      swr: 2.3.3(react@18.2.0)
       throttleit: 2.1.0
       zod: 3.23.8
+    dev: false
+
+  /@ai-sdk/react@1.2.12(react@18.2.0)(zod@3.24.3):
+    resolution: {integrity: sha512-jK1IZZ22evPZoQW3vlkZ7wvjYGYF+tRBKXtrcolduIkQ/m/sOAVcVeVDUDvh1T91xCnWCdUGCPZg2avZ90mv3g==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      react: ^18 || ^19 || ^19.0.0-rc
+      zod: ^3.23.8
+    peerDependenciesMeta:
+      zod:
+        optional: true
+    dependencies:
+      '@ai-sdk/provider-utils': 2.2.8(zod@3.24.3)
+      '@ai-sdk/ui-utils': 1.2.11(zod@3.24.3)
+      react: 18.2.0
+      swr: 2.3.3(react@18.2.0)
+      throttleit: 2.1.0
+      zod: 3.24.3
     dev: false
 
   /@ai-sdk/replicate@0.2.8(zod@3.24.3):
@@ -5650,15 +5674,15 @@ packages:
       '@octokit/openapi-types': 19.1.0
     dev: false
 
-  /@openrouter/ai-sdk-provider@0.4.5(zod@3.23.8):
+  /@openrouter/ai-sdk-provider@0.4.5(zod@3.24.3):
     resolution: {integrity: sha512-gbCOcSjNhyWlLHyYZX2rIFnpJi3C2RXNyyzJj+d6pMRfTS/mdvEEOsU66KxK9H8Qju2i9YRLOn/FdQT26K7bIQ==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.0.0
     dependencies:
       '@ai-sdk/provider': 1.0.9
-      '@ai-sdk/provider-utils': 2.1.10(zod@3.23.8)
-      zod: 3.23.8
+      '@ai-sdk/provider-utils': 2.1.10(zod@3.24.3)
+      zod: 3.24.3
     dev: false
 
   /@opentelemetry/api@1.9.0:

@@ -23,10 +23,15 @@
     "@ai-sdk/openai": "^0.0.45",
     "@ai-sdk/openai-compatible": "^0.1.17",
     "@ai-sdk/perplexity": "^1.1.9",
+    "@ai-sdk/react": "^1.2.12",
     "@ai-sdk/replicate": "^0.2.8",
     "@ai-sdk/solid": "^1.2.13",
     "@ai-sdk/togetherai": "^0.2.14",
-    "@ai-sdk/xai": "^1.2.16"
+    "@ai-sdk/xai": "^1.2.16",
+    "@openrouter/ai-sdk-provider": "^0.4.5"
+  },
+  "peerDependencies": {
+    "zod": "^3.23.8"
   },
   "keywords": [],
   "author": "",

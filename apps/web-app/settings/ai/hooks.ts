@@ -1,6 +1,6 @@
 import { toast } from "@/components/ui/use-toast"
 import { useAiConfig } from "@/hooks/use-ai-config"
-import { getProvider } from "@/lib/ai/helper"
+import { getProvider } from "@/packages/ai/helper"
 import { LanguageModelV1, embedMany, generateText } from "ai"
 import { useState } from "react"
 

@@ -10,12 +10,12 @@ import * as z from "zod"
 import {
   LLMProvider,
   llmProviderSchema as baseLlmProviderSchema,
-} from "@/lib/ai/config"
+} from "@/packages/ai/config"
 import {
   AvailableModel,
   LLM_PROVIDER_INFO,
   fetchAvailableModels,
-} from "@/lib/ai/helper"
+} from "@/packages/ai/helper"
 import {
   AlertDialog,
   AlertDialogAction,

@@ -2,7 +2,7 @@ import { app } from 'electron';
 import fs from 'fs';
 import path from 'path';
 import { EventEmitter } from 'events';
-import { AIFormValues } from '@/lib/ai/config';
+import { AIFormValues } from '@/packages/ai/config';
 import { CustomTheme } from '@/lib/store/theme-store';
 
 export interface GraftConfig {
