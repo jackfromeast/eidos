@@ -130,23 +130,19 @@ export const useSystemPrompt = (
 ) => {
     const additionalData = useAdditionalData(contextNodes)
     const extension = useCurrentExtension()
-    const { prompts } = useAllPrompts()
     const { getRemixPrompt } = useRemixPrompt()
     const [remixPrompt, setRemixPrompt] = useState("")
-    const [selectedCustomPromptId, setSelectedCustomPromptId] = useState<
-        string | null
-    >(null)
+    // const [selectedCustomPromptId, setSelectedCustomPromptId] = useState<
+    //     string | null
+    // >(null)
 
     // Memoize the base prompt calculation to prevent unnecessary recalculations
     const basePrompt = useMemo(() => {
         if (!extension?.type) {
             return null
         }
-        return selectedCustomPromptId
-            ? prompts.find((p) => p.id === selectedCustomPromptId)?.code ||
-            getPromptByScriptType(extension?.type)
-            : getPromptByScriptType(extension?.type)
-    }, [selectedCustomPromptId, prompts, extension?.type])
+        return getPromptByScriptType(extension?.type)
+    }, [extension?.type])
 
     // Memoize the extension data to prevent unnecessary re-renders
     const extensionData = useMemo(() => ({
