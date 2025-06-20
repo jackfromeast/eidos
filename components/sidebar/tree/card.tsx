@@ -200,35 +200,35 @@ export const Card: FC<CardProps> = ({
   // react-dnd uses its own event handling, but doesn't set the native dataTransfer,
   // which is needed for dropping outside of the react-dnd context (e.g., an external editor).
   // By using addEventListener, we can add our own logic without overwriting react-dnd's handlers.
-  useEffect(() => {
-    const element = ref.current
-    if (!element) {
-      return
-    }
+  // useEffect(() => {
+  //   const element = ref.current
+  //   if (!element) {
+  //     return
+  //   }
 
-    const handleDragStart = (event: DragEvent) => {
-      // We must not stop propagation, so both react-dnd and native handlers can run.
-      event.dataTransfer?.setData("text/plain", node.id)
-      if (event.dataTransfer) {
-        event.dataTransfer.effectAllowed = "copy"
-      }
-      console.log("Native drag started for node:", node.name, node.id)
-    }
+  //   const handleDragStart = (event: DragEvent) => {
+  //     // We must not stop propagation, so both react-dnd and native handlers can run.
+  //     event.dataTransfer?.setData("text/plain", node.id)
+  //     if (event.dataTransfer) {
+  //       event.dataTransfer.effectAllowed = "copy"
+  //     }
+  //     console.log("Native drag started for node:", node.name, node.id)
+  //   }
 
-    const handleDragEnd = () => {
-      console.log("Native drag ended for node:", node.name)
-    }
+  //   const handleDragEnd = () => {
+  //     console.log("Native drag ended for node:", node.name)
+  //   }
 
-    // react-dnd's `drag` ref will set `draggable=true` on this element.
-    // We're just adding our listeners to the element.
-    element.addEventListener("dragstart", handleDragStart)
-    element.addEventListener("dragend", handleDragEnd)
+  //   // react-dnd's `drag` ref will set `draggable=true` on this element.
+  //   // We're just adding our listeners to the element.
+  //   element.addEventListener("dragstart", handleDragStart)
+  //   element.addEventListener("dragend", handleDragEnd)
 
-    return () => {
-      element.removeEventListener("dragstart", handleDragStart)
-      element.removeEventListener("dragend", handleDragEnd)
-    }
-  }, [node.id, node.name])
+  //   return () => {
+  //     element.removeEventListener("dragstart", handleDragStart)
+  //     element.removeEventListener("dragend", handleDragEnd)
+  //   }
+  // }, [node.id, node.name])
 
   // const opacity = isDragging ? 0 : 1
   useEffect(() => {
