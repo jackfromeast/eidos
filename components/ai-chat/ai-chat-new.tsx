@@ -356,7 +356,7 @@ export default function Chat() {
       </div>
 
       {/* Add debug component in development */}
-      {process.env.NODE_ENV === "development" && <ContextNodesDebug />}
+      {/* {process.env.NODE_ENV === "development" && <ContextNodesDebug />} */}
     </div>
   )
 }
