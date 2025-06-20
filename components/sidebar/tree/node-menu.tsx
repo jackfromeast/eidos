@@ -70,6 +70,7 @@ export function NodeItem({
     sqlite,
     createExtNode,
     createFolder,
+    createView,
   } = useSqlite(databaseName)
   const { setNode, pin, unpin } = useNodeTree()
   const { handleCut, handlePaste } = useTreeOperations()
@@ -91,6 +92,12 @@ export function NodeItem({
     const tableId = await createTable("", node.id)
     goto(space, tableId)
   }
+
+  const handleCreateView = async () => {
+    const viewId = await createView(node.id)
+    goto(space, viewId)
+  }
+
   const handleCreateFolder = () => {
     createFolder(node.id)
   }
@@ -98,7 +105,6 @@ export function NodeItem({
   const handleCreateExtNode = async (type: ITreeNode["type"]) => {
     const extNode = extNodes.find((node) => node.ext_node_type === type)
     if (!extNode) return
-    console.log("creating ", extNode)
     const extNodeId = await createExtNode(extNode.ext_node_type!, node.id)
     if (!extNodeId) return
     goto(space, extNodeId)
@@ -219,6 +225,13 @@ export function NodeItem({
             <ContextMenuItem onClick={handleCreateTable}>
               <FileSpreadsheetIcon className="pr-2" />
               {t("node.menu.newTable")}
+            </ContextMenuItem>
+            <ContextMenuItem onClick={handleCreateView}>
+              <FileSpreadsheetIcon className="pr-2" />
+              {t("node.menu.newDataView")}
+              <span className="mx-2 px-2 py-0.5 text-xs rounded-full bg-purple-100 text-purple-700">
+                {t("common.badge.alpha")}
+              </span>
             </ContextMenuItem>
             <ContextMenuItem onClick={handleCreateFolder} disabled={depth > 6}>
               <FolderPlusIcon className="pr-2" />

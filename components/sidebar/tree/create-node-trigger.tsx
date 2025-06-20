@@ -110,6 +110,9 @@ export const CreateNodeTrigger = ({ parent_id }: { parent_id?: string }) => {
           }}
         >
           {t("node.menu.newDataView")}
+          <span className="mx-2 px-2 py-0.5 text-xs rounded-full bg-purple-100 text-purple-700">
+            {t("common.badge.alpha")}
+          </span>
         </DropdownMenuItem>
         {extNodes.length > 0 && <DropdownMenuSeparator />}
         {extNodes.map((node) => (
