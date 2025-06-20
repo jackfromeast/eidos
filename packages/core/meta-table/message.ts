@@ -37,6 +37,12 @@ export class MessageTable extends BaseTableImpl<ChatMessage> implements BaseTabl
     await this.dataSpace.exec2(sql, [chatId]);
   }
 
+  async deleteByIds(messageIds: string[]) {
+    const placeholders = messageIds.map(() => '?').join(',')
+    const sql = `DELETE FROM ${this.name} WHERE id IN (${placeholders})`;
+    await this.dataSpace.exec2(sql, messageIds);
+  }
+
   async clearMessages(chatId: string) {
     const sql = `DELETE FROM ${this.name} WHERE chat_id = ?`;
     await this.dataSpace.exec2(sql, [chatId]);

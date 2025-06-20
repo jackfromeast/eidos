@@ -6,7 +6,7 @@ import { LanguageModelV1, Message, Tool, appendClientMessage, appendResponseMess
 import { uuidv7 } from "@/lib/utils";
 import { DataSpace } from "@/packages/core/DataSpace";
 import { ChatMessage } from "@/packages/core/meta-table/message";
-import { combineAssistantMessage, generateTitleFromUserMessage, getChatById, getMessagesByChatId, getTrailingMessageId, saveChat, saveMessages, updateChatTitle } from "./helper";
+import { combineAssistantMessage, deleteMessages, generateTitleFromUserMessage, getChatById, getMessagesByChatId, getTrailingMessageId, saveChat, saveMessages, updateChatTitle } from "./helper";
 import { IData } from "./interface";
 
 
@@ -77,6 +77,13 @@ export async function handleChatApi(
       message,
     });
 
+    const messageIndex = previousMessages.findIndex(m => m.id === message.id)
+    const isReload = messageIndex !== -1
+    const messageIdsToDelete = previousMessages.slice(messageIndex + 1).map(m => m.id)
+    if (isReload && messageIdsToDelete.length > 0) {
+      console.log("deleteMessages", messageIdsToDelete)
+      await deleteMessages(messageIdsToDelete, dataspace)
+    }
 
     const chat = await getChatById(id, dataspace);
     const getTitle = () => {

@@ -95,6 +95,10 @@ export async function getChatMessages(id: string, dataspace: DataSpace) {
     return messages
 }
 
+export async function deleteMessages(messageIds: string[], dataspace: DataSpace) {
+    await dataspace.message.deleteByIds(messageIds)
+}
+
 export async function getLastAssistantMessage(chatId: string, dataspace: DataSpace) {
     const messages = await dataspace.message.list({ chat_id: chatId, role: "assistant" }, {
         orderBy: "created_at",
