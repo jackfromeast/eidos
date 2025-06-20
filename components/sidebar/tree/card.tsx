@@ -30,10 +30,14 @@ export interface CardProps {
   index: number
   depth: number
   className?: string
+  containerId?: string
   // moveCard: (dragIndex: number, hoverIndex: number, dragNodeId: string) => void
   setTarget: (target: IHoverTarget | null) => void
   setTargetFolderId: (id: string | null) => void
   onDrop: (dragItem: DragItem) => void
+  // Add optional state props for independent tree instances
+  target?: IHoverTarget | null
+  targetFolderId?: string | null
 }
 
 export interface DragItem {
@@ -41,7 +45,7 @@ export interface DragItem {
   id: string
   type: string
   depth: number
-  parent_id?: string
+  containerId?: string
 }
 
 export const Card: FC<CardProps> = ({
@@ -53,6 +57,9 @@ export const Card: FC<CardProps> = ({
   className,
   depth,
   setTargetFolderId,
+  containerId,
+  target: propTarget,
+  targetFolderId: propTargetFolderId,
 }) => {
   const { space: spaceName } = useCurrentPathInfo()
   const [searchParams] = useSearchParams()
@@ -82,18 +89,15 @@ export const Card: FC<CardProps> = ({
       }
     },
     hover(item: DragItem, monitor) {
-      const drag = monitor.getItem()
-      // if (drag.depth !== depth && node.type !== "folder") {
-      // if (drag.depth !== depth && node.type !== "folder") {
-      //   console.log("return 1")
-      //   setTargetFolderId(null)
-      //   return
-      // }
-      // if (drag.parent_id === node.id) {
-      //   console.log("return 2")
-      //   setTargetFolderId(null)
-      //   return
-      // }
+      // Check if the drag item is from the same container
+      // Only block if both containers are defined and different
+      if (containerId && item.containerId && item.containerId !== containerId) {
+        setTargetFolderId(null)
+        setTarget(null)
+        return
+      }
+      
+      const drag = item
       if (!ref.current) {
         setTargetFolderId(null)
         setTarget(null)
@@ -176,7 +180,7 @@ export const Card: FC<CardProps> = ({
   const [{ isDragging }, drag] = useDrag({
     type: ItemTypes.CARD,
     item: () => {
-      return { index, depth, ...node }
+      return { index, depth, containerId, ...node }
     },
     collect: (monitor: any) => ({
       isDragging: monitor.isDragging(),
@@ -302,7 +306,15 @@ export const Card: FC<CardProps> = ({
       </div>
       {open && node.type === "folder" && (
         <div className="ml-3 border-l pl-1">
-          <NodeTreeContainer nodes={children} depth={depth + 1} />
+          <NodeTreeContainer 
+            nodes={children} 
+            depth={depth + 1} 
+            containerId={containerId}
+            target={propTarget}
+            targetFolderId={propTargetFolderId}
+            setTarget={setTarget}
+            setTargetFolderId={setTargetFolderId}
+          />
         </div>
       )}
     </div>

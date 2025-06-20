@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils"
 import { useNode } from "@/hooks/use-nodes"
 
 import { Card, DragItem } from "./card"
-import { useFolderStore } from "./store"
+import { useFolderStore, IHoverTarget } from "./store"
 
 export interface ContainerState {
   cards: ITreeNode[]
@@ -14,19 +14,36 @@ export interface ContainerState {
 export const NodeTreeContainer = ({
   nodes,
   depth = 0,
+  containerId,
+  target: propTarget,
+  targetFolderId: propTargetFolderId,
+  setTarget: propSetTarget,
+  setTargetFolderId: propSetTargetFolderId,
 }: {
   nodes: ITreeNode[]
   depth?: number
+  containerId?: string
+  target?: IHoverTarget | null
+  targetFolderId?: string | null
+  setTarget?: (target: IHoverTarget | null) => void
+  setTargetFolderId?: (id: string | null) => void
 }) => {
   const [cards, setCards] = useState(nodes)
   const {
     currentCut,
     setCut,
-    targetFolderId,
-    setTargetFolderId,
-    target,
-    setTarget,
+    targetFolderId: globalTargetFolderId,
+    setTargetFolderId: globalSetTargetFolderId,
+    target: globalTarget,
+    setTarget: globalSetTarget,
   } = useFolderStore()
+  
+  // Use prop values if provided, otherwise fall back to global state
+  const targetFolderId = propTargetFolderId !== undefined ? propTargetFolderId : globalTargetFolderId
+  const target = propTarget !== undefined ? propTarget : globalTarget
+  const setTarget = propSetTarget || globalSetTarget
+  const setTargetFolderId = propSetTargetFolderId || globalSetTargetFolderId
+  
   useEffect(() => {
     setCards(nodes)
   }, [nodes])
@@ -96,10 +113,13 @@ export const NodeTreeContainer = ({
           setTarget={setTarget}
           setTargetFolderId={setTargetFolderId}
           onDrop={onDrop}
+          containerId={containerId}
+          target={target}
+          targetFolderId={targetFolderId}
         />
       )
     },
-    [targetFolderId, target, depth, setTarget, setTargetFolderId, onDrop]
+    [targetFolderId, target, depth, setTarget, setTargetFolderId, onDrop, containerId]
   )
 
   return (

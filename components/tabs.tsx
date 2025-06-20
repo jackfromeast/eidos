@@ -75,6 +75,7 @@ export const TabManager: React.FC = () => {
           setTargetFolderId={() => {}}
           onDrop={() => {}}
           node={node}
+          containerId="tabs"
         />
       ))}
     </DndProvider>

@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useMemo, useCallback } from "react"
 import { useLocalStorageState } from "ahooks"
 import {
   CalendarDaysIcon,
@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "../ui/button"
 import { CreateNodeTrigger } from "./tree/create-node-trigger"
 import { NodeTreeContainer } from "./tree/node-tree"
+import { IHoverTarget } from "./tree/store"
 
 export const CurrentItemTree = ({
   allNodes,
@@ -29,6 +30,9 @@ export const CurrentItemTree = ({
   Icon: React.ReactNode
   disableAdd?: boolean
 }) => {
+  // Generate a unique container ID for each CurrentItemTree instance
+  const containerId = useMemo(() => `tree-container-${Math.random().toString(36).substr(2, 9)}`, [])
+  
   const [showNodes, setShowNodes] = useLocalStorageState(
     "root-node-tree-show-toggle",
     {
@@ -36,9 +40,25 @@ export const CurrentItemTree = ({
     }
   )
 
+  // Independent state for each tree instance
+  const [targetFolderId, setTargetFolderId] = useState<string | null>(null)
+  const [target, setTarget] = useState<IHoverTarget | null>(null)
+
   const handleToggleShowNodes = () => {
     setShowNodes(!showNodes)
   }
+
+  const handleSetTarget = useCallback((newTarget: IHoverTarget | null) => {
+    setTarget(newTarget)
+    if (newTarget) {
+      setTargetFolderId(null)
+    }
+  }, [])
+
+  const handleSetTargetFolderId = useCallback((id: string | null) => {
+    setTargetFolderId(id)
+  }, [])
+  
   return (
     <>
       <div className="flex items-center justify-between w-full">
@@ -59,7 +79,14 @@ export const CurrentItemTree = ({
       {showNodes && (
         <div className="mt-1 w-full space-y-1 pl-4">
           <DndProvider backend={HTML5Backend} context={window}>
-            <NodeTreeContainer nodes={allNodes} />
+            <NodeTreeContainer 
+              nodes={allNodes} 
+              containerId={containerId}
+              target={target}
+              targetFolderId={targetFolderId}
+              setTarget={handleSetTarget}
+              setTargetFolderId={handleSetTargetFolderId}
+            />
           </DndProvider>
         </div>
       )}

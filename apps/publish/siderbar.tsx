@@ -38,6 +38,7 @@ export const SideBar = ({ className }: any) => {
                     nodes={allNodes.filter(
                       (node) => !node.parent_id && !node.is_deleted
                     )}
+                    containerId="publish-sidebar"
                   />
                 </DndProvider>
               </div>
