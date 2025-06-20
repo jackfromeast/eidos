@@ -31,8 +31,10 @@ import { AIModelSelect } from "./ai-chat-model-select"
 import { AIContextNodes } from "./ai-context-nodes"
 import { AIInputEditor, AIInputEditorRef } from "./ai-input-editor"
 import { AIToolsConfig, useFilteredTools, useMaxSteps } from "./ai-tools-config"
+import { ContextNodesDebug } from "./context-nodes-debug"
 import { useAIChatData } from "./hooks/use-ai-chat-data"
 import { useAttachments } from "./hooks/use-attachments"
+import { useContextNodes } from "./hooks/use-context-nodes"
 import { useSystemPrompt } from "./hooks/use-system-prompt"
 import { useAIChatStore } from "./store"
 
@@ -49,11 +51,12 @@ export default function Chat() {
   const { experiment } = useExperimentConfigStore()
 
   const [withSpaceData, setWithSpaceData] = useState(experiment.enableRAG)
-  const [enableTools, setEnableTools] = useState(true) // 添加 enableTools 状态
+  const [enableTools, setEnableTools] = useState(true)
 
   const divRef = useRef<HTMLDivElement>(null)
-  const { currentSysPrompt, setCurrentSysPrompt, contextNodes, setContextNodes, addContextNode, removeContextNode, clearContextNodes } = useAIChatStore()
-  // const { progress } = useLoadingStore()
+  const { currentSysPrompt, setCurrentSysPrompt } = useAIChatStore()
+
+  const { contextNodes, addNode, removeNode, clearNodes } = useContextNodes()
 
   const { handleToolsCall, handleRunCode } = useAIFunctions()
 
@@ -62,6 +65,12 @@ export default function Chat() {
     contextNodes
     // contextEmbeddings
   )
+
+  useEffect(() => {
+    if (currentNode) {
+      addNode(currentNode as ITreeNode)
+    }
+  }, [currentNode, addNode])
 
   const { chatId, chatMessages, clearChatMessages } = useAIChatData()
 
@@ -83,12 +92,6 @@ export default function Chat() {
       model && setAIModel(model)
     }
   }, [currentSysPrompt, prompts, setAIModel, systemPrompt])
-
-  useEffect(() => {
-    if (currentNode) {
-      setContextNodes([currentNode as ITreeNode])
-    }
-  }, [currentNode, setContextNodes])
 
   const { getConfigByModel, textModelConfig } = useAiConfig()
 
@@ -163,10 +166,10 @@ export default function Chat() {
   const cleanMessages = useCallback(async () => {
     clearChatMessages(chatId)
     setMessages([])
-    clearContextNodes()
+    clearNodes()
     setContextEmbeddings([])
     setAttachments([])
-  }, [setMessages, chatId, clearContextNodes])
+  }, [setMessages, chatId, clearNodes])
 
   const appendHiddenMessage = useCallback(
     (message: any) => {
@@ -208,8 +211,7 @@ export default function Chat() {
   const extension = useCurrentExtension()
 
   const handleRemoveContextNode = (nodeId: string) => {
-    removeContextNode(nodeId)
-    aiInputEditorRef.current?.deleteMentionNode(nodeId)
+    removeNode(nodeId, aiInputEditorRef)
   }
 
   return (
@@ -311,7 +313,6 @@ export default function Chat() {
             ref={aiInputEditorRef}
             enableRAG={withSpaceData}
             disabled={disableInput}
-            setContextNodes={setContextNodes}
             setContextEmbeddings={setContextEmbeddings}
             append={append}
             appendHiddenMessage={appendHiddenMessage}
@@ -353,6 +354,9 @@ export default function Chat() {
           </div>
         </div>
       </div>
+
+      {/* Add debug component in development */}
+      {process.env.NODE_ENV === "development" && <ContextNodesDebug />}
     </div>
   )
 }

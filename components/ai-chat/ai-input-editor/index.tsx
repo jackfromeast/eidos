@@ -38,6 +38,7 @@ import NewMentionsPlugin, {
 import { allTransformers } from "@/components/doc/plugins/const"
 import { useAIConfigStore } from "@/apps/web-app/settings/ai/store"
 
+import { useContextNodes } from "../hooks/use-context-nodes"
 import { AutoEditable } from "./plugins/auto-editable"
 import { DragDropPlugin } from "./plugins/drag-drop"
 import { SwitchPromptPlugin } from "./plugins/switch-prompt"
@@ -55,7 +56,6 @@ interface InputEditorProps {
   ) => Promise<string | null | undefined>
   appendHiddenMessage: (messages: Message) => void
   isLoading?: boolean
-  setContextNodes?: (nodes: ITreeNode[]) => void
   setContextEmbeddings?: (embeddings: IEmbedding[]) => void
   attachments?: Attachment[]
   setAttachments?: (attachments: Attachment[]) => void
@@ -67,8 +67,6 @@ export interface AIInputEditorRef {
   clear: () => void
   deleteMentionNode: (nodeId: string) => void
 }
-
-export const nodeInfoMap = new Map<string, ITreeNode>()
 
 const AIInputEditorDataPlugin = React.forwardRef((props, ref) => {
   const [editor] = useLexicalComposerContext()
@@ -141,7 +139,6 @@ export const AIInputEditor = React.forwardRef<
       enableRAG,
       appendHiddenMessage,
       isLoading,
-      setContextNodes,
       setContextEmbeddings,
       attachments = [],
       setAttachments = () => {},
@@ -149,6 +146,8 @@ export const AIInputEditor = React.forwardRef<
     ref
   ) => {
     const { t } = useTranslation()
+    const { addNode, removeNode, clearNodes } = useContextNodes()
+    
     const initialConfig: InitialConfigType = {
       namespace: "AI-Chat-Input-Editor",
       theme,
@@ -181,26 +180,10 @@ export const AIInputEditor = React.forwardRef<
         dataPluginRef.current?.deleteMentionNode(nodeId),
     }))
 
-    useEffect(() => {
-      return () => {
-        nodeInfoMap.clear()
-      }
-    }, [])
-
     const { toast } = useToast()
     const { aiConfig } = useAIConfigStore()
-    // const { isEmbeddingModeLoaded } = useAppRuntimeStore()
-    // const [tryToLoadEmbeddingModel, setTryToLoadEmbeddingModel] =
-    //   React.useState(false)
-    // useEffect(() => {
-    //   isEmbeddingModeLoaded &&
-    //     tryToLoadEmbeddingModel &&
-    //     toast({
-    //       title: "Embedding Mode is loaded.",
-    //     })
-    // }, [isEmbeddingModeLoaded, toast, tryToLoadEmbeddingModel])
 
-    const handleEnterPress = async (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const handleKeyDown = async (e: React.KeyboardEvent<HTMLDivElement>) => {
       if (e.key === "Enter") {
         const contextMenu = document.querySelector("#typeahead-menu")
         if (contextMenu?.hasChildNodes()) {
@@ -215,16 +198,6 @@ export const AIInputEditor = React.forwardRef<
         const markdown = dataPluginRef.current?.getData()
         if (markdown) {
           if (enableRAG && hasEmbeddingModel) {
-            // if (!isEmbeddingModeLoaded) {
-            //   toast({
-            //     title: "Embedding Mode is not loaded yet. this may take a while.",
-            //   })
-            //   if (!aiConfig.autoLoadEmbeddingModel) {
-            //     embeddingTexts(["hi"])
-            //   }
-            //   setTryToLoadEmbeddingModel(true)
-            //   return
-            // }
             const res = await queryEmbedding({
               query: markdown,
               model: "bge-m3",
@@ -286,26 +259,26 @@ export const AIInputEditor = React.forwardRef<
           setAttachments([])
         }
         dataPluginRef.current?.clear()
+      } else if (e.key === "Backspace") {
+        // Check if content is empty and clear context nodes
+        const currentContent = dataPluginRef.current?.getData()?.trim()
+        if (!currentContent || currentContent === "") {
+          clearNodes()
+        }
       }
     }
 
     const handleNodeInsert: MentionPluginProps["onOptionSelectCallback"] = (
       option
     ) => {
-      const node = option.rawData
-      nodeInfoMap.set(node.id, node)
-      setContextNodes?.([...nodeInfoMap.values()])
+      const node = option.rawData as ITreeNode
+      // Use the centralized context node management
+      addNode(node)
     }
 
     const handleNodeDelete = (nodeId: string) => {
-      // Remove the deleted node from the nodeInfoMap
-      nodeInfoMap.delete(nodeId)
-      // Update the context nodes to reflect the current state
-      setContextNodes?.([...nodeInfoMap.values()])
-    }
-
-    const handleNodeDrop = (node: ITreeNode) => {
-      setContextNodes?.([...nodeInfoMap.values()])
+      // Use the centralized context node management
+      removeNode(nodeId)
     }
 
     return (
@@ -319,20 +292,14 @@ export const AIInputEditor = React.forwardRef<
               contentEditable={
                 <ContentEditable
                   className="h-auto min-h-[100px] rounded-t-sm border-none bg-card p-2 outline-none "
-                  onKeyDownCapture={handleEnterPress}
+                  onKeyDownCapture={handleKeyDown}
                 />
               }
               placeholder={
                 <div className="pointer-events-none absolute left-3 top-2 text-xs text-muted-foreground opacity-50">
                   {t("aiChat.inputEditor.typeYourMessageHere")}
                   <br />
-                  {/* {t("aiChat.inputEditor.pressSlashToSwitchPrompt")} */}
                   {t("aiChat.inputEditor.pressAtToMentionResource")}
-                  {/* <br />
-                  {t(
-                    "aiChat.inputEditor.dragDropToMention",
-                    "Drag & drop tree nodes here to mention"
-                  )} */}
                 </div>
               }
               ErrorBoundary={LexicalErrorBoundary}
@@ -343,8 +310,6 @@ export const AIInputEditor = React.forwardRef<
               placement="top-start"
               onDeleteCallback={handleNodeDelete}
             />
-            {/* <DragDropPlugin onNodeInsert={handleNodeDrop} /> */}
-            {/* <SwitchPromptPlugin /> */}
             <HistoryPlugin />
             <AutoFocusPlugin />
             <AIInputEditorDataPlugin ref={dataPluginRef} />

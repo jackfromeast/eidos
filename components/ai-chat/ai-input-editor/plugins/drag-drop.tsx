@@ -5,7 +5,7 @@ import { useEffect, useState } from "react"
 import { ITreeNode } from "@/lib/store/ITreeNode"
 import { $createMentionNode } from "@/components/doc/blocks/mention/node"
 import { useQueryNode } from "@/hooks/use-query-node"
-import { nodeInfoMap } from "../index"
+import { useContextNodes } from "../../hooks/use-context-nodes"
 
 export function DragDropPlugin({
   onNodeInsert,
@@ -15,6 +15,7 @@ export function DragDropPlugin({
   const [editor] = useLexicalComposerContext()
   const [isDragOver, setIsDragOver] = useState(false)
   const { getNode } = useQueryNode()
+  const { hasNode, addNode } = useContextNodes()
 
   useEffect(() => {
     const handleDragOver = (event: DragEvent) => {
@@ -50,7 +51,7 @@ export function DragDropPlugin({
         if (!nodeId) return
 
         // Check if node is already mentioned to avoid duplicates
-        if (nodeInfoMap.has(nodeId)) {
+        if (hasNode(nodeId)) {
           console.log("Node already mentioned, skipping")
           return
         }
@@ -69,8 +70,8 @@ export function DragDropPlugin({
             const mentionNode = $createMentionNode(treeNode.id, treeNode.name)
             $insertNodes([mentionNode])
             
-            // Update nodeInfoMap and callback
-            nodeInfoMap.set(treeNode.id, treeNode)
+            // Add to context nodes using the centralized management
+            addNode(treeNode)
             onNodeInsert?.(treeNode)
             
             console.log("Successfully inserted mention node for:", treeNode.name)
@@ -96,7 +97,7 @@ export function DragDropPlugin({
         setIsDragOver(false)
       }
     }
-  }, [editor, onNodeInsert, getNode])
+  }, [editor, onNodeInsert, getNode, hasNode, addNode])
 
   // Add visual feedback for drag over state
   useEffect(() => {

@@ -64,26 +64,50 @@ export const useAIChatStore = create<Store>()(
       },
       contextNodes: [],
       setContextNodes: (nodes: ITreeNode[]) => {
+        console.log("Setting context nodes:", nodes.length)
         set(() => ({ contextNodes: nodes }))
       },
       addContextNode: (node: ITreeNode) => {
+        if (!node || !node.id) {
+          console.warn("Invalid node provided to addContextNode:", node)
+          return
+        }
+        
         set((state) => {
           // Check if the node already exists to avoid duplicates
           const exists = state.contextNodes.some((n) => n.id === node.id)
           if (exists) {
+            console.log("Context node already exists:", node.name, node.id)
             return state
           }
+          
+          console.log("Adding new context node:", node.name, node.id)
           return {
             contextNodes: [...state.contextNodes, node]
           }
         })
       },
       removeContextNode: (nodeId: string) => {
-        set((state) => ({
-          contextNodes: state.contextNodes.filter((node) => node.id !== nodeId)
-        }))
+        if (!nodeId) {
+          console.warn("Invalid nodeId provided to removeContextNode:", nodeId)
+          return
+        }
+        
+        set((state) => {
+          const nodeExists = state.contextNodes.some(node => node.id === nodeId)
+          if (!nodeExists) {
+            console.log("Context node not found for removal:", nodeId)
+            return state
+          }
+          
+          console.log("Removing context node:", nodeId)
+          return {
+            contextNodes: state.contextNodes.filter((node) => node.id !== nodeId)
+          }
+        })
       },
       clearContextNodes: () => {
+        console.log("Clearing all context nodes")
         set(() => ({ contextNodes: [] }))
       }
     }),
