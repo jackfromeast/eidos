@@ -52,12 +52,11 @@ export default function Chat() {
   const [enableTools, setEnableTools] = useState(true) // 添加 enableTools 状态
 
   const divRef = useRef<HTMLDivElement>(null)
-  const { currentSysPrompt, setCurrentSysPrompt } = useAIChatStore()
+  const { currentSysPrompt, setCurrentSysPrompt, contextNodes, setContextNodes, addContextNode, removeContextNode, clearContextNodes } = useAIChatStore()
   // const { progress } = useLoadingStore()
 
   const { handleToolsCall, handleRunCode } = useAIFunctions()
 
-  const [contextNodes, setContextNodes] = useState<ITreeNode[]>([])
   const [contextEmbeddings, setContextEmbeddings] = useState<IEmbedding[]>([])
   const systemPrompt = useSystemPrompt(
     contextNodes
@@ -89,7 +88,7 @@ export default function Chat() {
     if (currentNode) {
       setContextNodes([currentNode as ITreeNode])
     }
-  }, [])
+  }, [currentNode, setContextNodes])
 
   const { getConfigByModel, textModelConfig } = useAiConfig()
 
@@ -164,10 +163,10 @@ export default function Chat() {
   const cleanMessages = useCallback(async () => {
     clearChatMessages(chatId)
     setMessages([])
-    setContextNodes([])
+    clearContextNodes()
     setContextEmbeddings([])
     setAttachments([])
-  }, [setMessages, chatId])
+  }, [setMessages, chatId, clearContextNodes])
 
   const appendHiddenMessage = useCallback(
     (message: any) => {
@@ -208,8 +207,8 @@ export default function Chat() {
   } = useAttachments()
   const extension = useCurrentExtension()
 
-  const removeContextNode = (nodeId: string) => {
-    setContextNodes((prev) => prev.filter((node) => node.id !== nodeId))
+  const handleRemoveContextNode = (nodeId: string) => {
+    removeContextNode(nodeId)
     aiInputEditorRef.current?.deleteMentionNode(nodeId)
   }
 
@@ -300,7 +299,7 @@ export default function Chat() {
 
         <AIContextNodes
           contextNodes={contextNodes}
-          onRemoveNode={removeContextNode}
+          onRemoveNode={handleRemoveContextNode}
         />
         <div
           className={cn(

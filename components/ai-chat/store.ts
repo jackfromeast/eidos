@@ -1,5 +1,6 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
+import { ITreeNode } from "@/lib/store/ITreeNode"
 
 type Store = {
   currentSysPrompt: string
@@ -11,6 +12,11 @@ type Store = {
   maxSteps: Record<string, number>
   getMaxSteps: (space: string) => number
   setMaxSteps: (space: string, steps: number) => void
+  contextNodes: ITreeNode[]
+  setContextNodes: (nodes: ITreeNode[]) => void
+  addContextNode: (node: ITreeNode) => void
+  removeContextNode: (nodeId: string) => void
+  clearContextNodes: () => void
 }
 
 export const useAIChatStore = create<Store>()(
@@ -55,6 +61,30 @@ export const useAIChatStore = create<Store>()(
             [space]: steps
           }
         }))
+      },
+      contextNodes: [],
+      setContextNodes: (nodes: ITreeNode[]) => {
+        set(() => ({ contextNodes: nodes }))
+      },
+      addContextNode: (node: ITreeNode) => {
+        set((state) => {
+          // Check if the node already exists to avoid duplicates
+          const exists = state.contextNodes.some((n) => n.id === node.id)
+          if (exists) {
+            return state
+          }
+          return {
+            contextNodes: [...state.contextNodes, node]
+          }
+        })
+      },
+      removeContextNode: (nodeId: string) => {
+        set((state) => ({
+          contextNodes: state.contextNodes.filter((node) => node.id !== nodeId)
+        }))
+      },
+      clearContextNodes: () => {
+        set(() => ({ contextNodes: [] }))
       }
     }),
     {
@@ -62,7 +92,8 @@ export const useAIChatStore = create<Store>()(
       getStorage: () => localStorage,
       partialize: (state) => ({
         enabledTools: state.enabledTools,
-        maxSteps: state.maxSteps
+        maxSteps: state.maxSteps,
+        contextNodes: state.contextNodes
       })
     }
   )

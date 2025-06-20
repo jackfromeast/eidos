@@ -1,4 +1,5 @@
 import React, { useEffect, useImperativeHandle, useRef } from "react"
+import { BGEM3 } from "@/packages/ai/llm_vendors/bge"
 import { IEmbedding } from "@/packages/core/meta-table/embedding"
 import { LinkNode } from "@lexical/link"
 import { ListItemNode, ListNode } from "@lexical/list"
@@ -26,7 +27,6 @@ import {
 } from "lexical"
 import { useTranslation } from "react-i18next"
 
-import { BGEM3 } from "@/packages/ai/llm_vendors/bge"
 import { ITreeNode } from "@/lib/store/ITreeNode"
 import { useEmbedding } from "@/hooks/use-embedding"
 import { useHnsw } from "@/hooks/use-hnsw"
@@ -328,11 +328,11 @@ export const AIInputEditor = React.forwardRef<
                   <br />
                   {/* {t("aiChat.inputEditor.pressSlashToSwitchPrompt")} */}
                   {t("aiChat.inputEditor.pressAtToMentionResource")}
-                  <br />
+                  {/* <br />
                   {t(
                     "aiChat.inputEditor.dragDropToMention",
                     "Drag & drop tree nodes here to mention"
-                  )}
+                  )} */}
                 </div>
               }
               ErrorBoundary={LexicalErrorBoundary}
@@ -343,7 +343,7 @@ export const AIInputEditor = React.forwardRef<
               placement="top-start"
               onDeleteCallback={handleNodeDelete}
             />
-            <DragDropPlugin onNodeInsert={handleNodeDrop} />
+            {/* <DragDropPlugin onNodeInsert={handleNodeDrop} /> */}
             {/* <SwitchPromptPlugin /> */}
             <HistoryPlugin />
             <AutoFocusPlugin />

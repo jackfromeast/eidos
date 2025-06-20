@@ -7,6 +7,7 @@ import {
   FilePlus2Icon,
   FileSpreadsheetIcon,
   FolderPlusIcon,
+  MessageSquareIcon,
   PackageIcon,
   PencilLineIcon,
   PinIcon,
@@ -39,6 +40,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import { useSpaceAppStore } from "@/apps/web-app/[database]/store"
+import { useAIChatStore } from "@/components/ai-chat/store"
 
 import { NodeMoveInto } from "../../node-menu/move-into"
 import { NodeExportContextMenu } from "../../node-menu/node-export"
@@ -75,6 +78,8 @@ export function NodeItem({
   const { setNode, pin, unpin } = useNodeTree()
   const { handleCut, handlePaste } = useTreeOperations()
   const { currentCut } = useFolderStore()
+  const { setIsRightPanelOpen, setCurrentApp } = useSpaceAppStore()
+  const { addContextNode } = useAIChatStore()
   const [renameOpen, setRenameOpen] = useState(false)
   const [newName, setNewName] = useState(node.name)
   const renameInputRef = useRef<HTMLInputElement>(null)
@@ -108,6 +113,16 @@ export function NodeItem({
     const extNodeId = await createExtNode(extNode.ext_node_type!, node.id)
     if (!extNodeId) return
     goto(space, extNodeId)
+  }
+
+  const handleAddToChat = () => {
+    // Open right panel if not already open
+    setIsRightPanelOpen(true)
+    // Set current app to chat
+    setCurrentApp("chat")
+    
+    // Add the node to chat context (duplicates are handled in the store)
+    addContextNode(node)
   }
 
   useClickAway(() => {
@@ -177,6 +192,11 @@ export function NodeItem({
         <ContextMenuItem onClick={handleRename}>
           <PencilLineIcon className="pr-2" />
           {t("node.menu.rename")}
+        </ContextMenuItem>
+
+        <ContextMenuItem onClick={handleAddToChat}>
+          <MessageSquareIcon className="pr-2" />
+          {t("node.menu.addToChat", "Add to Chat")}
         </ContextMenuItem>
 
         <ContextMenuItem
