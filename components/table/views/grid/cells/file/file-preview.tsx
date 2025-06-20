@@ -27,10 +27,12 @@ export const FilePreview = ({
     document.addEventListener("keydown", handleEscKey)
 
     return () => {
-      document.body.removeChild(newContainer)
+      if (newContainer.parentNode) {
+        document.body.removeChild(newContainer)
+      }
       document.removeEventListener("keydown", handleEscKey)
     }
-  }, [onClose])
+  }, [])
 
   if (!container) {
     return null
@@ -39,7 +41,7 @@ export const FilePreview = ({
   return createPortal(
     <div
       className="click-outside-ignore"
-      onClick={onClose} // Add this line
+      onClick={onClose}
       style={{
         position: "fixed",
         top: 0,
@@ -83,7 +85,7 @@ export const FilePreview = ({
         <audio
           src={url}
           controls
-          onClick={(e) => e.stopPropagation()} // Add this line
+          onClick={(e) => e.stopPropagation()}
           style={{ maxWidth: "80%" }}
         />
       )}
@@ -91,7 +93,7 @@ export const FilePreview = ({
         <video
           src={url}
           controls
-          onClick={(e) => e.stopPropagation()} // Add this line
+          onClick={(e) => e.stopPropagation()}
           style={{ maxWidth: "80%", maxHeight: "80%" }}
         />
       )}
