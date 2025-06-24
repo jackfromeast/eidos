@@ -76,7 +76,8 @@ SELECT
   json_extract(j.value, '$.children[0].text') as text,
   json_extract(j.value, '$.checked') as checked,
   d.id as doc_id,
-  j.value as raw_node
+  j.value as raw_node,
+  d.created_at as created_at
 FROM
   valid_docs d,
   json_tree(d.content, '$.root.children') AS parent,
