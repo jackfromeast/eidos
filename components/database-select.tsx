@@ -2,13 +2,14 @@
 
 import * as React from "react"
 import kebabCase from "lodash/kebabCase"
-import { Check, ChevronsUpDown, PlusCircle } from "lucide-react"
+import { Check, ChevronsUpDown, HomeIcon, PlusCircle } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
 import { cn } from "@/lib/utils"
 import { useCurrentPathInfo } from "@/hooks/use-current-pathinfo"
 import { useGoto } from "@/hooks/use-goto"
 import { useSpace, useSpaceFileSystem } from "@/hooks/use-space"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
   Command,
@@ -33,7 +34,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { Switch } from "@/components/ui/switch"
 import { useLastOpened } from "@/apps/web-app/[database]/hook"
 
 import { Input } from "./ui/input"
@@ -135,7 +135,14 @@ export function DatabaseSelect({ databases }: IDatabaseSelectorProps) {
             aria-expanded={open}
             className="w-full min-w-[180px] justify-between"
           >
-            {space ? <div>{space}</div> : t("space.select.selectDatabase")}
+            {space ? (
+              <div className="flex items-center gap-3">
+                <HomeIcon className="h-4 w-4" />
+                <span>{space}</span>
+              </div>
+            ) : (
+              t("space.select.selectDatabase")
+            )}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
@@ -152,7 +159,13 @@ export function DatabaseSelect({ databases }: IDatabaseSelectorProps) {
               </CommandEmpty>
               <CommandGroup>
                 {databases.map((database) => (
-                  <CommandItem key={database} onSelect={handleSelect}>
+                  <CommandItem
+                    key={database}
+                    onSelect={() => {
+                      handleSelect(database)
+                      setOpen(false)
+                    }}
+                  >
                     <Check
                       className={cn(
                         "mr-2 h-4 w-4",

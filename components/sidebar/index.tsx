@@ -75,7 +75,7 @@ export const SideBar = ({ className }: any) => {
     <Sidebar>
       <SidebarRail />
       <div
-        className={cn("absolute top-[5px] right-2", {
+        className={cn("absolute top-[5px] right-3", {
           hidden: !isMacDesktop,
         })}
       >
