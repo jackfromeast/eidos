@@ -18,12 +18,10 @@ jobs:
           node-version: "20.18.0"
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 8
+        uses: pnpm/action-setup@v4
 
       - name: Tweak pnpm.cjs
-        run: sed -i 's/\/usr\/bin\/env node/node/g' /c/Users/runneradmin/setup-pnpm/node_modules/.pnpm/pnpm@8.15.9/node_modules/pnpm/bin/pnpm.cjs
+        run: sed -i 's/\/usr\/bin\/env node/node/g' /c/Users/runneradmin/setup-pnpm/node_modules/.pnpm/pnpm@10.12.4/node_modules/pnpm/bin/pnpm.cjs
         shell: bash
 
       - name: Download and extract libsimple
@@ -77,9 +75,7 @@ jobs:
           node-version: "20.18.0"
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 8
+        uses: pnpm/action-setup@v4
 
       - name: Download and extract libsimple
         run: |
@@ -143,9 +139,7 @@ jobs:
           node-version: "20.18.0"
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 8
+        uses: pnpm/action-setup@v4
 
       - name: Download and extract libsimple
         run: |
