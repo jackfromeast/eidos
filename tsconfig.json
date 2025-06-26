@@ -24,6 +24,8 @@
       "@/locales/*": ["./packages/locales/*"],
       "@/worker/*": ["./packages/worker/*"],
       "@/lib/*": ["./packages/lib/*"],
+      "@/components/*": ["./apps/web-app/components/*"],
+      "@/hooks/*": ["./apps/web-app/hooks/*"],
       "@/*": ["./*"]
     },
     "types": [

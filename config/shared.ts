@@ -22,9 +22,8 @@ export const createHtmlPlugin = (serviceMode: string): Plugin => {
         const entryMap: {
           [key: string]: string
         } = {
-          "ink": "/apps/publish/index.tsx",
           "desktop": "/apps/desktop/renderer/index.tsx",
-          "web-app": "/apps/web-app/index.tsx"
+          "web-app": "/apps/web-app/pages/index.tsx"
         }
         const src = entryMap[serviceMode]
         return [
@@ -43,6 +42,8 @@ export const sharedAlias = {
   "@/locales": path.resolve(__dirname, "../packages/locales"),
   '@/worker': path.resolve(__dirname, '../packages/worker'),
   '@/lib': path.resolve(__dirname, '../packages/lib'),
+  '@/components': path.resolve(__dirname, '../apps/web-app/components'),
+  '@/hooks': path.resolve(__dirname, '../apps/web-app/hooks'),
   "@": path.resolve(__dirname, "../"),
 }
 

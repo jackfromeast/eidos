@@ -28,7 +28,9 @@
     "@ai-sdk/solid": "^1.2.13",
     "@ai-sdk/togetherai": "^0.2.14",
     "@ai-sdk/xai": "^1.2.16",
-    "@openrouter/ai-sdk-provider": "^0.4.5"
+    "@openrouter/ai-sdk-provider": "^0.4.5",
+    "ai": "^4.3.16",
+    "openai": "^4.104.0"
   },
   "peerDependencies": {
     "zod": "^3.23.8"

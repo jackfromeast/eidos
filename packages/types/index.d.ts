@@ -919,8 +919,8 @@ declare module "packages/core/meta-table/base" {
         constructor(dataSpace: DataSpace);
         initTable(createTableSql: string): void;
         toJson: (data: T) => T;
-        del(id: string, db?: import("@/lib/sqlite/interface").BaseServerDatabase): Promise<boolean>;
-        delBy(data: Partial<T>, db?: import("@/lib/sqlite/interface").BaseServerDatabase): Promise<boolean>;
+        del(id: string, db?: import("@/packages/core/sqlite/interface").BaseServerDatabase): Promise<boolean>;
+        delBy(data: Partial<T>, db?: import("@/packages/core/sqlite/interface").BaseServerDatabase): Promise<boolean>;
         get(id: string): Promise<T | null>;
         transformData: (data: Partial<T>) => {
             kv: any[][];
@@ -930,7 +930,7 @@ declare module "packages/core/meta-table/base" {
             deleteKPlaceholder: string;
             values: any[];
         };
-        add(data: Partial<T>, db?: import("@/lib/sqlite/interface").BaseServerDatabase): Promise<T>;
+        add(data: Partial<T>, db?: import("@/packages/core/sqlite/interface").BaseServerDatabase): Promise<T>;
         set(id: string, data: Partial<T>): Promise<boolean>;
         list(query?: Partial<T>, opts?: {
             limit?: number;
@@ -1982,8 +1982,8 @@ declare module "packages/lib/fields/multi-select" {
         static type: FieldType;
         get compareOperators(): CompareOperator[];
         get type(): FieldType;
-        get options(): import("@/lib/fields/select").SelectOption[];
-        addOption(name: string): import("@/lib/fields/select").SelectOption[];
+        get options(): import("@/packages/core/fields/select").SelectOption[];
+        addOption(name: string): import("@/packages/core/fields/select").SelectOption[];
         rawData2JSON(rawData: string | null): string[];
         /**
          * in database we store the tags as a string, so we need to convert it to an array of strings
@@ -2094,7 +2094,7 @@ declare module "packages/lib/fields/number" {
     };
     export class NumberField extends BaseField<NumberCell | RangeCell, NumberProperty, number> {
         static type: FieldType;
-        get compareOperators(): import("@/lib/fields/const").CompareOperator[];
+        get compareOperators(): import("@/packages/core/fields/const").CompareOperator[];
         rawData2JSON(rawData: number): number;
         getCellContent(rawData: number | undefined): NumberCell | RangeCell;
         cellData2RawData(cell: NumberCell | RangeCell): {
@@ -2125,7 +2125,7 @@ declare module "packages/core/sdk/service/text" {
         /**
      * when user delete a link field, we also need to delete the paired link field and delete relation data
      */
-        beforeDeleteColumn(tableName: string, columnName: string, db?: import("@/lib/sqlite/interface").BaseServerDatabase): Promise<void>;
+        beforeDeleteColumn(tableName: string, columnName: string, db?: import("@/packages/core/sqlite/interface").BaseServerDatabase): Promise<void>;
         /**
          * Get statistics about the embedding status for a text field
          * @param fieldId The field ID to get statistics for
@@ -2157,7 +2157,7 @@ declare module "packages/lib/fields/text" {
     }
     export class TextField extends BaseField<TextCell, TextProperty> {
         static type: FieldType;
-        get compareOperators(): import("@/lib/fields/const").CompareOperator[];
+        get compareOperators(): import("@/packages/core/fields/const").CompareOperator[];
         rawData2JSON(rawData: string): string;
         getCellContent(rawData: string | null, context?: CellContext): TextCell;
         cellData2RawData(cell: TextCell): {
@@ -2271,7 +2271,7 @@ declare module "packages/lib/fields/url" {
     type URLCell = UriCell;
     export class URLField extends BaseField<URLCell, URLProperty> {
         static type: FieldType;
-        get compareOperators(): import("@/lib/fields/const").CompareOperator[];
+        get compareOperators(): import("@/packages/core/fields/const").CompareOperator[];
         rawData2JSON(rawData: string): string;
         getCellContent(rawData: string): URLCell;
         cellData2RawData(cell: URLCell): {
@@ -2417,7 +2417,7 @@ declare module "packages/core/sdk/service/link" {
         dataSpace: DataSpace;
         db: EidosDatabase;
         constructor(table: TableManager);
-        getEffectRowsByRelationDeleted: (relationTableName: string, relation: IRelation, db?: import("@/lib/sqlite/interface").BaseServerDatabase) => Promise<{
+        getEffectRowsByRelationDeleted: (relationTableName: string, relation: IRelation, db?: import("@/packages/core/sqlite/interface").BaseServerDatabase) => Promise<{
             [x: string]: any;
         }>;
         /**
@@ -2436,7 +2436,7 @@ declare module "packages/core/sdk/service/link" {
             added: string[];
             removed: string[];
         };
-        getEffectRows: (table_name: string, rowIds: string[], db?: import("@/lib/sqlite/interface").BaseServerDatabase) => Promise<Record<string, string[]>>;
+        getEffectRows: (table_name: string, rowIds: string[], db?: import("@/packages/core/sqlite/interface").BaseServerDatabase) => Promise<Record<string, string[]>>;
         getTableNodeName: (tableName: string) => Promise<string>;
         getPairedLinkField: (data: IField<ILinkProperty>) => Promise<{
             name: string;
@@ -2464,15 +2464,15 @@ declare module "packages/core/sdk/service/link" {
          * @param db
          * @returns
          */
-        addField: (data: IField<ILinkProperty>, db?: import("@/lib/sqlite/interface").BaseServerDatabase) => Promise<import("@/lib/sqlite/interface").BaseServerDatabase>;
+        addField: (data: IField<ILinkProperty>, db?: import("@/packages/core/sqlite/interface").BaseServerDatabase) => Promise<import("@/packages/core/sqlite/interface").BaseServerDatabase>;
         /**
          * when user delete a table, we need check if there are link fields in the table, if so, we need to delete the paired link field and delete relation table and delete trigger
          */
-        beforeDeleteTable(tableName: string, db?: import("@/lib/sqlite/interface").BaseServerDatabase): Promise<void>;
+        beforeDeleteTable(tableName: string, db?: import("@/packages/core/sqlite/interface").BaseServerDatabase): Promise<void>;
         /**
          * when user delete a link field, we also need to delete the paired link field and delete relation data
          */
-        beforeDeleteColumn(tableName: string, columnName: string, db?: import("@/lib/sqlite/interface").BaseServerDatabase): Promise<void>;
+        beforeDeleteColumn(tableName: string, columnName: string, db?: import("@/packages/core/sqlite/interface").BaseServerDatabase): Promise<void>;
     }
 }
 declare module "packages/core/sdk/service/lookup" {
@@ -2553,7 +2553,7 @@ declare module "packages/core/sdk/service/select" {
             to: string;
         }) => Promise<void>;
         deleteSelectOption: (field: IField<SelectProperty>, option: string) => Promise<void>;
-        beforeConvert: (field: IField<any>, db?: import("@/lib/sqlite/interface").BaseServerDatabase) => Promise<{
+        beforeConvert: (field: IField<any>, db?: import("@/packages/core/sqlite/interface").BaseServerDatabase) => Promise<{
             id: string;
             name: string;
             color: string;
@@ -3022,7 +3022,7 @@ declare module "packages/core/meta-table/tree" {
         get(id: string): Promise<ITreeNode | null>;
         updateName(id: string, name: string): Promise<boolean>;
         pin(id: string, is_pinned: boolean): Promise<boolean>;
-        del(id: string, db?: import("@/lib/sqlite/interface").BaseServerDatabase): Promise<boolean>;
+        del(id: string, db?: import("@/packages/core/sqlite/interface").BaseServerDatabase): Promise<boolean>;
         makeProxyRow(row: any): ITreeNode;
         query(qs: {
             query?: string;
@@ -3054,7 +3054,7 @@ declare module "packages/core/meta-table/view" {
         JSONFields: string[];
         add(data: IView): Promise<IView>;
         del(id: string): Promise<boolean>;
-        deleteByTableId(table_id: string, db?: import("@/lib/sqlite/interface").BaseServerDatabase): Promise<void>;
+        deleteByTableId(table_id: string, db?: import("@/packages/core/sqlite/interface").BaseServerDatabase): Promise<void>;
         updateQuery(id: string, query: string): Promise<void>;
         createDefaultView(tableName: string, type?: ViewTypeEnum): Promise<IView<any>>;
         isRowExistInQuery(table_id: string, rowId: string, query: string): Promise<boolean>;
@@ -3279,7 +3279,7 @@ declare module "packages/core/DataSpace" {
         addEmbedding(embedding: IEmbedding): Promise<IEmbedding>;
         table(id: string): TableManager;
         createTableIndex(tableId: string, column: string): void;
-        getLookupContext(tableName: string, columnName: string): Promise<import("@/lib/fields/lookup").ILookupContext>;
+        getLookupContext(tableName: string, columnName: string): Promise<import("@/packages/core/fields/lookup").ILookupContext>;
         updateLookupColumn(tableName: string, columnName: string): Promise<void>;
         deleteSelectOption: (field: IField, option: string) => Promise<void>;
         updateSelectOptionName: (field: IField, update: {
