@@ -1,10 +1,20 @@
-import { MultiSelectCell } from "@/components/table/views/grid/cells/multi-select-cell"
-
+import type { CustomCell } from "@glideapps/glide-data-grid"
 import { BaseField } from "./base"
 import { CompareOperator, FieldType, GridCellKind } from "./const"
-import { SelectField, SelectProperty } from "./select"
+import { SelectField, SelectOption, SelectProperty } from "./select"
 
 type MultiSelectProperty = SelectProperty
+
+interface MultiSelectCellProps {
+  readonly kind: "multi-select-cell"
+  //  option id
+  readonly values: readonly string[] | null
+  readonly readonly?: boolean
+  readonly allowedValues: readonly SelectOption[]
+}
+
+export type MultiSelectCell = CustomCell<MultiSelectCellProps>
+
 
 export class MultiSelectField extends BaseField<
   MultiSelectCell,

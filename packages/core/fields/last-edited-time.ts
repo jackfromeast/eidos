@@ -1,4 +1,4 @@
-import { TextCell } from "@glideapps/glide-data-grid"
+import type { TextCell } from "@glideapps/glide-data-grid"
 
 import { BaseField } from "./base"
 import { CompareOperator, FieldType, GridCellKind } from "./const"

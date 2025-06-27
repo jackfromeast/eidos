@@ -1,14 +1,20 @@
-import type { RatingCell } from "@/components/table/views/grid/cells/rating-cell"
-
+import type { CustomCell } from "@glideapps/glide-data-grid"
 import { BaseField } from "./base"
 import {
-  CompareOperator,
   FieldType,
   GridCellKind,
-  NUMBER_BASED_COMPARE_OPERATORS,
+  NUMBER_BASED_COMPARE_OPERATORS
 } from "./const"
 
 type RatingProperty = {}
+
+interface RatingCellProps {
+  readonly kind: "rating-cell"
+  readonly rating: number
+}
+
+export type RatingCell = CustomCell<RatingCellProps>
+
 
 export class RatingField extends BaseField<RatingCell, RatingProperty, number> {
   static type = FieldType.Rating

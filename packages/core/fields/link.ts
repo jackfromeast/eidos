@@ -1,6 +1,13 @@
 import zip from "lodash/zip"
 
-import { LinkCell } from "@/components/table/views/grid/cells/link/link-cell"
+import type { CustomCell } from "@glideapps/glide-data-grid"
+
+interface LinkCellProps {
+  readonly kind: "link-cell"
+  readonly value: LinkCellData[]
+  readonly linkTable: string
+}
+export type LinkCell = CustomCell<LinkCellProps>
 
 import { BaseField } from "./base"
 import { FieldType, GridCellKind } from "./const"
