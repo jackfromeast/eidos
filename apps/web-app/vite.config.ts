@@ -1,12 +1,14 @@
-import { UserConfig, mergeConfig } from "vite"
+import { UserConfig, defineConfig, mergeConfig } from "vite"
 import { VitePWA } from "vite-plugin-pwa"
-import { sharedConfig, createHtmlPlugin, iconJson } from "./shared"
+import { sharedConfig } from "../../packages/shared/vite/base.config"
+import { createHtmlPlugin } from "../../packages/shared/vite/plugins"
+import iconJson from "./icons.json"
 
 const webAppConfig: UserConfig = mergeConfig(sharedConfig, {
   plugins: [
-    createHtmlPlugin('web-app'),
+    createHtmlPlugin('/pages/index.tsx'),
     VitePWA({
-      srcDir: "apps/web-app",
+      srcDir: ".",
       filename: "sw.ts",
       strategies: "injectManifest",
       injectManifest: {
@@ -48,4 +50,5 @@ const webAppConfig: UserConfig = mergeConfig(sharedConfig, {
   },
 })
 
-export default webAppConfig 
+
+export default defineConfig(webAppConfig)

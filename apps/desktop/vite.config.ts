@@ -1,8 +1,9 @@
 import esmShim from '@rollup/plugin-esm-shim'
 import path from "path"
-import { Plugin, UserConfig, mergeConfig } from "vite"
+import { Plugin, UserConfig, mergeConfig, defineConfig } from "vite"
 import electron from 'vite-plugin-electron/simple'
-import { createHtmlPlugin, sharedAlias, sharedConfig } from "./shared"
+import { sharedAlias, sharedConfig } from "../../packages/shared/vite/base.config"
+import { createHtmlPlugin } from "../../packages/shared/vite/plugins"
 import fs from "fs/promises"
 
 
@@ -53,8 +54,8 @@ const desktopConfig: UserConfig = mergeConfig(sharedConfig, {
     electron({
       main: {
         entry: [
-          'apps/desktop/electron/main.ts',
-          'apps/desktop/electron/worker.ts',
+          'electron/main.ts',
+          'electron/worker.ts',
         ],
         vite: {
           resolve: {
@@ -74,7 +75,7 @@ const desktopConfig: UserConfig = mergeConfig(sharedConfig, {
         }
       },
       preload: {
-        input: 'apps/desktop/electron/preload.ts',
+        input: 'electron/preload.ts',
         vite: {
           resolve: {
             alias: sharedAlias,
@@ -120,7 +121,7 @@ const desktopConfig: UserConfig = mergeConfig(sharedConfig, {
       '^/[^/]+/files/': {
         target: 'http://localhost:13127',
         changeOrigin: true,
-        rewrite: (path) => path,
+        rewrite: (path: string) => path,
       },
       '/static/': {
         target: 'http://localhost:13127',
@@ -134,4 +135,4 @@ const desktopConfig: UserConfig = mergeConfig(sharedConfig, {
   },
 })
 
-export default desktopConfig 
+export default defineConfig(desktopConfig)
