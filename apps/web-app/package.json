@@ -3,8 +3,12 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
   "scripts": {
     "dev": "vite",
+    "build": "NODE_OPTIONS=--max-old-space-size=8192 vite build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
@@ -171,8 +175,5 @@
     "zod-to-json-schema": "^3.22.3",
     "zustand": "^4.3.9"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "packageManager": "pnpm@10.12.4"
 }

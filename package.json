@@ -10,7 +10,6 @@
   "scripts": {
     "dev:staging": "vite --mode staging",
     "dev:desktop": "cross-env EIDOS_SERVICE_MODE=desktop vite --mode desktop",
-    "build": "NODE_OPTIONS=--max-old-space-size=8192 vite build",
     "build:staging": "pnpm recursive run build && NODE_OPTIONS=--max-old-space-size=8192 vite build --mode staging",
     "build:self-host": "pnpm recursive run build && NODE_OPTIONS=--max-old-space-size=8192 vite build --mode self-host",
     "build:desktop": "shx rm -rf dist-electron && cross-env NODE_OPTIONS=--max-old-space-size=8192 EIDOS_SERVICE_MODE=desktop vite build --mode desktop",
@@ -46,6 +45,7 @@
     "@typescript-eslint/eslint-plugin": "^5.61.0",
     "@typescript-eslint/parser": "^5.61.0",
     "@vitejs/plugin-react": "^4.0.3",
+    "@vitejs/plugin-react-oxc": "^0.2.3",
     "autoprefixer": "^10.4.14",
     "clsx": "^1.2.1",
     "cross-env": "^7.0.3",
@@ -76,6 +76,9 @@
     "pnpm": ">=8.5.0"
   },
   "pnpm": {
+    "overrides": {
+      "vite": "npm:rolldown-vite@latest"
+    },
     "peerDependencyRules": {
       "ignoreMissing": [
         "next",
