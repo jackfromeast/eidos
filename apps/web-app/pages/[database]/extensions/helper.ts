@@ -3,8 +3,7 @@ import z from "zod"
 import { toast } from "@/components/ui/use-toast"
 import { IExtension } from "@/packages/core/meta-table/extension"
 import { generateId, proxyURL } from "@/lib/utils"
-// @ts-ignore
-import eidosTypes from "@eidos.space/types/index.d.ts?raw"
+import eidosTypes from "@eidos.space/core/dist/index.d.ts?raw"
 
 import { parse } from "comment-parser"
 
@@ -133,10 +132,17 @@ export const getDynamicPrompt = (bindings: IExtension["bindings"]) => {
       return `${key}: TableManager;`
     })
     .join("\n")
+  
+  // Add global eidos variable declaration
+  const eidosGlobalDeclaration = `
+declare global {
+  const eidos: Eidos;
+}
+`
+  
   let replaced = eidosTypes.replace(replaceText, replaceText + "\n" + bindingText)
-  replaced += `
-  declare const eidos: import("@eidos.space/types").Eidos;
-  `
+  // Add global eidos declaration at the end
+  replaced = replaced + eidosGlobalDeclaration
   return replaced
 }
 

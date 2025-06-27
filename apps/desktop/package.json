@@ -12,7 +12,6 @@
   "author": "",
   "dependencies": {
     "@eidos.space/better-sqlite3": "^11.9.3",
-    "@eidos.space/types": "workspace:*",
     "@hono/node-server": "^1.12.2",
     "@libsql/client": "^0.8.1",
     "@oxc-parser/wasm": "^0.60.0",
