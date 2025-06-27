@@ -52,6 +52,7 @@
       "vite-plugin-pwa/react",
       "node",
       "vitest/globals",
+      "vite/client",
       "@types/wicg-file-system-access"
     ]
   },
@@ -65,8 +66,11 @@
     "apps/web-app/rag.jsx",
     "scripts/version.cjs",
     "scripts/build-cf-worker.cjs",
-    "scripts/notarize.cjs"
-, "apps/web-app/postcss.config.mjg", "apps/web-app/tailwind.config.cjs"  ],
+    "scripts/notarize.cjs",
+    "apps/web-app/postcss.config.mjg",
+    "apps/web-app/tailwind.config.cjs",
+    "packages/lib/types/**/*.d.ts"
+  ],
   "exclude": [
     "node_modules",
     "dist",
