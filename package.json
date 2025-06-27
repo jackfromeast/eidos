@@ -11,7 +11,7 @@
     "dev": "vite",
     "dev:staging": "vite --mode staging",
     "dev:desktop": "cross-env EIDOS_SERVICE_MODE=desktop vite --mode desktop",
-    "build": "pnpm recursive run build  && NODE_OPTIONS=--max-old-space-size=8192 vite build",
+    "build": "NODE_OPTIONS=--max-old-space-size=8192 vite build",
     "build:staging": "pnpm recursive run build && NODE_OPTIONS=--max-old-space-size=8192 vite build --mode staging",
     "build:self-host": "pnpm recursive run build && NODE_OPTIONS=--max-old-space-size=8192 vite build --mode self-host",
     "build:desktop": "shx rm -rf dist-electron && cross-env NODE_OPTIONS=--max-old-space-size=8192 EIDOS_SERVICE_MODE=desktop vite build --mode desktop",

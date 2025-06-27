@@ -2,21 +2,21 @@
 
 import { Suspense, lazy } from "react"
 
-import { useAppRuntimeStore } from "@/lib/store/runtime-store"
-import { cn } from "@/lib/utils"
 import { useEidosFileSystemManager } from "@/apps/web-app/hooks/use-fs"
 import { useSqlite } from "@/apps/web-app/hooks/use-sqlite"
+import { FileManager } from "@/components/file-manager"
+import { Loading } from "@/components/loading"
+import { Nav } from "@/components/nav"
+import { ScriptContainer } from "@/components/script-container"
+import { SideBar } from "@/components/sidebar"
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable"
-import { FileManager } from "@/components/file-manager"
-import { Loading } from "@/components/loading"
-import { ScriptContainer } from "@/components/script-container"
-import { SideBar } from "@/components/sidebar"
+import { useAppRuntimeStore } from "@/lib/store/runtime-store"
+import { cn } from "@/lib/utils"
 
-import { Nav } from "../../../../components/nav"
 import { useSpaceAppStore } from "./store"
 
 const AIChat = lazy(() => import("@/components/ai-chat/ai-chat-new"))
