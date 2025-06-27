@@ -48,7 +48,7 @@ function getPlatformInfo(pkgConfig) {
   }
 
   // Determine destination base name (still needed)
-  let destBaseName = pkgConfig.destBaseName;
+  let destBaseName = pkgConfig.destBaseName
 
   // Platform-specific destination overrides could still be useful if needed later
   // if (pkgConfig.overrides && pkgConfig.overrides[process.platform]) {
@@ -64,15 +64,53 @@ function getPlatformInfo(pkgConfig) {
   const destFileName = `${destBaseName}.${extension}`
 
   // Return necessary info, including the extension for findSourcePath
-  return { packageName, destFileName, extension, basePackageName: pkgConfig.basePackageName }
+  return {
+    packageName,
+    destFileName,
+    extension,
+    basePackageName: pkgConfig.basePackageName,
+  }
+}
+
+// Function to find workspace root
+function findWorkspaceRoot() {
+  let currentDir = __dirname
+  
+  while (currentDir !== path.dirname(currentDir)) {
+    // Check for workspace indicators
+    const packageJsonPath = path.join(currentDir, "package.json")
+    const pnpmWorkspacePath = path.join(currentDir, "pnpm-workspace.yaml")
+    
+    if (fs.existsSync(packageJsonPath)) {
+      try {
+        const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'))
+        // Check if it has workspaces property or if pnpm-workspace.yaml exists
+        if (packageJson.workspaces || fs.existsSync(pnpmWorkspacePath)) {
+          return currentDir
+        }
+      } catch (e) {
+        // Continue searching if package.json is malformed
+      }
+    }
+    
+    currentDir = path.dirname(currentDir)
+  }
+  
+  // Fallback to current working directory if no workspace root found
+  console.warn("Could not find workspace root, falling back to current working directory")
+  return process.cwd()
 }
 
 // Updated function to find the source file by extension
 function findSourcePath(basePackageName, packageName, extension) {
-  const pnpmDir = path.join(process.cwd(), "node_modules", ".pnpm")
+  const workspaceRoot = findWorkspaceRoot()
+  const pnpmDir = path.join(workspaceRoot, "node_modules", ".pnpm")
   let packageVersionDir = ""
 
   // Add basePackageName to logs
+  console.log(
+    `postinstall-${basePackageName}: Using workspace root: ${workspaceRoot}`
+  )
   console.log(
     `postinstall-${basePackageName}: Searching for package directory starting with ${packageName}@ in ${pnpmDir}`
   )
@@ -128,7 +166,9 @@ function findSourcePath(basePackageName, packageName, extension) {
 
   try {
     const packageFiles = fs.readdirSync(packageDir)
-    const targetFiles = packageFiles.filter((file) => file.endsWith(`.${extension}`))
+    const targetFiles = packageFiles.filter((file) =>
+      file.endsWith(`.${extension}`)
+    )
 
     if (targetFiles.length === 1) {
       const sourceFileName = targetFiles[0]
@@ -143,7 +183,9 @@ function findSourcePath(basePackageName, packageName, extension) {
       console.error(
         `postinstall-${basePackageName}: No file found with extension .${extension} in ${packageDir}`
       )
-      console.log(`postinstall-${basePackageName}: Files in directory: ${packageFiles.join(', ')}`) // Log files for debugging
+      console.log(
+        `postinstall-${basePackageName}: Files in directory: ${packageFiles.join(", ")}`
+      ) // Log files for debugging
       return null
     } else {
       // Add basePackageName to logs
@@ -164,13 +206,15 @@ function findSourcePath(basePackageName, packageName, extension) {
 
 // --- Main Script Logic ---
 console.log("--- Starting postinstall script for native dependencies ---")
+const workspaceRoot = findWorkspaceRoot()
+console.log(`Using workspace root: ${workspaceRoot}`)
 let overallSuccess = true
 
 packagesToProcess.forEach((pkgConfig) => {
   console.log(`
 --- Processing package: ${pkgConfig.basePackageName} ---`)
   // Pass the whole pkgConfig object to getPlatformInfo
-  const platformInfo = getPlatformInfo(pkgConfig);
+  const platformInfo = getPlatformInfo(pkgConfig)
 
   if (!platformInfo) {
     console.log(
@@ -259,5 +303,3 @@ packagesToProcess.forEach((pkgConfig) => {
 
 console.log("--- Postinstall script finished ---")
 process.exit(overallSuccess ? 0 : 1) // Exit with 0 if all succeed, 1 otherwise
-
-

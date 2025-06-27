@@ -42,7 +42,6 @@ let forceQuit = false;
 export const PORT = 13127;
 
 
-Menu.setApplicationMenu(null)
 
 const libPath = getResourcePath(`dist-sqlite-ext/libsimple`);
 const dictPath = getResourcePath('dist-sqlite-ext/dict');

@@ -12,8 +12,8 @@ const copyPublicPlugin = (): Plugin => {
   return {
     name: 'copy-public',
     closeBundle: async () => {
-      const publicDir = path.resolve(__dirname, '../public')
-      const distDir = path.resolve(__dirname, '../dist')
+      const publicDir = path.resolve(__dirname, '../web-app/public')
+      const distDir = path.resolve(__dirname, 'dist')
       console.log('dir', publicDir, distDir)
 
       try {
@@ -49,7 +49,7 @@ const copyPublicPlugin = (): Plugin => {
 
 const desktopConfig: UserConfig = mergeConfig(sharedConfig, {
   plugins: [
-    createHtmlPlugin('desktop'),
+    createHtmlPlugin('renderer/index.tsx'),
     copyPublicPlugin(),
     electron({
       main: {

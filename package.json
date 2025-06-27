@@ -5,16 +5,13 @@
   "type": "module",
   "description": "Eidos is an extensible framework for managing your personal data throughout your lifetime in one place.",
   "author": "mayneyao",
-  "main": "dist-electron/main.js",
-  "start": "electron .",
   "scripts": {
-    "dev:staging": "vite --mode staging",
-    "dev:desktop": "cross-env EIDOS_SERVICE_MODE=desktop vite --mode desktop",
-    "build:staging": "pnpm recursive run build && NODE_OPTIONS=--max-old-space-size=8192 vite build --mode staging",
-    "build:self-host": "pnpm recursive run build && NODE_OPTIONS=--max-old-space-size=8192 vite build --mode self-host",
-    "build:desktop": "shx rm -rf dist-electron && cross-env NODE_OPTIONS=--max-old-space-size=8192 EIDOS_SERVICE_MODE=desktop vite build --mode desktop",
-    "pkg:desktop": "cross-env BUILD_MODE=1 electron-builder --publish never --config apps/desktop/electron/electron-builder.json",
-    "pkg:desktop:dev": "cross-env BUILD_MODE=1 electron-builder --publish never --config apps/desktop/electron/electron-builder.dev.json",
+    "dev": "pnpm run --filter web-app dev",
+    "dev:desktop": "pnpm run --filter desktop dev",
+    "build": "pnpm run --filter web-app build",
+    "build:desktop": "pnpm run --filter desktop build",
+    "pkg": "pnpm run --filter desktop package",
+    "pkg:dev": "pnpm run --filter desktop package:dev",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
@@ -76,9 +73,6 @@
     "pnpm": ">=8.5.0"
   },
   "pnpm": {
-    "overrides": {
-      "vite": "npm:rolldown-vite@latest"
-    },
     "peerDependencyRules": {
       "ignoreMissing": [
         "next",

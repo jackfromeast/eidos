@@ -21,7 +21,6 @@ import { useSpaceAppStore } from "../../store"
 import { getDynamicPrompt } from "../helper"
 import { useEditorStore } from "../stores/editor-store"
 import scriptTypes from "./script-global-types?raw"
-import reactTypes from "/node_modules/@types/react/index.d.ts?raw"
 
 function compile(source: string) {
   const result = ts.transpileModule(source, {
@@ -253,10 +252,10 @@ export const CodeEditor = forwardRef(
           })
 
           if (language === "typescriptreact") {
-            monaco.languages.typescript.typescriptDefaults.addExtraLib(
-              reactTypes,
-              `file:///node_modules/@react/types/index.d.ts`
-            )
+            // monaco.languages.typescript.typescriptDefaults.addExtraLib(
+            //   reactTypes,
+            //   `file:///node_modules/@react/types/index.d.ts`
+            // )
           }
           monaco.languages.typescript.typescriptDefaults.addExtraLib(
             dynamicPrompt,
