@@ -8,7 +8,7 @@
   "license": "ISC",
   "scripts": {
     "dev": "vite",
-    "build": "NODE_OPTIONS=--max-old-space-size=8192 vite build",
+    "build": "pnpm run --filter @eidos.space/core build && NODE_OPTIONS=--max-old-space-size=8192 vite build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
