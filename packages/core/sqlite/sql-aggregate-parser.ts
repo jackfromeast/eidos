@@ -1,4 +1,3 @@
-import { AggregateItem } from "@/lib/types/aggregate-item"
 import {
   Expr,
   ExprCall,
@@ -8,6 +7,7 @@ import {
   parseFirst,
   toSql
 } from "pgsql-ast-parser"
+import { AggregateItem } from "./interface"
 
 export const transformAggregateItems2SqlString = (
   sql: string,

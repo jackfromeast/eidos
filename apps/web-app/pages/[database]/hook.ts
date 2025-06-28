@@ -107,7 +107,7 @@ export const useLayoutInit = () => {
       window.eidos.invoke(MsgType.SwitchDatabase, {
         databaseName: database,
         id: switchDdMsgId,
-      }).then((response) => {
+      }).then((response: any) => {
         const { id: returnId, data } = response
         if (returnId === switchDdMsgId) {
           setLastOpenedDatabase(data.dbName)

@@ -77,25 +77,31 @@ interface WindowControlsOverlayGeometryChangeEventInit extends EventInit {
 }
 
 interface Window {
-  eidos: import('electron').IpcRenderer & {
-    on: (channel: string, listener: IpcListener) => string | undefined
+  eidos: {
+    invoke: (type: string, data: any) => Promise<any>
+    on: (channel: string, listener: any) => string | undefined
     off: (channel: string, listenerId: string) => void
-    efsManager: import('@/packages/lib/storage/eidos-file-system').EidosFileSystemManager
+    efsManager: any
     spaceList: string[]
-    spaceFileSystem: import('@/packages/lib/storage/space').SpaceFileSystem
+    spaceFileSystem: any
     openTabs: string[]
-    config: import('./config/index').ConfigManager
+    config: any
     selectFolder: () => Promise<string | undefined>
     openFolder: (folder: string) => Promise<void>
     isDataFolderSet: boolean
+    isNeverCreatedSpace: boolean
+    checkIsDataFolderSet: () => boolean
+    checkIsNeverCreatedSpace: () => Promise<boolean>
     reloadApp: () => Promise<void>
     minimizeWindow: () => void
     maximizeWindow: () => void
     unmaximizeWindow: () => void
     closeWindow: () => void
     onWindowStateChange: (callback: (state: 'maximized' | 'restored') => void) => () => void
-    initializePlayground: (space: string, blockId: string, files: PlaygroundFile[]) => Promise<string>
-    getApiAgentStatus: () => Promise<import('./server/api-agent').ApiAgentStatus>
-    onApiAgentStatusChanged: (callback: (status: import('./server/api-agent').ApiAgentStatus) => void) => () => void
+    initializePlayground: (space: string, blockId: string, files: any[]) => Promise<string>
+    getApiAgentStatus: () => Promise<any>
+    onApiAgentStatusChanged: (callback: (status: any) => void) => () => void
+    fetch: (url: string, options: RequestInit) => Promise<any>
+    openUrl: (url: string) => Promise<void>
   }
-}
+} 

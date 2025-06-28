@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react"
+import { AggregateItem } from "@/packages/core/sqlite/interface"
 import { useTranslation } from "react-i18next"
 
-import { AggregateItem } from "@/lib/types/aggregate-item"
-import { TableField } from "@/apps/web-app/hooks/use-table-fields"
 import { Button } from "@/components/ui/button"
 import {
   Select,
@@ -11,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { TableField } from "@/apps/web-app/hooks/use-table-fields"
 
 export type QueryTransformType = "aggregate" | "filter" | "sort" // 添加更多转换类型
 

@@ -66,9 +66,9 @@
     "scripts/version.cjs",
     "scripts/build-cf-worker.cjs",
     "scripts/notarize.cjs",
-    "apps/web-app/postcss.config.mjg",
-    "apps/web-app/tailwind.config.cjs",
-    "packages/lib/types/**/*.d.ts"
+    "apps/web-app/postcss.config.mjs",
+    "apps/web-app/tailwind.config.mjs",
+    "packages/shared/types/**/*.d.ts"
   ],
   "exclude": [
     "node_modules",
