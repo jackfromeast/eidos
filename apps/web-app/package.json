@@ -12,9 +12,25 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.11",
+    "@tailwindcss/typography": "^0.5.9",
+    "@testing-library/react-hooks": "^8.0.1",
+    "@types/d3": "^7.4.0",
+    "@types/node": "^20.4.1",
+    "@types/papaparse": "^5.3.7",
     "@types/react": "^18.2.14",
     "@types/react-dom": "^18.2.6",
-    "@types/react-window": "^1.8.5"
+    "@types/react-window": "^1.8.5",
+    "@vitejs/plugin-react": "^4.0.3",
+    "@vitejs/plugin-react-oxc": "^0.2.3",
+    "autoprefixer": "^10.4.14",
+    "clsx": "^1.2.1",
+    "postcss": "^8.4.25",
+    "typescript": "^5.3.3",
+    "vite": "^6.3.5",
+    "vite-plugin-pwa": "^0.20.1",
+    "vite-plugin-top-level-await": "^1.5.0",
+    "vite-plugin-wasm": "^3.4.1"
   },
   "dependencies": {
     "@ahooksjs/use-url-state": "^3.5.1",
