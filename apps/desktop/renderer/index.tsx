@@ -4,6 +4,8 @@ import { RouterProvider, createBrowserRouter, redirect } from "react-router-dom"
 import { QueryParamProvider } from "use-query-params"
 import { ReactRouter6Adapter } from "use-query-params/adapters/react-router-6"
 
+import CreateSpacePage from "@/apps/desktop/renderer/initial-setup/create-space"
+import InitialSetupPage from "@/apps/desktop/renderer/initial-setup/storage-setup"
 import SettingsApiPage from "@/apps/desktop/renderer/settings/api/page"
 import SettingsSecurityPage from "@/apps/desktop/renderer/settings/security/page"
 import SettingsStoragePage from "@/apps/desktop/renderer/settings/storage/page"
@@ -64,11 +66,23 @@ const router = createBrowserRouter([
         path: "/",
         element: <LandingPage />,
         loader: ({ params }) => {
-          if (!window.eidos.isDataFolderSet) {
-            return redirect("/settings/storage")
+          if (!window.eidos.checkIsDataFolderSet()) {
+            console.log(
+              "redirect to initial-setup",
+              window.eidos.checkIsDataFolderSet()
+            )
+            return redirect("/initial-setup")
           }
           return null
         },
+      },
+      {
+        path: "initial-setup",
+        element: <InitialSetupPage />,
+      },
+      {
+        path: "create-space",
+        element: <CreateSpacePage />,
       },
       {
         path: "404",
@@ -152,8 +166,8 @@ const router = createBrowserRouter([
         element: <DesktopSpaceLayout />,
         loader: async ({ params }) => {
           // check the space is exist
-          if (!window.eidos.isDataFolderSet) {
-            return redirect("/settings/storage")
+          if (!window.eidos.checkIsDataFolderSet()) {
+            return redirect("/initial-setup")
           }
           const spaceNames = await window.eidos.spaceFileSystem.list()
           if (params.database && !spaceNames.includes(params.database)) {
