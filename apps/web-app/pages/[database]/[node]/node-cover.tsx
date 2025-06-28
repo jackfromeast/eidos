@@ -4,8 +4,6 @@ import { useTranslation } from "react-i18next"
 
 import { ITreeNode } from "@/lib/store/ITreeNode"
 import { cn } from "@/lib/utils"
-import { useMblock } from "@/apps/web-app/hooks/use-mblock"
-import { useNode } from "@/apps/web-app/hooks/use-nodes"
 import { Button } from "@/components/ui/button"
 import {
   Popover,
@@ -15,6 +13,8 @@ import {
 import { BlockRenderer } from "@/components/block-renderer/block-renderer"
 import { getDragFileInfo } from "@/components/file-manager/helper"
 import { FileSelector } from "@/components/file-selector"
+import { useMblock } from "@/apps/web-app/hooks/use-mblock"
+import { useNode } from "@/apps/web-app/hooks/use-nodes"
 
 export const NodeCover = (props: { node: ITreeNode }) => {
   const { node } = props

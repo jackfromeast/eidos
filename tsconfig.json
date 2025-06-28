@@ -61,7 +61,6 @@
     "**/*.ts",
     "**/*.tsx",
     "**/*.js",
-    ".eslintrc.cjs",
     "prettier.config.cjs",
     "apps/web-app/rag.jsx",
     "scripts/version.cjs",
