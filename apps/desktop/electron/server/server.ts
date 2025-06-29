@@ -38,7 +38,7 @@ app.use('*', async (c, next) => {
     if (c.req.method === 'OPTIONS' && isAllowedOrigin) {
         // Respond to preflight requests with 204 No Content.
         // CORS headers are already set if isAllowedOrigin is true.
-        return c.text('', 204);
+        return c.body(null, 204);
     }
 
     // These COOP/COEP headers were in the original middleware.
