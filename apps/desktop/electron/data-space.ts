@@ -1,7 +1,7 @@
 import { EidosDataEventChannelName, EidosMessageChannelName } from "@/lib/const";
 import type { EidosDatabase } from "@/packages/core/DataSpace";
 import { DataSpace } from "@/packages/core/DataSpace";
-import type { WebContents} from "electron";
+import type { WebContents } from "electron";
 import { ipcMain } from "electron";
 import { EventEmitter } from 'events';
 import { getConfigManager } from "./config";
@@ -169,7 +169,8 @@ export class DataSpaceManager {
                 libPath: vecLibPath,
             },
             enableSync,
-            volumeId
+            volumeId,
+            logger: console
         });
 
         const draftDataSpace = new DataSpace({
@@ -180,7 +181,8 @@ export class DataSpaceManager {
                     libPath,
                     dictPath,
                 },
-                enableSync: false
+                enableSync: false,
+                logger: console
             }),
             activeUndoManager: false,
             dbName: 'draft',

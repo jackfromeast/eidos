@@ -1,6 +1,5 @@
 import { BaseServerDatabase } from '@/packages/core/sqlite/interface';
 import Database from '@eidos.space/better-sqlite3';
-import console from 'electron-log';
 import fs from 'fs';
 import path from 'path';
 import { generatePragmaList } from './config';
@@ -30,20 +29,25 @@ interface NodeServerDatabaseOptions {
     // vec extension
     vec?: {
         libPath: string;
-    }
+    },
+    // we make logger configurable instead of directly importing electron-log, 
+    // electron-log does not support esm, which will cause the worker code to mix cjs and esm and cannot work normally
+    logger?: any;
 }
 
 export class NodeServerDatabase extends BaseServerDatabase {
     isSyncEnabled: boolean = false;
     db: Database.Database | null = null;
     options: NodeServerDatabaseOptions | null = null
+    logger: any = console;
 
     constructor(config: NodeDomainDbInfo['config'], options: NodeServerDatabaseOptions) {
         super();
-        console.log('Initializing NodeServerDatabase...');
-        // console.log('Options:', options);
-        // console.log('Config:', config);
+        this.logger.log('Initializing NodeServerDatabase...');
+        // this.logger.log('Options:', options);
+        // this.logger.log('Config:', config);
         this.options = options;
+        this.logger = options.logger || console;
 
         try {
             // 1. Register Graft VFS if necessary
@@ -52,54 +56,54 @@ export class NodeServerDatabase extends BaseServerDatabase {
                 // This is necessary to register the 'graft' VFS system-wide
                 const vfsRegistrationDb = new Database(':memory:');
                 try {
-                    console.log('Loading graft extension library to register VFS:', options.graft.libPath);
+                    this.logger.log('Loading graft extension library to register VFS:', options.graft.libPath);
                     vfsRegistrationDb.loadExtension(options.graft.libPath);
-                    console.log('Graft extension library loaded, VFS should be registered.');
+                    this.logger.log('Graft extension library loaded, VFS should be registered.');
                 } catch (err: any) {
-                    console.error('Failed to load graft extension library:', err);
+                    this.logger.error('Failed to load graft extension library:', err);
                     // This is likely a fatal error for sync functionality
                     throw new Error(`Failed to load graft VFS extension from ${options.graft.libPath}: ${err.message}`);
                 } finally {
                     vfsRegistrationDb.close();
                 }
             } else if (options.enableSync) {
-                console.warn('enableSync is true, but graft.libPath is not provided. Sync functionality will likely fail.');
+                this.logger.warn('enableSync is true, but graft.libPath is not provided. Sync functionality will likely fail.');
             } else {
-                console.log('Graft extension path not provided (sync likely disabled).');
+                this.logger.log('Graft extension path not provided (sync likely disabled).');
             }
 
             // Determine if sync mode (via graft VFS) should be attempted
             const graftFilePath = path.join(path.dirname(config.path), 'graft');
             const isSyncDbFilePresent = fs.existsSync(graftFilePath);
             this.isSyncEnabled = (isSyncDbFilePresent || options.enableSync) && !!options.graft?.libPath;
-            console.log(`Sync mode check: enableSync=${options.enableSync}, graftFilePresent=${isSyncDbFilePresent}, graftLibPathProvided=${!!options.graft?.libPath}, result=${this.isSyncEnabled}`);
+            this.logger.log(`Sync mode check: enableSync=${options.enableSync}, graftFilePresent=${isSyncDbFilePresent}, graftLibPathProvided=${!!options.graft?.libPath}, result=${this.isSyncEnabled}`);
 
             // 2. Determine the database URI
             const dbUri = this._determineDbUri(config, options, graftFilePath, isSyncDbFilePresent);
-            console.log('Determined dbUri:', dbUri);
+            this.logger.log('Determined dbUri:', dbUri);
 
             // 3. Create the main database connection
-            console.log('Creating main database instance...');
+            this.logger.log('Creating main database instance...');
             // Make sure to pass original config options if any were intended
             this.db = new Database(dbUri, config.options);
-            console.log('Main database instance created.');
+            this.logger.log('Main database instance created.');
 
             // 4. Initialize the main database connection (Extensions, Pragmas)
             this._initializeDatabaseConnection(options);
 
             // 5. Load the Vec extension
             this.loadVecExtension(this.db);
-            console.log('NodeServerDatabase initialized successfully.');
+            this.logger.log('NodeServerDatabase initialized successfully.');
 
         } catch (error) {
-            console.error('Error during NodeServerDatabase initialization:', error);
+            this.logger.error('Error during NodeServerDatabase initialization:', error);
             // Clean up if necessary (e.g., close this.db if partially opened)
             if (this.db && this.db.open) {
                 try {
                     this.db.close();
-                    console.log('Closed partially opened database due to initialization error.');
+                    this.logger.log('Closed partially opened database due to initialization error.');
                 } catch (closeError) {
-                    console.error('Error closing database during error handling:', closeError);
+                    this.logger.error('Error closing database during error handling:', closeError);
                 }
             }
             throw error; // Re-throw the error to signal failure
@@ -118,11 +122,11 @@ export class NodeServerDatabase extends BaseServerDatabase {
                     "select sqlite_version() as sqlite_version, vec_version() as vec_version;",
                 )
                 .get() as any;
-            console.log(`sqlite_version=${sqlite_version}, vec_version=${vec_version}`);
+            this.logger.log(`sqlite_version=${sqlite_version}, vec_version=${vec_version}`);
             // const result = db
             //     .prepare("select vec_f32(?) as result")
             //     .get('[1.0,2.0,3.0]');
-            // console.log('result', result)
+            // this.logger.log('result', result)
         }
     }
 
@@ -132,7 +136,7 @@ export class NodeServerDatabase extends BaseServerDatabase {
     }) {
         db.loadExtension(options.libPath);
         const row = db.prepare('select simple_query(\'pinyin\') as query').get() as any;
-        console.log(row.query);
+        this.logger.log(row.query);
         db.prepare("select jieba_dict(?)").run(options.dictPath);
     }
 
@@ -147,34 +151,34 @@ export class NodeServerDatabase extends BaseServerDatabase {
         graftFilePath: string,
         isSyncDbFilePresent: boolean
     ): string {
-        console.log(`Determining DB URI using pre-calculated isSyncEnabled=${this.isSyncEnabled}`);
+        this.logger.log(`Determining DB URI using pre-calculated isSyncEnabled=${this.isSyncEnabled}`);
 
         let dbUri = config.path; // Default to local file path
 
         if (this.isSyncEnabled) {
-            console.log('Sync DB mode selected.');
+            this.logger.log('Sync DB mode selected.');
             let dbId = options.volumeId || null;
 
             if (isSyncDbFilePresent) {
                 const fileContent = fs.readFileSync(graftFilePath, 'utf-8').trim();
                 if (fileContent) {
-                    console.log('Read existing dbId from graft file:', fileContent);
+                    this.logger.log('Read existing dbId from graft file:', fileContent);
                     dbId = fileContent;
                 } else {
-                    console.log('Graft file exists but is empty. Will attempt to generate ID.');
+                    this.logger.log('Graft file exists but is empty. Will attempt to generate ID.');
                 }
             } else {
-                console.log('Graft file does not exist.');
+                this.logger.log('Graft file does not exist.');
                 if (options.enableSync) {
-                    console.log('enableSync is true, will attempt to generate ID and create graft file.');
+                    this.logger.log('enableSync is true, will attempt to generate ID and create graft file.');
                 } else {
-                    console.warn('Graft file missing and enableSync is false. Sync may not function as expected.');
+                    this.logger.warn('Graft file missing and enableSync is false. Sync may not function as expected.');
                 }
             }
 
             // Generate a new ID if needed (and sync is enabled or file exists)
             if (!dbId && (options.enableSync || isSyncDbFilePresent)) {
-                console.log('dbId not found or invalid, generating new one using "file:random?vfs=graft"...');
+                this.logger.log('dbId not found or invalid, generating new one using "file:random?vfs=graft"...');
                 let tempIdDb: Database.Database | null = null;
                 try {
                     // This relies on the graft VFS being registered in the constructor's step 1
@@ -192,12 +196,12 @@ export class NodeServerDatabase extends BaseServerDatabase {
                     }
 
                     dbId = path.basename(generatedId); // Extract the ID part if it's a path
-                    console.log('Generated new dbId:', dbId);
+                    this.logger.log('Generated new dbId:', dbId);
 
                     fs.writeFileSync(graftFilePath, dbId);
-                    console.log('Saved new dbId to graft file:', graftFilePath);
+                    this.logger.log('Saved new dbId to graft file:', graftFilePath);
                 } catch (err: any) {
-                    console.error("Error generating database ID with graft VFS:", err);
+                    this.logger.error("Error generating database ID with graft VFS:", err);
                     // Propagate a more informative error
                     throw new Error(`Failed to generate/save database ID for graft VFS: ${err.message}`);
                 } finally {
@@ -216,11 +220,11 @@ export class NodeServerDatabase extends BaseServerDatabase {
 
         } else if (options.enableSync && !options.graft?.libPath) {
             // Log if sync was requested but library wasn't provided
-            console.warn('enableSync is true, but graft.libPath is not provided. Falling back to non-sync URI.');
+            this.logger.warn('enableSync is true, but graft.libPath is not provided. Falling back to non-sync URI.');
             dbUri = config.path; // Fall back to default path
         } else {
             // Standard non-sync operation
-            console.log('Using standard file path (non-sync mode).');
+            this.logger.log('Using standard file path (non-sync mode).');
             dbUri = config.path;
         }
 
@@ -233,7 +237,7 @@ export class NodeServerDatabase extends BaseServerDatabase {
         simple: { libPath: string; dictPath: string; },
         // Add other options if needed by initialization steps
     }) {
-        console.log('Initializing database connection settings (extensions, pragmas)...');
+        this.logger.log('Initializing database connection settings (extensions, pragmas)...');
         if (!this.db) {
             // This should ideally not happen if called after successful DB creation
             throw new Error("Database not initialized before calling _initializeDatabaseConnection");
@@ -242,32 +246,32 @@ export class NodeServerDatabase extends BaseServerDatabase {
         // Load Simple extension if dictionary exists
         if (fs.existsSync(options.simple.dictPath)) {
             try {
-                console.log('Attempting to enable simple extension...');
+                this.logger.log('Attempting to enable simple extension...');
                 this.loadSimpleExtension(this.db, options.simple);
-                console.log('Simple extension enabled successfully.');
+                this.logger.log('Simple extension enabled successfully.');
             } catch (err) {
-                console.error('Failed to enable simple extension:', err);
+                this.logger.error('Failed to enable simple extension:', err);
                 // Decide if this is fatal. For now, just log and continue.
                 // Consider re-throwing if simple extension is critical:
                 // throw new Error(`Failed to enable simple extension: ${err.message}`);
             }
         } else {
-            console.warn('Simple dictionary file not found, skipping simple extension enablement:', options.simple.dictPath);
+            this.logger.warn('Simple dictionary file not found, skipping simple extension enablement:', options.simple.dictPath);
         }
 
         // Apply Pragma settings
         try {
-            console.log('Applying PRAGMA settings...');
+            this.logger.log('Applying PRAGMA settings...');
             const pragmaList = generatePragmaList();
             pragmaList.forEach(pragma => {
-                console.log(`Executing PRAGMA: ${pragma}`);
+                this.logger.log(`Executing PRAGMA: ${pragma}`);
                 if (!this.db) throw new Error("Database is not initialized.");
                 // Ensure pragma string is correctly formatted if it contains values
                 this.db.pragma(pragma);
             });
-            console.log('PRAGMA settings applied successfully.');
+            this.logger.log('PRAGMA settings applied successfully.');
         } catch (err) {
-            console.error('Failed to apply PRAGMA settings:', err);
+            this.logger.error('Failed to apply PRAGMA settings:', err);
             // Decide if this is fatal. For now, just log and continue.
             // Consider re-throwing if pragmas are critical:
             // throw new Error(`Failed to apply PRAGMA settings: ${err.message}`);
@@ -280,7 +284,7 @@ export class NodeServerDatabase extends BaseServerDatabase {
     }
     close() {
         if (!this.db) {
-            console.warn("Attempted to close an uninitialized database.");
+            this.logger.warn("Attempted to close an uninitialized database.");
             return; // Or throw error depending on desired behavior
         }
         this.db.close();
@@ -290,27 +294,27 @@ export class NodeServerDatabase extends BaseServerDatabase {
     async reset(): Promise<{ [key: string]: any; }> {
         if (!this.isSyncEnabled) {
             // throw new Error("Reset operation is only available in sync mode.");
-            console.warn("Reset operation called but sync is not enabled. Returning empty object.");
+            this.logger.warn("Reset operation called but sync is not enabled. Returning empty object.");
             return {}; // Return empty object instead of throwing
         }
         if (!this.db) throw new Error("Database is not initialized.");
         const rawResult = this.db.pragma('graft_reset');
-        console.log(rawResult)
+        this.logger.log(rawResult)
         return {}
     }
 
     async pages() {
         if (!this.isSyncEnabled) {
             // throw new Error("Pages operation is only available in sync mode.");
-            console.warn("Pages operation called but sync is not enabled. Returning empty promise.");
+            this.logger.warn("Pages operation called but sync is not enabled. Returning empty promise.");
             return Promise.resolve({}); // Return promise resolving to empty object
         }
         if (!this.db) throw new Error("Database is not initialized.");
         const rawResult = this.db.pragma('graft_pages');
-        console.log('Raw graft_pages:', rawResult);
+        this.logger.log('Raw graft_pages:', rawResult);
 
         if (!rawResult || !Array.isArray(rawResult) || rawResult.length === 0 || typeof rawResult[0] !== 'object' || rawResult[0] === null) {
-            console.error('Unexpected graft_pages format:', rawResult);
+            this.logger.error('Unexpected graft_pages format:', rawResult);
             // Return a structured error or throw? Returning promise for now.
             return Promise.resolve({ error: 'Unexpected format from pragma graft_pages' });
         }
@@ -318,7 +322,7 @@ export class NodeServerDatabase extends BaseServerDatabase {
         const pagesString = Object.values(rawResult[0])[0];
 
         if (typeof pagesString !== 'string') {
-            console.error('Expected string value in graft_pages result:', pagesString);
+            this.logger.error('Expected string value in graft_pages result:', pagesString);
             return Promise.resolve({ error: 'Expected string value from pragma graft_pages' });
         }
 
@@ -329,15 +333,15 @@ export class NodeServerDatabase extends BaseServerDatabase {
     async status() {
         if (!this.isSyncEnabled) {
             // throw new Error("Status operation is only available in sync mode.");
-            console.warn("Status operation called but sync is not enabled. Returning empty promise.");
+            this.logger.warn("Status operation called but sync is not enabled. Returning empty promise.");
             return Promise.resolve({}); // Return promise resolving to empty object
         }
         if (!this.db) throw new Error("Database is not initialized.");
         const rawResult = this.db.pragma('graft_status');
-        // console.log('Raw graft_status:', rawResult);
+        // this.logger.log('Raw graft_status:', rawResult);
 
         if (!rawResult || !Array.isArray(rawResult) || rawResult.length === 0 || typeof rawResult[0] !== 'object' || rawResult[0] === null) {
-            console.error('Unexpected graft_status format:', rawResult);
+            this.logger.error('Unexpected graft_status format:', rawResult);
             // Return a structured error or throw? Returning promise for now.
             return Promise.resolve({ error: 'Unexpected format from pragma graft_status' });
         }
@@ -346,13 +350,13 @@ export class NodeServerDatabase extends BaseServerDatabase {
         const statusString = Object.values(rawResult[0])[0];
 
         if (typeof statusString !== 'string') {
-            console.error('Expected string value in graft_status result:', statusString);
+            this.logger.error('Expected string value in graft_status result:', statusString);
             return Promise.resolve({ error: 'Expected string value from pragma graft_status' });
         }
 
         const parsedStatus = parseGraftStatus(statusString);
 
-        // console.log('Parsed graft_status:', parsedStatus);
+        // this.logger.log('Parsed graft_status:', parsedStatus);
         return Promise.resolve(parsedStatus);
     }
 
@@ -420,9 +424,9 @@ export class NodeServerDatabase extends BaseServerDatabase {
                 try {
                     return stmt.run(_bind);
                 } catch (error) {
-                    console.error("Error executing statement:", error);
-                    console.error("SQL:", sql);
-                    console.error("Bind:", _bind);
+                    this.logger.error("Error executing statement:", error);
+                    this.logger.error("SQL:", sql);
+                    this.logger.error("Bind:", _bind);
                     throw error
                 }
             }
