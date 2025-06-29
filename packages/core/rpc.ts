@@ -1,5 +1,11 @@
 import type { DataSpace } from "@/packages/core/DataSpace"
-import { workerStore } from "@/worker/web-worker/store"
+
+export const workerStore: {
+    currentCallUserId: string | null
+} = {
+    currentCallUserId: null,
+}
+
 
 export const handleFunctionCall = async (
     data: {
