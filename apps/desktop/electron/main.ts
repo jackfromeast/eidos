@@ -76,8 +76,9 @@ process.env.VITE_PUBLIC = app.isPackaged
     ? process.env.DIST
     : path.join(process.env.DIST, '../public')
 
-app.setName('Eidos')
-app.setPath('userData', path.join(app.getPath('appData'), 'Eidos'))
+// app.setName('Eidos')
+// not working on windows, we just change name in package.json to eidos to avoid breaking change
+// app.setPath('userData', path.join(app.getPath('appData'), 'eidos'))
 
 startServer({ dist: process.env.DIST, port: PORT });
 

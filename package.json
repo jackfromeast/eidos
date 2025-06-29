@@ -1,5 +1,5 @@
 {
-  "name": "eidos",
+  "name": "eidos-project",
   "version": "0.22.0",
   "private": true,
   "type": "module",
@@ -7,11 +7,11 @@
   "author": "mayneyao",
   "scripts": {
     "dev": "pnpm run --filter web-app dev",
-    "dev:desktop": "pnpm run --filter desktop dev",
+    "dev:desktop": "pnpm run --filter eidos dev",
     "build": "pnpm run --filter web-app build",
-    "build:desktop": "pnpm run --filter desktop build",
-    "pkg:desktop": "pnpm run --filter desktop package",
-    "pkg:desktop:dev": "pnpm run --filter desktop package:dev",
+    "build:desktop": "pnpm run --filter eidos build",
+    "pkg:desktop": "pnpm run --filter eidos package",
+    "pkg:desktop:dev": "pnpm run --filter eidos package:dev",
     "lint": "oxlint .",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
