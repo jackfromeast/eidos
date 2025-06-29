@@ -280,7 +280,19 @@ export class NodeServerDatabase extends BaseServerDatabase {
 
     prepare(sql: string) {
         if (!this.db) throw new Error("Database is not initialized.");
-        return this.db.prepare(sql)
+        const stmt = this.db.prepare(sql);
+        return {
+            run: (bind?: any[]) => {
+                if (bind == null) {
+                    stmt.run();
+                } else {
+                    stmt.run(bind);
+                }
+            },
+            all: (bind?: any[]) => {
+                return Promise.resolve(bind == null ? stmt.all() : stmt.all(bind));
+            }
+        };
     }
     close() {
         if (!this.db) {
@@ -391,15 +403,15 @@ export class NodeServerDatabase extends BaseServerDatabase {
         return stmt.all() as { [columnName: string]: any }[];
     }
 
-    transaction(func: (db: NodeServerDatabase) => void) {
+    transaction(func: (db: BaseServerDatabase) => void) {
         if (!this.db) throw new Error("Database is not initialized.");
         // Use non-null assertion operator since the check above guarantees non-nullability
-        const transaction = this.db!.transaction(func);
-        transaction(this);
+        const transaction = this.db!.transaction(() => func(this));
+        transaction();
         return
     }
 
-    async exec(opts: { sql: string; bind?: any[]; rowMode?: "array" | "object" }) {
+    async exec(opts: { sql: string; bind?: any[]; rowMode?: "array" | "object" }): Promise<any> {
         if (!this.db) throw new Error("Database is not initialized.");
         if (typeof opts === 'string') {
             const res = this.db.exec(opts);

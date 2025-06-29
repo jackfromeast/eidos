@@ -1,4 +1,4 @@
-import type { Database , Sqlite3Static } from "@sqlite.org/sqlite-wasm"
+import type { Database, Sqlite3Static } from "@sqlite.org/sqlite-wasm"
 import sqlite3InitModule from "@sqlite.org/sqlite-wasm"
 
 import { logger } from "@/lib/env"
@@ -20,17 +20,50 @@ export class SQLiteWasmDatabase implements BaseServerDatabase {
     this.filename = db.filename;
   }
 
+  get isWalMode() {
+    return true;
+  }
+
+  pages(): Promise<{ [key: string]: any; }> {
+    return Promise.resolve({});
+  }
+
+  status(): Promise<{ [key: string]: any; }> {
+    return Promise.resolve({});
+  }
+
+  pull(): Promise<{ [key: string]: any; }> {
+    return Promise.resolve({});
+  }
+
+  push(): Promise<{ [key: string]: any; }> {
+    return Promise.resolve({});
+  }
+
+  reset(): Promise<{ [key: string]: any; }> {
+    return Promise.resolve({});
+  }
+
   prepare(sql: string) {
     const stmt = this.db.prepare(sql)
     return {
       run: (bind?: any[]) => {
-        if (bind == null) {
-          stmt.step()
-        } else {
+        if (bind != null) {
           stmt.bind(bind)
-          stmt.step()
-          stmt.reset()
         }
+        stmt.step()
+        stmt.reset()
+      },
+      all: (bind?: any[]) => {
+        if (bind != null) {
+          stmt.bind(bind)
+        }
+        const results: any[] = []
+        while (stmt.step()) {
+          results.push(stmt.get({}))
+        }
+        stmt.reset()
+        return Promise.resolve(results);
       }
     }
   }
@@ -47,7 +80,7 @@ export class SQLiteWasmDatabase implements BaseServerDatabase {
   transaction(func: (db: BaseServerDatabase) => void): any {
     try {
       this.db.exec("BEGIN");
-      func(this);
+      func(this as BaseServerDatabase);
       this.db.exec("COMMIT");
     } catch (e) {
       this.db.exec("ROLLBACK");
