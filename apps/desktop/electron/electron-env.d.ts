@@ -25,6 +25,7 @@ declare namespace NodeJS {
 
 interface Window {
     eidos: {
+        send: import('electron').IpcRenderer['send']
         invoke: import('electron').IpcRenderer['invoke']
         on: (channel: string, listener: IpcListener) => string | undefined
         off: (channel: string, listenerId: string) => void

@@ -116,7 +116,7 @@ export const useWorker = () => {
       listenerId = window.eidos.on("request-from-main", requestHandler)
       listenerId2 = window.eidos.on(
         EidosMessageChannelName,
-        async (event, arg) => {
+        async (event: any, arg: any) => {
           await handle(new MessageEvent("message", { data: arg }))
         }
       ) as unknown as string
