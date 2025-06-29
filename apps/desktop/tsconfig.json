@@ -20,6 +20,12 @@
     "references": [
         {
             "path": "../web-app"
+        },
+        {
+            "path": "../../packages/core"
+        },
+        {
+            "path": "../../packages/lib"
         }
     ]
 }

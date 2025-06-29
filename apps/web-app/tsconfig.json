@@ -16,5 +16,13 @@
     "exclude": [
         "node_modules",
         "dist"
+    ],
+    "references": [
+        {
+            "path": "../../packages/core"
+        },
+        {
+            "path": "../../packages/lib"
+        }
     ]
 }

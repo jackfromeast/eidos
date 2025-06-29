@@ -87,6 +87,18 @@
       "path": "./tsconfig.node.json"
     },
     {
+      "path": "./packages/core"
+    },
+    {
+      "path": "./packages/lib"
+    },
+    {
+      "path": "./packages/v3"
+    },
+    {
+      "path": "./packages/ai"
+    },
+    {
       "path": "./apps/web-app"
     },
     {
