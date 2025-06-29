@@ -1,7 +1,7 @@
 import { MsgType } from '@/lib/const';
 import { handleFunctionCall } from '@/packages/core/rpc';
-import type { BrowserWindow} from 'electron';
-import { Menu, Tray, app, dialog, ipcMain, nativeImage, shell } from 'electron';
+import type { BrowserWindow } from 'electron';
+import { Menu, Tray, app, dialog, ipcMain, nativeImage, shell, webContents } from 'electron';
 import electronLog from 'electron-log';
 import path from 'path';
 import { getConfigManager } from './config';
@@ -87,6 +87,17 @@ if (!app.requestSingleInstanceLock()) {
     app.quit()
     process.exit(0)
 }
+
+ipcMain.on('webview-dom-ready', (_, id) => {
+    const wc = webContents.fromId(id)
+    wc?.setWindowOpenHandler(({ url }) => {
+        const protocol = (new URL(url)).protocol
+        if (['https:', 'http:'].includes(protocol)) {
+            shell.openExternal(url)
+        }
+        return { action: 'deny' }
+    })
+})
 
 ipcMain.handle('get-app-data-folder', () => {
     return getConfigManager().get('dataFolder');

@@ -96,6 +96,7 @@
     "common.trash": "Trash",
     "common.untitled": "Untitled",
     "common.update": "Update",
+    "common.viewDetails": "View Details",
     "common.viewSelector.placeholder": "Select a view...",
     "common.viewSelector.untitled": "Untitled",
     "dataview.template.queryAllBookmarksInDocs": "Query all bookmarks in documents",

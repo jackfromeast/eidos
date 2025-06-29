@@ -5,6 +5,7 @@ import { isDesktopMode } from "@/lib/env"
 import { useMblock } from "@/apps/web-app/hooks/use-mblock"
 
 import { type BlockRendererRef } from "./block-renderer"
+import { WebViewBlock } from "./webview-block"
 
 export const ExtNodeBlockApp = forwardRef<
   BlockRendererRef,
@@ -48,16 +49,13 @@ export const ExtNodeBlockApp = forwardRef<
     )
   }
 
-  const extUrl = `http://${blockId}.ext.${space}.eidos.localhost:13127/${nodeId}`
   if (isDesktopMode) {
     return (
-      <webview
-        src={extUrl}
-        style={{
-          height: "100%",
-          width: "100%",
-        }}
-        autosize
+      <WebViewBlock
+        blockId={blockId}
+        width="100%"
+        height="100%"
+        extraPath={nodeId}
       />
     )
   }

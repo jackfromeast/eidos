@@ -5,21 +5,21 @@ import React, {
   useRef,
   useState,
 } from "react"
+import { generateImportMap, getAllLibs } from "@/packages/v3/compiler"
 import { useTheme } from "next-themes"
 
 import { isDesktopMode } from "@/lib/env"
-import { useThemeStore } from "@/apps/web-app/store/theme-store"
-import { serializePropsToUrl } from "@/lib/utils"
-import { generateImportMap, getAllLibs } from "@/packages/v3/compiler"
 import { getThemeVariables } from "@/lib/web/theme"
 import { useAllThemes } from "@/apps/web-app/hooks/use-all-themes"
 import { useCurrentPathInfo } from "@/apps/web-app/hooks/use-current-pathinfo"
+import { useThemeStore } from "@/apps/web-app/store/theme-store"
 
 import { LogoLoading } from "../loading"
 import { makeSdkInjectScript } from "../script-container/helper"
 import { twConfig } from "./tailwind-config"
 import tailwindRaw from "./tailwind-raw.js?raw"
 import themeRawCode from "./theme-raw.css?raw"
+import { WebViewBlock } from "./webview-block"
 
 export interface BlockRendererRef {
   getHeight: () => number
@@ -72,14 +72,7 @@ export const BlockRenderer = React.forwardRef<
       return {}
     }, [allThemes, currentThemeName, theme])
 
-    const webviewRef = useRef<HTMLWebViewElement | null>(null)
     const [importMap, setImportMap] = useState<string>("")
-    const [extUrl, setExtUrl] = useState<string>(
-      serializePropsToUrl(
-        defaultProps,
-        `http://${blockId}.ext.${space}.eidos.localhost:13127/`
-      )
-    )
 
     const defaultPropsString = JSON.stringify(defaultProps)
 
@@ -313,34 +306,6 @@ export const BlockRenderer = React.forwardRef<
       )
     }, [defaultProps])
 
-    useEffect(() => {
-      if (!webviewRef.current) return
-      webviewRef.current.contentWindow?.postMessage(
-        { type: "props-change", props: defaultProps },
-        "*"
-      )
-    }, [defaultProps])
-
-    // theme change
-    useEffect(() => {
-      if (!webviewRef.current) return
-      webviewRef.current.contentWindow?.postMessage(
-        { type: "theme-change", theme, variables: themeVariables },
-        "*"
-      )
-    }, [theme, themeVariables])
-
-    useEffect(() => {
-      if (!webviewRef.current) return
-      webviewRef.current.addEventListener("dom-ready", () => {
-        setTimeout(() => {
-          webviewRef.current?.contentWindow?.postMessage(
-            JSON.stringify({ type: "props-change", props: defaultProps })
-          )
-        }, 5000)
-      })
-    }, [])
-
     useImperativeHandle(
       ref,
       () => ({
@@ -354,30 +319,6 @@ export const BlockRenderer = React.forwardRef<
       }),
       []
     )
-
-    useEffect(() => {
-      const url = serializePropsToUrl(
-        defaultProps,
-        `http://${blockId}.ext.${space}.eidos.localhost:13127/`
-      )
-      if (url !== extUrl) {
-        setExtUrl(url)
-      }
-      // do not listen to defaultProps changes, avoid webview repeating props-change messages
-      // the message mechanism can ensure subsequent changes are passed
-    }, [blockId, space])
-
-    useEffect(() => {
-      if (rerenderOnDefaultPropsChange) {
-        const url = serializePropsToUrl(
-          defaultProps,
-          `http://${blockId}.ext.${space}.eidos.localhost:13127/`
-        )
-        if (url !== extUrl) {
-          setExtUrl(url)
-        }
-      }
-    }, [blockId, space, extUrl, defaultProps, rerenderOnDefaultPropsChange])
 
     const style = {
       border: "none",
@@ -402,14 +343,12 @@ export const BlockRenderer = React.forwardRef<
     }
     if (isDesktopMode) {
       return (
-        <webview
-          ref={webviewRef}
-          src={extUrl.toString()}
-          style={{
-            minHeight: height,
-            minWidth: width,
-          }}
-          autosize
+        <WebViewBlock
+          blockId={blockId}
+          defaultProps={defaultProps}
+          width={width}
+          height={height}
+          rerenderOnDefaultPropsChange={rerenderOnDefaultPropsChange}
         />
       )
     }

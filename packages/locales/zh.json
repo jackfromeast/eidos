@@ -92,6 +92,7 @@
     "common.trash": "回收站",
     "common.untitled": "未命名",
     "common.update": "更新",
+    "common.viewDetails": "查看详情",
     "common.viewSelector.placeholder": "选择视图...",
     "common.viewSelector.untitled": "未命名",
     "dataview.template.queryAllBookmarksInDocs": "查询文档中的所有书签",
