@@ -1,8 +1,15 @@
-import { useLocalStorageState, useSize } from "ahooks"
 import { Suspense, lazy, useEffect, useRef } from "react"
+import { useLocalStorageState, useSize } from "ahooks"
 import { Outlet, useLocation, useNavigate, useParams } from "react-router-dom"
 
-import { ScriptBreadcrumb } from "@/apps/web-app/pages/[database]/extensions/components/extension-breadcrumb"
+import { EidosDataEventChannelName } from "@/lib/const"
+import { cn, isStandaloneBlocksPath } from "@/lib/utils"
+import { isWindowsDesktop } from "@/lib/web/helper"
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable"
 import { BlockApp } from "@/components/block-renderer/block-app"
 import { DocExtBlockLoader } from "@/components/doc-ext-block-loader"
 import { KeyboardShortCuts } from "@/components/keyboard-shortcuts"
@@ -11,24 +18,15 @@ import { Nav } from "@/components/nav"
 import { RightPanelNav } from "@/components/nav/right-panel-nav"
 import { ScriptContainer } from "@/components/script-container"
 import { SideBar } from "@/components/sidebar"
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@/components/ui/resizable"
 import { useActivation } from "@/apps/web-app/hooks/use-activation"
 import { useCurrentPathInfo } from "@/apps/web-app/hooks/use-current-pathinfo"
 import { useEidosFileSystemManager } from "@/apps/web-app/hooks/use-fs"
 import { useSqlite } from "@/apps/web-app/hooks/use-sqlite"
-import { EidosDataEventChannelName } from "@/lib/const"
+import { ScriptBreadcrumb } from "@/apps/web-app/pages/[database]/extensions/components/extension-breadcrumb"
 import { useAppRuntimeStore } from "@/apps/web-app/store/runtime-store"
-import { cn, isStandaloneBlocksPath } from "@/lib/utils"
-import { isWindowsDesktop } from "@/lib/web/helper"
 
 import { useLayoutInit } from "../../../web-app/pages/[database]/hook"
-import {
-  useSpaceAppStore
-} from "../../../web-app/pages/[database]/store"
+import { useSpaceAppStore } from "../../../web-app/pages/[database]/store"
 
 const AIChat = lazy(() => import("@/components/ai-chat/ai-chat-new"))
 

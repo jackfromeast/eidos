@@ -1,6 +1,6 @@
 import type {
     Message
-} from '@/packages/ai';
+} from 'ai';
 
 
 

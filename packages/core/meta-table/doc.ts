@@ -4,7 +4,6 @@ import { MsgType } from "@/lib/const"
 import { DocTableName } from "@/packages/core/sqlite/const"
 
 import { BaseTable, BaseTableImpl } from "./base"
-import { _convertMarkdown2State } from "@/apps/web-app/hooks/use-doc-editor"
 
 /**
  * Utility function to escape FTS queries safely
