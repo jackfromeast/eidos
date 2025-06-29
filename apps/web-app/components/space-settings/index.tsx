@@ -5,9 +5,6 @@ import { Link, useNavigate } from "react-router-dom"
 
 import { MsgType } from "@/lib/const"
 import { isDesktopMode } from "@/lib/env"
-import { useCurrentPathInfo } from "@/apps/web-app/hooks/use-current-pathinfo"
-import { useEngine } from "@/apps/web-app/hooks/use-engine"
-import { useSpace } from "@/apps/web-app/hooks/use-space"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,6 +26,9 @@ import {
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useCurrentPathInfo } from "@/apps/web-app/hooks/use-current-pathinfo"
+import { useEngine } from "@/apps/web-app/hooks/use-engine"
+import { useSpace } from "@/apps/web-app/hooks/use-space"
 
 import { Button } from "../ui/button"
 
@@ -259,12 +259,11 @@ export const SpaceSettings = () => {
         <Button
           variant={"ghost"}
           size="sm"
-          className="w-full cursor-pointer justify-start font-normal"
+          className="w-full cursor-pointer justify-center font-normal"
           asChild
         >
           <span className="[&>svg]:!size-5">
-            <SettingsIcon className="pr-1" />{" "}
-            <span>{t("common.settings")}</span>
+            <SettingsIcon />
           </span>
         </Button>
       </DialogTrigger>

@@ -13,18 +13,18 @@ import { useTranslation } from "react-i18next"
 import { Link } from "react-router-dom"
 
 import { isDesktopMode } from "@/lib/env"
-import { useAppStore } from "@/apps/web-app/store/app-store"
-import { useAppRuntimeStore } from "@/apps/web-app/store/runtime-store"
 import { cn } from "@/lib/utils"
 import { isMac, isMacDesktop } from "@/lib/web/helper"
+import { Sidebar, SidebarRail } from "@/components/ui/sidebar"
+import { DatabaseSelect } from "@/components/database-select"
 import { useAllExtensions } from "@/apps/web-app/hooks/use-all-extensions"
 import { useCurrentPathInfo } from "@/apps/web-app/hooks/use-current-pathinfo"
 import { useAllNodes } from "@/apps/web-app/hooks/use-nodes"
 import { useSpace } from "@/apps/web-app/hooks/use-space"
 import { useSqlite } from "@/apps/web-app/hooks/use-sqlite"
-import { Sidebar, SidebarRail } from "@/components/ui/sidebar"
-import { DatabaseSelect } from "@/components/database-select"
 import { useExperimentConfigStore } from "@/apps/web-app/pages/settings/experiment/store"
+import { useAppStore } from "@/apps/web-app/store/app-store"
+import { useAppRuntimeStore } from "@/apps/web-app/store/runtime-store"
 
 import { FileManager } from "../file-manager"
 import { NavigationControls } from "../navigation-controls"
@@ -40,6 +40,7 @@ import { EverydaySidebarItem } from "./everyday"
 import { ImportFileDialog } from "./import-file"
 import { CurrentItemTree } from "./item-tree"
 import { TableListLoading } from "./loading"
+import { MicroBlocksGrid } from "./micro-blocks-grid"
 import { Trash } from "./trash"
 import { useTreeOperations } from "./tree/hooks"
 import { useFolderStore } from "./tree/store"
@@ -93,15 +94,9 @@ export const SideBar = ({ className }: any) => {
         ) : (
           <div className={cn("flex h-full flex-col p-2", className)}>
             <div className="flex items-center justify-between">
-              {isShareMode ? (
-                t("common.shareMode")
-              ) : (
-                <>
-                  <DatabaseSelect databases={spaceList} />
-                </>
-              )}
+              {isShareMode ? t("common.shareMode") : <div className="w-full" />}
             </div>
-
+            <MicroBlocksGrid />
             <div className="flex h-full w-full flex-col justify-between overflow-y-auto">
               {loading ? (
                 <TableListLoading />
@@ -135,6 +130,7 @@ export const SideBar = ({ className }: any) => {
                           {t("common.extensions")}
                         </Link>
                       </Button>
+                      {/* Micro Blocks Grid */}
                       <CurrentItemTree
                         title={t("common.pinned")}
                         allNodes={allNodes.filter((node) => node.is_pinned)}
@@ -183,7 +179,10 @@ export const SideBar = ({ className }: any) => {
             <div>
               <Trash />
               <ImportFileDialog />
-              <SpaceSettings />
+              <div className="flex items-center justify-between gap-1">
+                {!isShareMode && <DatabaseSelect databases={spaceList} />}
+                <SpaceSettings />
+              </div>
             </div>
           </div>
         )}

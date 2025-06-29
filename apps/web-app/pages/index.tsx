@@ -4,11 +4,12 @@ import { RouterProvider, createBrowserRouter, redirect } from "react-router-dom"
 import { QueryParamProvider } from "use-query-params"
 import { ReactRouter6Adapter } from "use-query-params/adapters/react-router-6"
 
+import { SpaceFileSystem } from "@/lib/storage/space"
 import NodePage from "@/apps/web-app/pages/[database]/[node]/page"
 import EverydayPage from "@/apps/web-app/pages/[database]/everyday/[day]/page"
 import EverydayHomePage from "@/apps/web-app/pages/[database]/everyday/page"
 import { FileManager } from "@/apps/web-app/pages/[database]/files/page"
-import { SpaceFileSystem } from "@/lib/storage/space"
+
 import "@/locales/i18n"
 // space
 import SpaceLayout from "@/apps/web-app/pages/[database]/layout"
@@ -32,6 +33,7 @@ import SharePage from "@/apps/web-app/pages/share/page"
 
 import { NotFound } from "./404"
 import { AppPage } from "./[database]/apps/page"
+import { BlocksPage } from "./[database]/blocks/page"
 import { ExtensionDetailPage } from "./[database]/extensions/detail"
 import { ScriptPage } from "./[database]/extensions/page"
 import { SpaceSetting } from "./[database]/settings/page"
@@ -161,6 +163,15 @@ const router = createBrowserRouter([
               {
                 path: ":id",
                 element: <AppPage />,
+              },
+            ],
+          },
+          {
+            path: "blocks",
+            children: [
+              {
+                path: ":id",
+                element: <BlocksPage />,
               },
             ],
           },

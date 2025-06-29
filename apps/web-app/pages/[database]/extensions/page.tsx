@@ -17,6 +17,7 @@ import { EIDOS_SPACE_BASE_URL } from "@/lib/const"
 import { cn, getExtensionUrl } from "@/lib/utils"
 import { useCurrentPathInfo } from "@/apps/web-app/hooks/use-current-pathinfo"
 import { useExtension } from "@/apps/web-app/hooks/use-extension"
+import { useFavBlocks } from "@/apps/web-app/hooks/use-fav-blocks"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -144,6 +145,9 @@ export const ScriptPage = () => {
   const { addApp } = useAppsStore()
   const { setCurrentApp } = useSpaceAppStore()
 
+  // Add favorite functionality
+  const { isFavorite, toggleFavBlock } = useFavBlocks()
+
   useMount(() => {
     revalidator.revalidate()
   })
@@ -179,6 +183,28 @@ export const ScriptPage = () => {
     // Open micro block in standalone mode (new window/tab)
     const newUrl = getExtensionUrl(blockId, space)
     window.open(newUrl)
+  }
+
+  const handleToggleFavorite = (script: IExtension) => {
+    const wasFavorite = isFavorite(script.id)
+    
+    toggleFavBlock({
+      id: script.id,
+      name: script.name,
+      icon: script.icon,
+    })
+    
+    if (wasFavorite) {
+      toast({
+        title: "Removed from Favorites", 
+        description: `Micro block "${script.name}" has been removed from favorites.`,
+      })
+    } else {
+      toast({
+        title: "Added to Favorites",
+        description: `Micro block "${script.name}" has been added to favorites.`,
+      })
+    }
   }
 
   const { dirHandle, scriptId } = useDirHandleStore()
@@ -311,6 +337,8 @@ export const ScriptPage = () => {
                 onToggleEnabled={handleToggleEnabled}
                 onAddToSidebar={handleAddToSidebar}
                 onOpenStandalone={handleOpenStandalone}
+                onToggleFavorite={script.type === "m_block" ? handleToggleFavorite : undefined}
+                isFavorite={script.type === "m_block" ? isFavorite(script.id) : undefined}
                 showReload={Boolean(dirHandle) && scriptId === script.id}
                 onReload={handleReload}
               />

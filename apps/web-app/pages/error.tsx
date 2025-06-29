@@ -5,13 +5,14 @@ import { Link, useRouteError } from "react-router-dom"
 import { DOMAINS } from "@/lib/const"
 import { EIDOS_VERSION, isDesktopMode } from "@/lib/env"
 import { Button } from "@/components/ui/button"
-import { Toaster } from "@/components/toaster"
 import { useToast } from "@/components/ui/use-toast"
+import { Toaster } from "@/components/toaster"
 
 export function ErrorBoundary() {
   let error = useRouteError()
   const { toast } = useToast()
   const { t } = useTranslation()
+  console.error(error)
 
   const handleCopyErrorMessages = () => {
     const messages = String((error as any).stack || error)

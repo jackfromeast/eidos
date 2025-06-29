@@ -12,13 +12,17 @@
         "./**/*.ts",
         "./**/*.tsx",
         "./**/*.json",
-        "../../apps/desktop/electron/electron-env.d.ts"
-, "../../packages/core/types/ITreeNode.ts", "../../packages/core/types/IView.ts", "../../packages/core/types/IViewFilter.ts"    ],
+        "../../apps/desktop/electron/electron-env.d.ts",
+        "../../packages/shared/types/global.d.ts"
+    ],
     "exclude": [
         "node_modules",
         "dist"
     ],
     "references": [
+        {
+            "path": "../../packages/locales"
+        },
         {
             "path": "../../packages/shared"
         },

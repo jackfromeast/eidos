@@ -1,6 +1,7 @@
 import type { IExtension } from "@/packages/core/meta-table/extension"
 import {
   ExternalLinkIcon,
+  HeartIcon,
   MoreVerticalIcon,
   PanelRightIcon,
   RefreshCwIcon,
@@ -27,6 +28,8 @@ interface ExtensionListItemProps {
   onToggleEnabled: (script: IExtension, enabled: boolean) => void
   onAddToSidebar: (id: string) => void
   onOpenStandalone: (id: string) => void
+  onToggleFavorite?: (script: IExtension) => void
+  isFavorite?: boolean
   showReload?: boolean
   onReload?: () => void
 }
@@ -38,6 +41,8 @@ export const ExtensionListItem = ({
   onToggleEnabled,
   onAddToSidebar,
   onOpenStandalone,
+  onToggleFavorite,
+  isFavorite,
   showReload,
   onReload,
 }: ExtensionListItemProps) => {
@@ -68,6 +73,9 @@ export const ExtensionListItem = ({
             <Badge variant="secondary" className="text-xs">
               {script.type}
             </Badge>
+            {script.type === "m_block" && isFavorite && (
+              <HeartIcon size={14} className="text-red-500 fill-current" />
+            )}
           </div>
           <div className="text-sm text-muted-foreground">
             {script.description || "No description"}
@@ -102,6 +110,15 @@ export const ExtensionListItem = ({
           <DropdownMenuContent align="end">
             {script.type === "m_block" && (
               <>
+                {onToggleFavorite && (
+                  <DropdownMenuItem onClick={() => onToggleFavorite(script)}>
+                    <HeartIcon 
+                      size={16} 
+                      className={`mr-2 ${isFavorite ? 'text-red-500 fill-current' : ''}`} 
+                    />
+                    {isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem onClick={() => onAddToSidebar(script.id)}>
                   <PanelRightIcon size={16} className="mr-2" />
                   Add to Sidebar

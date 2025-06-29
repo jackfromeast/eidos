@@ -6,9 +6,6 @@ import { Check, ChevronsUpDown, HomeIcon, PlusCircle } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
 import { cn } from "@/lib/utils"
-import { useCurrentPathInfo } from "@/apps/web-app/hooks/use-current-pathinfo"
-import { useGoto } from "@/apps/web-app/hooks/use-goto"
-import { useSpace, useSpaceFileSystem } from "@/apps/web-app/hooks/use-space"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
@@ -34,6 +31,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import { useCurrentPathInfo } from "@/apps/web-app/hooks/use-current-pathinfo"
+import { useGoto } from "@/apps/web-app/hooks/use-goto"
+import { useSpace, useSpaceFileSystem } from "@/apps/web-app/hooks/use-space"
 import { useLastOpened } from "@/apps/web-app/pages/[database]/hook"
 
 import { Input } from "./ui/input"
@@ -137,13 +137,12 @@ export function DatabaseSelect({ databases }: IDatabaseSelectorProps) {
           >
             {space ? (
               <div className="flex items-center gap-3">
-                <HomeIcon className="h-4 w-4" />
+                <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-80" />
                 <span>{space}</span>
               </div>
             ) : (
               t("space.select.selectDatabase")
             )}
-            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-full min-w-[180px] p-0">
