@@ -22,8 +22,6 @@
 
 ![eidos](/static/assets/images/eidos-table-and-doc.webp)
 
-![extension micro block](/static/assets/images/eidos-extension-micro-block.webp)
-
 > [!IMPORTANT]
 > Eidos is under active development. While you can try it out, it's not recommended for production use. Stay tuned for updates on the official release.
 
@@ -32,10 +30,26 @@
 - Out-of-the-box Notion-like documents and databases
 - Offline Support: Everything runs inside your local machine. Access your data without an internet connection. Data is stored locally for blazing-fast performance.
 - AI Features: Deeply integrated with LLM for AI-powered capabilities. Translate, summarize, and interact with your data within Eidos.
-- Extensible: Simple and powerful extension system, make Eidos a malleable software, write extension code manually or use AI to generate extension code.
-  - Micro block: UI components for customized data display and interaction.
-  - Script: Create powerful data processing logic with TypeScript/JavaScript/Python.
-  - UDF: Use JavaScript to create custom calculation functions for use in table Formula fields.
+- Extensible: Simple and powerful extension system, make Eidos a malleable software, write extension code manually or use AI to generate extension code. Build tools and use tools, unlimited extension.
+
+  <details>
+  <summary>
+    Micro block: UI components for customized data display and interaction.
+  </summary>
+    <img src="./static/assets/images/eidos-extension-micro-block.webp" alt="extension micro block" />
+  </details>
+  <details>
+  <summary>
+    Script: Create powerful data processing logic with TypeScript/JavaScript/Python. 
+  </summary>
+    <img src="./static/assets/images/eidos-extension-script-as-llm-tools.webp" alt="extension script" />
+    <img src="./static/assets/images/eidos-llm-call-custom-script-tools.webp" alt="eidos ai call custom script tools" />
+  </details>
+  <details>
+  <summary>
+    UDF: Use JavaScript to create custom calculation functions for use in table Formula fields.
+  </summary>
+  </details>
 
 - Open Format: You get the raw data, everything in sqlite is open.
 
